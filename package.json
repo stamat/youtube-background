@@ -1,5 +1,5 @@
 {
-  "name": "jquery.youtube-background",
+  "name": "youtube-background",
   "version": "1.0.2",
   "description": "Simple jQuery plugin for embedding YouTube videos as a cover background",
   "main": "jquery.youtube-background.js",
