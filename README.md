@@ -6,7 +6,7 @@ I wrote this code several times over the years and never bothered to make it reu
 
 Goodbye careless days... I'm getting old...
 
-[DEMO HERE ⤻](http://stamat.github.io/jquery.youtube-background)
+[DEMO HERE ⤻](http://stamat.github.io/jquery.youtube-background/)
 
 ## Usage
 
