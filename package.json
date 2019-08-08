@@ -1,0 +1,29 @@
+{
+  "name": "jquery.youtube-background",
+  "version": "1.1",
+  "description": "Simple jQuery plugin for embedding YouTube videos as a cover background",
+  "main": "jquery.youtube-background.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stamat/jquery.youtube-background.git"
+  },
+  "keywords": [
+    "youtube",
+    "background",
+    "jquery",
+    "embed",
+    "jquery-plugin",
+    "youtube-embed",
+    "youtube-embed-player"
+  ],
+  "author": "Nikola Stamatovic <nikola.stamatovic@me.com>",
+  "contributors": [
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stamat/jquery.youtube-background/issues"
+  },
+  "peerDependencies": {
+    "jquery": ">=1.7.0"
+  }
+}

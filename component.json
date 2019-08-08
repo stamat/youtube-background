@@ -1,0 +1,25 @@
+{
+    "name": "jquery.youtube-background",
+    "repo": "stamat/jquery.youtube-background",
+    "description": "https://github.com/stamat/jquery.youtube-background",
+    "version": "1.1",
+    "keywords": [
+        "youtube",
+        "background",
+        "jquery",
+        "embed",
+        "jquery-plugin",
+        "youtube-embed",
+        "youtube-embed-player"
+    ],
+    "dependencies": {
+        "component/jquery": "*"
+    },
+    "development": {},
+    "scripts": {
+        "jquery.youtube-background.js": "jquery.youtube-background.js"
+    },
+    "styles": {
+        
+    }
+}

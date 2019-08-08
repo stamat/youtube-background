@@ -86,6 +86,7 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
                         'autoplay': 1,
                         'mute': 1,
                         'loop': 1,
+                        'rel': 0,
                         'showinfo': 0,
                         'modestbranding': 1
                     },
