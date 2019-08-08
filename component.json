@@ -2,7 +2,7 @@
     "name": "jquery.youtube-background",
     "repo": "stamat/jquery.youtube-background",
     "description": "https://github.com/stamat/jquery.youtube-background",
-    "version": "1.1",
+    "version": "1.0.2",
     "keywords": [
         "youtube",
         "background",
@@ -20,6 +20,6 @@
         "jquery.youtube-background.js": "jquery.youtube-background.js"
     },
     "styles": {
-        
+
     }
 }
