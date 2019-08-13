@@ -85,6 +85,7 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
                         'controls': 0,
                         'autoplay': 1,
                         'mute': 1,
+                        'origin': window.location.origin,
                         'loop': 1,
                         'rel': 0,
                         'showinfo': 0,
