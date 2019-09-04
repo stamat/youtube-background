@@ -63,7 +63,12 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
                     "width" : "100%",
                     "z-index": "0",
                     "position": "absolute",
-                    "overflow": "hidden"
+                    "overflow": "hidden",
+                    "top": 0, // added by @insad
+                    "left": 0,
+                    "bottom": 0,
+                    "right": 0,
+                    "pointer-events": "none" // avoid right mouse click popup menu
                 });
 
                 $root.parent().parent().css({
