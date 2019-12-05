@@ -8,6 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
         <link href="https://fonts.googleapis.com/css?family=Lato:400,700&display=swap" rel="stylesheet">
+		<script src="https://kit.fontawesome.com/228006f19a.js" crossorigin="anonymous"></script>
 
         <style>
             html, body {
@@ -42,6 +43,32 @@
                 color: white;
                 text-shadow: 0px 1px 3px rgba(0,0,0,0.5);
             }
+
+			.play-toggle {
+				font-size: 32px;
+				position: absolute;
+				z-index: 2;
+				top: 10px;
+				right: 10px;
+				padding: 0px;
+				margin: 0px;
+				height: 32px;
+				width: 32px;
+				border-radius: 16px;
+				line-height: 32px;
+				border: none;
+				background: none;
+				-webkit-appearance: none;
+				color: white;
+				filter: drop-shadow(0px 0px 1px black);
+				cursor: pointer;
+				opacity: 1;
+				transition: all 250ms ease-in-out;
+			}
+
+			.play-toggle:hover {
+				opacity: 0.5;
+			}
         </style>
 
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -50,7 +77,6 @@
     <body>
         <div class="container">
             <main>
-
                 <div class="example-marquee">
                     <div id="ytbg" data-youtube="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
                     <div class="content">
@@ -59,12 +85,19 @@
                         </div>
                     </div>
                 </div>
-
+				<div class="example-marquee">
+                    <div id="ytbg2" data-ytbg-pause="true" data-youtube="https://www.youtube.com/watch?v=MgDZBqTuUuE"></div>
+                    <div class="content">
+                        <div class="inner">
+                            <h1>Click the button to pause.</h1>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
         <script type="text/javascript">
             jQuery(document).ready(function() {
-                $('[data-youtube]').youtube_background();
+				$('[data-youtube]').youtube_background();
             });
         </script>
     </body>
