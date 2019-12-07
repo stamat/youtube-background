@@ -98,6 +98,20 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
                     "pointer-events": "none" // avoid right mouse click popup menu
                 });
 
+				var ytid = $elem.data('youtube');
+
+				if (!ytid) {
+					continue;
+				}
+
+                var pts = ytid.match(YOUTUBE);
+                if (pts && pts.length) {
+                    ytid = pts[1];
+					YOUTUBE.lastIndex = 0; //regex needs a reset in for loops, I always forget this
+                } else {
+					continue;
+				}
+
 				if (params['load-background']) {
 					$root.css({
 						'background-image': 'url(https://img.youtube.com/vi/'+ytid+'/maxresdefault.jpg)',
@@ -140,20 +154,6 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
                 $root.parent().css({
                     "position": "relative"
                 });
-
-                var ytid = $elem.data('youtube');
-
-				if (!ytid) {
-					continue;
-				}
-
-                var pts = ytid.match(YOUTUBE);
-                if (pts && pts.length) {
-                    ytid = pts[1];
-					YOUTUBE.lastIndex = 0; //regex needs a reset in for loops, I always forget this
-                } else {
-					continue;
-				}
 
 				function getRandomIntInclusive(min, max) {
 				  min = Math.ceil(min);
