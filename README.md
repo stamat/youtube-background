@@ -1,6 +1,6 @@
 # jquery.youtube-background
 
-Another ~~100~~ 200 liner in a form of a jQuery plugin created to facilitate YouTube embeds as a cover background using YouTube Embed API.
+Another 100 liner in a form of a jQuery plugin created to facilitate YouTube embeds as a cover background using YouTube Embed API.
 
 I wrote this code several times over the years and never bothered to make it reusable. Now when I needed it again I could not even find where I wrote it last...
 
