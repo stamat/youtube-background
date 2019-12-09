@@ -68,6 +68,9 @@ Noted properties can be added as html attributes as:
 ```
 
 ## todo
-- [ ] Make a unified solution with support for Vimeo, Brightcove, Slate and DailyMotion, regardless of the name youtube-background
+- [ ] Add another wrapper so video can fade in when loaded
+- [ ] Add play-pause events
+- [ ] Test the execution order
+- [ ] Make a unified solution with support for Vimeo, Brightcove, Slate and DailyMotion and HTML5 video, this can also be a new more robust project called video-background
 
 THE END.
