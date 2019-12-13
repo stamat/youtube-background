@@ -68,6 +68,8 @@ Noted properties can be added as html attributes as:
 ```
 
 ## todo
+- [ ] Autoplay property
+- [ ] Mute property and button #4
 - [ ] Add another wrapper so video can fade in when loaded
 - [ ] Add play-pause events
 - [ ] Test the execution order
