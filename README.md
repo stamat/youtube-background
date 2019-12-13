@@ -55,7 +55,7 @@ Noted properties can be added as html attributes as:
 
 #### Example - Properties as JSON
 
-```
+```html
     <div id="ytbg" data-youtube="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
