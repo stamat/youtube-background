@@ -103,13 +103,13 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 				for (var k in params) {
 					var data = $elem.data('ytbg-'+k);
 					if (data !== undefined && data !== null) {
-						//pause deprecated
-						if (k === 'pause') {
-							k = 'pause-button';
-						}
-
 						params[k] = data;
 					}
+				}
+
+				//pause deprecated
+				if (params.pause) {
+					params['play-button'] = params.pause;
 				}
 
                 $elem.wrap('<div class="youtube-background" />');
