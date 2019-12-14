@@ -11,6 +11,7 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         var $this = $(this);
 
 		var defaults = {
+			'pause': false, //deprecated
 			'play-button': false,
 			'mute-button': false,
 			'autoplay': true,
@@ -29,6 +30,11 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 					params[k] = defaults[k];
 				}
 			}
+		}
+
+		//pause deprecated
+		if (params.pause) {
+			params['play-button'] = params.pause;
 		}
 
         function onVideoPlayerReady(event) {
@@ -97,6 +103,11 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 				for (var k in params) {
 					var data = $elem.data('ytbg-'+k);
 					if (data !== undefined && data !== null) {
+						//pause deprecated
+						if (k === 'pause') {
+							k = 'pause-button';
+						}
+
 						params[k] = data;
 					}
 				}
