@@ -44,12 +44,9 @@
                 text-shadow: 0px 1px 3px rgba(0,0,0,0.5);
             }
 
-			.play-toggle {
+			.video-background-controls button {
 				font-size: 32px;
-				position: absolute;
-				z-index: 2;
-				top: 10px;
-				right: 10px;
+				display: inline-block;
 				padding: 0px;
 				margin: 0px;
 				height: 32px;
@@ -64,9 +61,10 @@
 				cursor: pointer;
 				opacity: 1;
 				transition: all 250ms ease-in-out;
+				margin-left: 10px;
 			}
 
-			.play-toggle:hover {
+			.video-background-controls button:hover {
 				opacity: 0.5;
 			}
         </style>
@@ -86,10 +84,19 @@
                     </div>
                 </div>
 				<div class="example-marquee">
-                    <div id="ytbg2" data-ytbg-pause="true" data-youtube="https://www.youtube.com/watch?v=MgDZBqTuUuE"></div>
+                    <div id="ytbg2" data-ytbg-play-button="true" data-youtube="https://www.youtube.com/watch?v=MgDZBqTuUuE"></div>
                     <div class="content">
                         <div class="inner">
                             <h1>Click the button to pause.</h1>
+                        </div>
+                    </div>
+                </div>
+				<div class="example-marquee">
+                    <div id="ytbg3" data-ytbg-mute-button="true" data-youtube="https://www.youtube.com/watch?v=dQw4w9WgXcQ
+					"></div>
+                    <div class="content">
+                        <div class="inner">
+                            <h1>Mute / Unmute.</h1>
                         </div>
                     </div>
                 </div>

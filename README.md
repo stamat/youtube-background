@@ -31,13 +31,21 @@ P.S. *https://www.youtube.com/player_api* is injected automatically, only once p
 
 Property | Default | Accepts | Description
 -------- | ------- | ------- | -----------
-**pause** | false | boolean | Adds a toggle pause button
+**play-button** | false | boolean | Adds a toggle pause button
+**mute-button** | false | boolean | Adds a toggle mute button
+**autoplay** | true | boolean | Autoplay loaded video
+**muted** | true | boolean | Load video muted
+**loop** | true | boolean | Loop loaded video
 **mobile** | false | boolean | Keep the youtube embed on mobile
 **load-background** | true | boolean | Fetch background from youtube
 
 Noted properties can be added as html attributes as:
 
-* **data-ytbg-pause**
+* **data-ytbg-play-button**
+* **data-ytbg-mute-button**
+* **data-ytbg-autoplay**
+* **data-ytbg-mooted**
+* **data-ytbg-loop**
 * **data-ytbg-mobile**
 * **data-ytbg-load-background**
 
@@ -68,8 +76,8 @@ Noted properties can be added as html attributes as:
 ```
 
 ## todo
-- [ ] Autoplay property
-- [ ] Mute property and button #4
+- [x] Autoplay property
+- [x] Mute property and button #4
 - [ ] Add another wrapper so video can fade in when loaded
 - [ ] Add play-pause events
 - [ ] Test the execution order

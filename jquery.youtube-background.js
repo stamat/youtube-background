@@ -11,7 +11,11 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         var $this = $(this);
 
 		var defaults = {
-			'pause': false,
+			'play-button': false,
+			'mute-button': false,
+			'autoplay': true,
+			'muted': true,
+			'loop': true,
 			'mobile': false,
 			'load-background': true
 		}
@@ -28,7 +32,9 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 		}
 
         function onVideoPlayerReady(event) {
-            event.target.playVideo();
+			if (params.autoplay) {
+				event.target.playVideo();
+			}
 
             $(event.target.a).css({
                 "top" : "50%",
@@ -56,7 +62,7 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
         function onVideoStateChange(event) {
 			//video loop
-			if (event.data === 0) {
+			if (event.data === 0 && params.loop) {
 				event.target.playVideo();
 			}
         }
@@ -133,12 +139,29 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 					continue;
 				}
 
+				if (params['play-button'] || params['mute-button']) {
+					var $vbc = $('<div class="video-background-controls" />');
+					$vbc.css({
+						'position': 'absolute',
+						'z-index': 2,
+						'top': '10px',
+						'right': '10px'
+					});
+					$root.parent().append($vbc);
+				}
+
 				//add a play toggle button
-				if (params.pause) {
+				if (params['play-button']) {
 					var $btn = $('<button class="play-toggle"><i class="fa fa-pause-circle"></i></button>');
+
+					if (!params.autoplay) {
+						$btn.addClass('paused');
+						$this.find('i').removeClass('fa-pause-circle').addClass('fa-play-circle');
+					}
+
 					$btn.on('click', function() {
 						var $this = $(this);
-						var player = $this.parent().find('.youtube-background').data('yt-player');
+						var player = $this.parent().parent().find('.youtube-background').data('yt-player');
 
 						if ($this.hasClass('paused')) {
 							$this.removeClass('paused');
@@ -154,7 +177,36 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 							}
 						}
 					});
-					$root.parent().append($btn);
+					$root.parent().find('.video-background-controls').append($btn);
+				}
+
+				if (params['mute-button']) {
+					var $btn = $('<button class="mute-toggle"><i class="fa fa-volume-up"></i></button>');
+
+					if (params.muted) {
+						$btn.addClass('muted');
+						$btn.find('i').addClass('fa-volume-mute').removeClass('fa-volume-up');
+					}
+
+					$btn.on('click', function() {
+						var $this = $(this);
+						var player = $this.parent().parent().find('.youtube-background').data('yt-player');
+
+						if (!$this.hasClass('muted')) {
+							$this.addClass('muted');
+							$this.find('i').addClass('fa-volume-mute').removeClass('fa-volume-up');
+							if (player) {
+								player.mute();
+							}
+						} else {
+							$this.removeClass('muted');
+							$this.find('i').removeClass('fa-volume-mute').addClass('fa-volume-up');
+							if (player) {
+								player.unMute();
+							}
+						}
+					});
+					$root.parent().find('.video-background-controls').append($btn);
 				}
 
 				//index the instance
@@ -189,10 +241,10 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
                     videoId: entry.ytid,
                     playerVars: {
                         'controls': 0,
-                        'autoplay': 1,
-                        'mute': 1,
+                        'autoplay': params.autoplay ? 1 : 0,
+                        'mute': params.muted ? 1 : 0,
                         'origin': window.location.origin,
-                        'loop': 1,
+                        'loop': params.loop ? 1 : 0,
                         'rel': 0,
 						'ecver': 2,
                         'showinfo': 0,
