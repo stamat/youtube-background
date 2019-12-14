@@ -38,6 +38,7 @@ Property | Default | Accepts | Description
 **loop** | true | boolean | Loop loaded video
 **mobile** | false | boolean | Keep the youtube embed on mobile
 **load-background** | true | boolean | Fetch background from youtube
+**pause** | false | boolean | Adds a toggle pause button (deprecated)
 
 Noted properties can be added as html attributes as:
 
@@ -52,7 +53,7 @@ Noted properties can be added as html attributes as:
 #### Example - Properties as HTML attributes
 
 ```html
-    <div id="ytbg" data-ytbg-pause="true" data-youtube="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+    <div id="ytbg" data-ytbg-play-button="true" data-youtube="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
         jQuery(document).ready(function() {
@@ -69,7 +70,7 @@ Noted properties can be added as html attributes as:
     <script type="text/javascript">
         jQuery(document).ready(function() {
             $('[data-youtube]').youtube_background({
-				'pause': true
+				'play-button': true
 			});
         });
     </script>

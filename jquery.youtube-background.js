@@ -1,4 +1,4 @@
-/* jquery.youtube-background v1.0.3 | Nikola Stamatovic <@stamat> | MIT */
+/* jquery.youtube-background v1.0.4 | Nikola Stamatovic <@stamat> | MIT */
 
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/player_api";
