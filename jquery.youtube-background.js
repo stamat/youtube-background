@@ -1,4 +1,4 @@
-/* jquery.youtube-background v1.0.5 | Nikola Stamatovic <@stamat> | MIT */
+/* jquery.youtube-background v1.0.6 | Nikola Stamatovic <@stamat> | MIT */
 
 //TODO: option to pause videos on cursor or scroll inactivity
 //XXX: https://codepen.io/songyima/pen/VKbyYG?editors=1000
