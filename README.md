@@ -79,9 +79,10 @@ Noted properties can be added as html attributes as:
 ## todo
 - [x] Autoplay property
 - [x] Mute property and button #4
-- [ ] Add another wrapper so video can fade in when loaded
+- [x] Add another wrapper so video can fade in when loaded
 - [ ] Add play-pause events
-- [ ] Test the execution order
-- [ ] Make a unified solution with support for Vimeo, Brightcove, Slate and DailyMotion and HTML5 video, this can also be a new more robust project called video-background
+- [x] Test the execution order
+- [x] Refactor the code to provide foundation for unified solution from multiple providers and sources called video-background
+- [ ] https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
 
 THE END.
