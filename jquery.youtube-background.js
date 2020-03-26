@@ -1,13 +1,12 @@
-/* jquery.youtube-background v1.0.6 | Nikola Stamatovic <@stamat> | MIT */
-
-//TODO: option to pause videos on cursor or scroll inactivity
-//XXX: https://codepen.io/songyima/pen/VKbyYG?editors=1000
+/* jquery.youtube-background v1.0.7 | Nikola Stamatovic <@stamat> | MIT */
 
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/player_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+
+//native addClass, removeClass, hasClass and toggleClass
 if (!window.hasOwnProperty('d0')) {
 	window.d0 = {};
 
@@ -54,6 +53,11 @@ function YoutubeBackground(elem, params, id, uid) {
 	this.ytid = id;
 	this.uid = uid;
 	this.player = null;
+	this.buttons = {};
+
+	this.state = {};
+	this.state.play = false;
+	this.state.mute = false;
 
 	this.params = {};
 
@@ -66,7 +70,8 @@ function YoutubeBackground(elem, params, id, uid) {
 		'loop': true,
 		'mobile': false,
 		'load-background': true,
-		'resolution': '16:9'
+		'resolution': '16:9',
+		'offset': 200
 	};
 
 	this.__init__ = function () {
@@ -76,16 +81,37 @@ function YoutubeBackground(elem, params, id, uid) {
 
 		this.parseProperties(params);
 		this.params.resolution_mod = this.parseResolutionString(this.params.resolution);
+		this.state.playing = this.params.autoplay;
+		this.state.muted = this.params.muted;
+
 		this.buildHTML();
 		this.injectIFrame();
 
 
 		if (this.params['play-button']) {
-			this.generatePlayButton();
+			this.generateActionButton({
+				name: 'play',
+				className: 'play-toggle',
+				innerHtml: '<i class="fa"></i>',
+				initialState: false,
+				stateClassName: 'paused',
+				condition_parameter: 'autoplay',
+				stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
+				actions: ['play', 'pause']
+			});
 		}
 
 		if (this.params['mute-button']) {
-			this.generateMuteButton();
+			this.generateActionButton({
+				name: 'mute',
+				className: 'mute-toggle',
+				innerHtml: '<i class="fa"></i>',
+				initialState: true,
+				stateClassName: 'muted',
+				condition_parameter: 'muted',
+				stateChildClassNames: ['fa-volume-up', 'fa-volume-mute'],
+				actions: ['unmute', 'mute']
+			});
 		}
 	}
 
@@ -124,7 +150,6 @@ YoutubeBackground.prototype.onVideoStateChange = function (event) {
 	}
 
 	if (event.data === -1 && this.params.autoplay) {
-
 		event.target.playVideo();
 	}
 
@@ -172,7 +197,8 @@ YoutubeBackground.prototype.parseProperties = function (params) {
 YoutubeBackground.prototype.injectIFrame = function () {
 	this.iframe = document.createElement('iframe');
 	this.iframe.setAttribute('frameborder', 0);
-	var src = 'https://www.youtube.com/embed/'+this.ytid+'?enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0';
+	this.iframe.setAttribute('allow', ['autoplay; mute']);
+	var src = 'https://www.youtube.com/embed/'+this.ytid+'?enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin='+window.location.origin;
 
 	if (this.params.muted) {
 		src += '&mute=1';
@@ -204,8 +230,8 @@ YoutubeBackground.prototype.injectIFrame = function () {
 	var self = this;
 
 	function onResize() {
-		var h = self.iframe.parentNode.offsetHeight + 200; // since showinfo is deprecated and ignored after September 25, 2018. we add +100 to hide it in the overflow
-		var w = self.iframe.parentNode.offsetWidth + 200;
+		var h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
+		var w = self.iframe.parentNode.offsetWidth + self.params.offset;
 		var res = self.params.resolution_mod;
 
 		if (res > w/h) {
@@ -242,9 +268,12 @@ YoutubeBackground.prototype.buildHTML = function () {
 		"top": 0, // added by @insad
 		"left": 0,
 		"bottom": 0,
-		"right": 0,
-		//"pointer-events": "none" // avoid right mouse click popup menu
+		"right": 0
 	};
+
+	if (!this.params['mute-button']) {
+		wrapper_styles["pointer-events"] = "none" // avoid right mouse click popup menu
+	}
 
 	if (this.params['load-background']) {
 		wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
@@ -280,75 +309,90 @@ YoutubeBackground.prototype.buildHTML = function () {
 	return wrapper;
 };
 
-YoutubeBackground.prototype.generatePlayButton = function () {
-	var btn = document.createElement('button');
-	btn.className = 'play-toggle';
-	btn.innerHTML = '<i class="fa fa-pause-circle"></i>';
+YoutubeBackground.prototype.play = function () {
+	if (this.buttons.hasOwnProperty('play')) {
+		var btn_obj = this.buttons.play;
+		d0.removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+		d0.addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+		d0.removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+	}
 
-	if (!this.params.autoplay) {
-		d0.addClass(btn, 'paused');
-		d0.removeClass(btn.firstChild, 'fa-pause-circle');
-		d0.addClass(btn.firstChild, 'fa-play-circle');
+	if (this.player) {
+		this.player.playVideo();
+	}
+}
+
+YoutubeBackground.prototype.pause = function () {
+	if (this.buttons.hasOwnProperty('play')) {
+		var btn_obj = this.buttons.play;
+		d0.addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+		d0.removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+		d0.addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+	}
+
+	if (this.player) {
+		this.player.pauseVideo();
+	}
+}
+
+YoutubeBackground.prototype.unmute = function () {
+	if (this.buttons.hasOwnProperty('mute')) {
+		var btn_obj = this.buttons.mute;
+		d0.removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+		d0.addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+		d0.removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+	}
+
+	if (this.player) {
+		this.player.unMute();
+	}
+}
+
+YoutubeBackground.prototype.mute = function () {
+	if (this.buttons.hasOwnProperty('mute')) {
+		var btn_obj = this.buttons.mute;
+		d0.addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+		d0.removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+		d0.addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+	}
+
+	if (this.player) {
+		this.player.mute();
+	}
+}
+
+//TODO: refactor states to be equal for all buttons
+YoutubeBackground.prototype.generateActionButton = function (obj) {
+	var btn = document.createElement('button');
+	btn.className = obj.className;
+	btn.innerHTML = obj.innerHtml;
+	d0.addClass(btn.firstChild, obj.stateChildClassNames[0]);
+
+	if (this.params[obj.condition_parameter] == obj.initialState) {
+		d0.addClass(btn, obj.stateClassName);
+		d0.removeClass(btn.firstChild, obj.stateChildClassNames[0]);
+		d0.addClass(btn.firstChild, obj.stateChildClassNames[1]);
 	}
 
 	var self = this;
 	btn.addEventListener('click', function(e) {
-		if (d0.hasClass(this, 'paused')) {
-			d0.removeClass(this, 'paused');
-			d0.addClass(this.firstChild, 'fa-pause-circle')
-			d0.removeClass(this.firstChild, 'fa-play-circle');
-
-			if (self.player) {
-				self.player.playVideo();
-			}
+		if (d0.hasClass(this, obj.stateClassName)) {
+			self.state[obj.name] = false;
+			self[obj.actions[0]]();
 		} else {
-			d0.addClass(this, 'paused');
-			d0.removeClass(this.firstChild, 'fa-pause-circle')
-			d0.addClass(this.firstChild, 'fa-play-circle');
-
-			if (self.player) {
-				self.player.pauseVideo();
-			}
+			self.state[obj.name] = true;
+			self[obj.actions[1]]();
 		}
 	});
+
+	this.buttons[obj.name] = {
+		element: btn,
+		button_properties: obj
+	};
 
 	this.controls_element.appendChild(btn);
 };
 
-YoutubeBackground.prototype.generateMuteButton = function () {
-	var btn = document.createElement('button');
-	btn.className = 'mute-toggle';
-	btn.innerHTML = '<i class="fa fa-volume-up"></i>';
-
-	if (this.params.muted) {
-		d0.addClass(btn, 'muted');
-		d0.removeClass(btn.firstChild, 'fa-volume-up');
-		d0.addClass(btn.firstChild, 'fa-volume-mute');
-	}
-
-	var self = this;
-	btn.addEventListener('click', function(e) {
-		if (d0.hasClass(this, 'muted')) {
-			d0.removeClass(this, 'muted');
-			d0.addClass(this.firstChild, 'fa-volume-up')
-			d0.removeClass(this.firstChild, 'fa-volume-mute');
-
-			if (self.player) {
-				self.player.unMute();
-			}
-		} else {
-			d0.addClass(this, 'muted');
-			d0.removeClass(this.firstChild, 'fa-volume-up')
-			d0.addClass(this.firstChild, 'fa-volume-mute');
-
-			if (self.player) {
-				self.player.mute();
-			}
-		}
-	});
-
-	this.controls_element.appendChild(btn);
-};
 
 YoutubeBackground.prototype.parseResolutionString = function (res) {
 	var pts = res.split(/\s?:\s?/i);
@@ -380,6 +424,72 @@ YoutubeBackground.prototype.error = function (message, value) {
 	}
 };
 
+function ActivityMonitor(on_activity, on_inactivity, activity_timeout, inactivity_timeout, events) {
+	this.timer = null;
+	this.timeout = inactivity_timeout || 10000;
+	this.activity_timer = null; //for event throttling
+	this.activity_timeout = activity_timeout || 1000;
+	this.last_activity = null;
+
+	this.resetTimer = function() {
+		if (this.timer) {
+			clearTimeout(this.timer);
+			this.timer = null;
+		}
+
+		var self = this;
+		this.timer = setTimeout(function() {
+			if (self.last_activity + self.timeout + self.activity_timeout
+				>= new Date().getTime()) {
+					if (on_inactivity) {
+						on_inactivity();
+					}
+			}
+		}, this.timeout);
+	};
+
+	this.logActivity = function() {
+		this.last_activity = new Date().getTime();
+
+		if (on_activity) {
+			on_activity();
+		}
+	};
+
+	this.onActivity = function() {
+		if (!this.activity_timer) {
+			var self = this;
+			this.activity_timer = setTimeout(function(){
+				self.logActivity();
+				self.resetTimer();
+
+				clearTimeout(self.activity_timer);
+				self.activity_timer = null;
+			}, this.activity_timeout);
+		}
+	};
+
+	this.__init__ = function() {
+		var self = this;
+
+		if (!events) {
+			events = ['click', 'mousemove', 'scroll'];
+		} else {
+			if (typeof events === 'string') {
+				events = [events];
+			}
+		}
+
+		for (var i = 0; i < events.length; i++) {
+			document.addEventListener(events[i], function() {
+				self.onActivity();
+			});
+		}
+	};
+
+	this.__init__();
+}
+
 function VideoBackgrounds(selector, params) {
 	this.elements = selector;
 
@@ -408,7 +518,24 @@ function VideoBackgrounds(selector, params) {
 			this.index[uid] = yb;
 		}
 
-		this.initYTPlayer();
+		var self = this;
+
+		this.initYTPlayers(function() {
+			//TODO: FIX!
+			if (params &&
+				(params.hasOwnProperty('activity_timeout')
+				|| params.hasOwnProperty('inactivity_timeout'))) {
+					this.activity_monitor = new ActivityMonitor(function () {
+						self.playVideos();
+					}, function() {
+						self.pauseVideos();
+					},
+					params ? params.activity_timeout : null,
+					params ? params.inactivity_timeout : null,
+					['mousemove', 'scroll']
+				);
+			}
+		});
 	};
 
 	this.__init__();
@@ -441,12 +568,28 @@ VideoBackgrounds.prototype.generateUID = function (pref) {
 	return uid;
 };
 
-VideoBackgrounds.prototype.initYTPlayer = function () {
+VideoBackgrounds.prototype.pauseVideos = function () {
+	for (var k in this.index) {
+		this.index[k].pause();
+	}
+};
+
+VideoBackgrounds.prototype.playVideos = function () {
+	for (var k in this.index) {
+		this.index[k].play();
+	}
+};
+
+VideoBackgrounds.prototype.initYTPlayers = function (callback) {
 	var self = this;
 
 	window.onYouTubeIframeAPIReady = function () {
 		for (var k in self.index) {
 			self.index[k].initYTPlayer();
+		}
+
+		if (callback) {
+			setTimeout(callback, 100);
 		}
 	};
 
@@ -459,7 +602,7 @@ if (window.hasOwnProperty('jQuery')) {
 	(function ($) {
 	    $.fn.youtube_background = function(params) {
 	        var $this = $(this);
-			new VideoBackgrounds(this);
+			new VideoBackgrounds(this, params);
 	 		return $this;
 	 	};
 	})(jQuery);
