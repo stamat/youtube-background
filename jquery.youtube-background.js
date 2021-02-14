@@ -372,7 +372,7 @@ YoutubeBackground.prototype.generateActionButton = function (obj) {
 	btn.innerHTML = obj.innerHtml;
 	d0.addClass(btn.firstChild, obj.stateChildClassNames[0]);
 
-	if (this.params[obj.condition_parameter] == obj.initialState) {
+	if (this.params[obj.condition_parameter] === obj.initialState) {
 		d0.addClass(btn, obj.stateClassName);
 		d0.removeClass(btn.firstChild, obj.stateChildClassNames[0]);
 		d0.addClass(btn.firstChild, obj.stateChildClassNames[1]);
