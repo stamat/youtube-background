@@ -294,9 +294,11 @@ YoutubeBackground.prototype.buildHTML = function () {
 
 	if (this.params['load-background']) {
 		wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
-		wrapper_styles['background-size'] = 'cover';
-		wrapper_styles['background-repeat'] = 'no-repeat';
-		wrapper_styles['background-position'] = 'center';
+		if (this.params['inline-styles']) {
+			wrapper_styles['background-size'] = 'cover';
+			wrapper_styles['background-repeat'] = 'no-repeat';
+			wrapper_styles['background-position'] = 'center';
+		}
 	}
 
 	for (var property in wrapper_styles) {
