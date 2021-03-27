@@ -73,6 +73,7 @@ function YoutubeBackground(elem, params, id, uid) {
 		'resolution': '16:9',
 		'onStatusChange': function() {},
 		'inline-styles': true,
+    'fit-box': false,
 		'offset': 200
 	};
 
@@ -255,11 +256,11 @@ YoutubeBackground.prototype.injectIFrame = function () {
 		var res = self.params.resolution_mod;
 
 		if (res > w/h) {
-			self.iframe.style.width = h*res + 'px';
-			self.iframe.style.height = h + 'px';
+			self.iframe.style.width = self.params.fitbox ? '100%' : (h*res + 'px');
+			self.iframe.style.height = self.params.fitbox ? '100%' : (h + 'px');
 		} else {
-			self.iframe.style.width = w + 'px';
-			self.iframe.style.height = w/res + 'px';
+			self.iframe.style.width = self.params.fitbox ? '100%' : (w + 'px');
+			self.iframe.style.height = self.params.fitbox ? '100%' : (w/res + 'px');
 		}
 	}
 
