@@ -14,11 +14,11 @@ if (!window.hasOwnProperty('d0')) {
 		if (element.classList) {
 			return element.classList.contains(className);
 		}
-	    return new RegExp('\\b'+ className+'\\b').test(element.className);
+		return new RegExp('\\b'+ className+'\\b').test(element.className);
 	};
 
 	d0.addClass = function(element, className) {
-	    if (element.classList) {
+		if (element.classList) {
 			element.classList.add(className);
 			return;
 		}
@@ -29,7 +29,7 @@ if (!window.hasOwnProperty('d0')) {
 	};
 
 	d0.removeClass = function(element, className) {
-	    if (element.classList) {
+		if (element.classList) {
 			element.classList.remove(className);
 			return;
 		}
@@ -38,7 +38,7 @@ if (!window.hasOwnProperty('d0')) {
 	};
 
 	d0.toogleClass = function(element, className) {
-	    if (d0.hasClass(element, className)) {
+		if (d0.hasClass(element, className)) {
 			d0.removeClass(element, className);
 		} else {
 			d0.addClass(element, className);
@@ -71,8 +71,10 @@ function YoutubeBackground(elem, params, id, uid) {
 		'mobile': false,
 		'load-background': true,
 		'resolution': '16:9',
-		'offset': 200,
-		'fit-box': false
+		'onStatusChange': function() {},
+		'inline-styles': true,
+    'fit-box': false,
+		'offset': 200
 	};
 
 	this.__init__ = function () {
@@ -157,17 +159,33 @@ YoutubeBackground.prototype.onVideoStateChange = function (event) {
 	if (event.data === 1) {
 		this.iframe.style.opacity = 1;
 	}
+
+	this.params["onStatusChange"](event);
 };
 
 YoutubeBackground.prototype.parseProperties = function (params) {
 	if (!params) {
 		this.params = this.defaults;
 	} else {
-		this.params = params;
-		//load in defaults
 		for (var k in this.defaults) {
-			if (!this.params.hasOwnProperty(k)) {
+			if (!params.hasOwnProperty(k)) {
+				//load in defaults if the param hasn't been set
 				this.params[k] = this.defaults[k];
+			} else if (params[k] !== undefined && params[k] !== null) {
+				var data;
+				// switch strings to their booleans
+				switch (params[k]) {
+					case 'false':
+						data = false;
+						break;
+					case 'true':
+						data = true;
+						break;
+					default:
+						data = params[k];
+				}
+
+				this.params[k] = data;
 			}
 		}
 	}
@@ -178,14 +196,13 @@ YoutubeBackground.prototype.parseProperties = function (params) {
 
 		if (data !== undefined && data !== null) {
 			switch (data) {
-				case data === 'false':
+				case 'false':
 					data = false;
 					break;
-				case data === 'true':
+				case 'true':
 					data = true;
 					break;
 			}
-
 			this.params[k] = data;
 		}
 	}
@@ -220,11 +237,13 @@ YoutubeBackground.prototype.injectIFrame = function () {
 		this.iframe.id = this.uid;
 	}
 
-	this.iframe.style.top = '50%';
-	this.iframe.style.left = '50%';
-	this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
-	this.iframe.style.position = 'absolute';
-	this.iframe.style.opacity = 0;
+	if (this.params['inline-styles']) {
+		this.iframe.style.top = '50%';
+		this.iframe.style.left = '50%';
+		this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
+		this.iframe.style.position = 'absolute';
+		this.iframe.style.opacity = 0;
+	}
 
 	this.element.parentNode.appendChild(this.iframe);
 	this.iframe.parentNode.removeChild(this.element);
@@ -279,9 +298,11 @@ YoutubeBackground.prototype.buildHTML = function () {
 
 	if (this.params['load-background']) {
 		wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
-		wrapper_styles['background-size'] = 'cover';
-		wrapper_styles['background-repeat'] = 'no-repeat';
-		wrapper_styles['background-position'] = 'center';
+		if (this.params['inline-styles']) {
+			wrapper_styles['background-size'] = 'cover';
+			wrapper_styles['background-repeat'] = 'no-repeat';
+			wrapper_styles['background-position'] = 'center';
+		}
 	}
 
 	for (var property in wrapper_styles) {
@@ -370,7 +391,7 @@ YoutubeBackground.prototype.generateActionButton = function (obj) {
 	btn.innerHTML = obj.innerHtml;
 	d0.addClass(btn.firstChild, obj.stateChildClassNames[0]);
 
-	if (this.params[obj.condition_parameter] == obj.initialState) {
+	if (this.params[obj.condition_parameter] === obj.initialState) {
 		d0.addClass(btn, obj.stateClassName);
 		d0.removeClass(btn.firstChild, obj.stateChildClassNames[0]);
 		d0.addClass(btn.firstChild, obj.stateChildClassNames[1]);
@@ -443,9 +464,9 @@ function ActivityMonitor(on_activity, on_inactivity, activity_timeout, inactivit
 		this.timer = setTimeout(function() {
 			if (self.last_activity + self.timeout + self.activity_timeout
 				>= new Date().getTime()) {
-					if (on_inactivity) {
-						on_inactivity();
-					}
+				if (on_inactivity) {
+					on_inactivity();
+				}
 			}
 		}, this.timeout);
 	};
@@ -492,7 +513,7 @@ function ActivityMonitor(on_activity, on_inactivity, activity_timeout, inactivit
 	this.__init__();
 }
 
-function VideoBackgrounds(selector, params) {
+export function VideoBackgrounds(selector, params) {
 	this.elements = selector;
 
 	if (typeof selector === 'string') {
@@ -526,8 +547,8 @@ function VideoBackgrounds(selector, params) {
 			//TODO: FIX!
 			if (params &&
 				(params.hasOwnProperty('activity_timeout')
-				|| params.hasOwnProperty('inactivity_timeout'))) {
-					this.activity_monitor = new ActivityMonitor(function () {
+					|| params.hasOwnProperty('inactivity_timeout'))) {
+				this.activity_monitor = new ActivityMonitor(function () {
 						self.playVideos();
 					}, function() {
 						self.pauseVideos();
@@ -600,12 +621,12 @@ VideoBackgrounds.prototype.initYTPlayers = function (callback) {
 	}
 };
 
-if (window.hasOwnProperty('jQuery')) {
+if (typeof jQuery == 'function') {
 	(function ($) {
-	    $.fn.youtube_background = function(params) {
-	        var $this = $(this);
+		$.fn.youtube_background = function (params) {
+			var $this = $(this);
 			new VideoBackgrounds(this, params);
-	 		return $this;
-	 	};
+			return $this;
+		};
 	})(jQuery);
 }
