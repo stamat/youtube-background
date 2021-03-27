@@ -14,11 +14,11 @@ if (!window.hasOwnProperty('d0')) {
 		if (element.classList) {
 			return element.classList.contains(className);
 		}
-	    return new RegExp('\\b'+ className+'\\b').test(element.className);
+		return new RegExp('\\b'+ className+'\\b').test(element.className);
 	};
 
 	d0.addClass = function(element, className) {
-	    if (element.classList) {
+		if (element.classList) {
 			element.classList.add(className);
 			return;
 		}
@@ -29,7 +29,7 @@ if (!window.hasOwnProperty('d0')) {
 	};
 
 	d0.removeClass = function(element, className) {
-	    if (element.classList) {
+		if (element.classList) {
 			element.classList.remove(className);
 			return;
 		}
@@ -38,7 +38,7 @@ if (!window.hasOwnProperty('d0')) {
 	};
 
 	d0.toogleClass = function(element, className) {
-	    if (d0.hasClass(element, className)) {
+		if (d0.hasClass(element, className)) {
 			d0.removeClass(element, className);
 		} else {
 			d0.addClass(element, className);
@@ -71,6 +71,7 @@ function YoutubeBackground(elem, params, id, uid) {
 		'mobile': false,
 		'load-background': true,
 		'resolution': '16:9',
+		'onStatusChange': function() {},
 		'inline-styles': true,
 		'offset': 200
 	};
@@ -157,6 +158,8 @@ YoutubeBackground.prototype.onVideoStateChange = function (event) {
 	if (event.data === 1) {
 		this.iframe.style.opacity = 1;
 	}
+
+	this.params["onStatusChange"](event);
 };
 
 YoutubeBackground.prototype.parseProperties = function (params) {
@@ -387,7 +390,7 @@ YoutubeBackground.prototype.generateActionButton = function (obj) {
 	btn.innerHTML = obj.innerHtml;
 	d0.addClass(btn.firstChild, obj.stateChildClassNames[0]);
 
-	if (this.params[obj.condition_parameter] == obj.initialState) {
+	if (this.params[obj.condition_parameter] === obj.initialState) {
 		d0.addClass(btn, obj.stateClassName);
 		d0.removeClass(btn.firstChild, obj.stateChildClassNames[0]);
 		d0.addClass(btn.firstChild, obj.stateChildClassNames[1]);
@@ -460,9 +463,9 @@ function ActivityMonitor(on_activity, on_inactivity, activity_timeout, inactivit
 		this.timer = setTimeout(function() {
 			if (self.last_activity + self.timeout + self.activity_timeout
 				>= new Date().getTime()) {
-					if (on_inactivity) {
-						on_inactivity();
-					}
+				if (on_inactivity) {
+					on_inactivity();
+				}
 			}
 		}, this.timeout);
 	};
@@ -509,7 +512,7 @@ function ActivityMonitor(on_activity, on_inactivity, activity_timeout, inactivit
 	this.__init__();
 }
 
-function VideoBackgrounds(selector, params) {
+export function VideoBackgrounds(selector, params) {
 	this.elements = selector;
 
 	if (typeof selector === 'string') {
@@ -543,8 +546,8 @@ function VideoBackgrounds(selector, params) {
 			//TODO: FIX!
 			if (params &&
 				(params.hasOwnProperty('activity_timeout')
-				|| params.hasOwnProperty('inactivity_timeout'))) {
-					this.activity_monitor = new ActivityMonitor(function () {
+					|| params.hasOwnProperty('inactivity_timeout'))) {
+				this.activity_monitor = new ActivityMonitor(function () {
 						self.playVideos();
 					}, function() {
 						self.pauseVideos();
@@ -617,12 +620,12 @@ VideoBackgrounds.prototype.initYTPlayers = function (callback) {
 	}
 };
 
-if (window.hasOwnProperty('jQuery')) {
+if (typeof jQuery == 'function') {
 	(function ($) {
-	    $.fn.youtube_background = function(params) {
-	        var $this = $(this);
+		$.fn.youtube_background = function (params) {
+			var $this = $(this);
 			new VideoBackgrounds(this, params);
-	 		return $this;
-	 	};
+			return $this;
+		};
 	})(jQuery);
 }
