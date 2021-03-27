@@ -58,6 +58,7 @@ Property | Default | Accepts | Description
 **muted** | true | boolean | Load video muted
 **loop** | true | boolean | Loop loaded video
 **mobile** | false | boolean | Keep the youtube embed on mobile
+**inline-styles** | true | boolean | Enable/disable inline styles from the iframe and wrapper. The default wrapper styles are: `background-size: cover;`, `background-repeat: no-repeat;` and `background-position: center;`; the default iframe styles you ca use in your css is `top: 50%;`, `left: 50%;`, `transform: translateX(-50%) translateY(-50%);`, `position: absolute;`, and `opacity: 0;`
 **load-background** | true | boolean | Fetch background from youtube
 **offset** | 200 | int | showinfo:0 id deprecated since September 25, 2018. - this setting makes the video a bit larger than it's viewport to hide the info elements
 **resolution** | 16:9 | string | declare video resolution (work in progress)

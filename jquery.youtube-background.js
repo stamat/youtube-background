@@ -71,8 +71,9 @@ function YoutubeBackground(elem, params, id, uid) {
 		'mobile': false,
 		'load-background': true,
 		'resolution': '16:9',
-		'offset': 200,
-		'onStatusChange': function() {}
+		'onStatusChange': function() {},
+		'inline-styles': true,
+		'offset': 200
 	};
 
 	this.__init__ = function () {
@@ -165,11 +166,25 @@ YoutubeBackground.prototype.parseProperties = function (params) {
 	if (!params) {
 		this.params = this.defaults;
 	} else {
-		this.params = params;
-		//load in defaults
 		for (var k in this.defaults) {
-			if (!this.params.hasOwnProperty(k)) {
+			if (!params.hasOwnProperty(k)) {
+				//load in defaults if the param hasn't been set
 				this.params[k] = this.defaults[k];
+			} else if (params[k] !== undefined && params[k] !== null) {
+				var data;
+				// switch strings to their booleans
+				switch (params[k]) {
+					case 'false':
+						data = false;
+						break;
+					case 'true':
+						data = true;
+						break;
+					default:
+						data = params[k];
+				}
+
+				this.params[k] = data;
 			}
 		}
 	}
@@ -180,14 +195,13 @@ YoutubeBackground.prototype.parseProperties = function (params) {
 
 		if (data !== undefined && data !== null) {
 			switch (data) {
-				case data === 'false':
+				case 'false':
 					data = false;
 					break;
-				case data === 'true':
+				case 'true':
 					data = true;
 					break;
 			}
-
 			this.params[k] = data;
 		}
 	}
@@ -222,11 +236,13 @@ YoutubeBackground.prototype.injectIFrame = function () {
 		this.iframe.id = this.uid;
 	}
 
-	this.iframe.style.top = '50%';
-	this.iframe.style.left = '50%';
-	this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
-	this.iframe.style.position = 'absolute';
-	this.iframe.style.opacity = 0;
+	if (this.params['inline-styles']) {
+		this.iframe.style.top = '50%';
+		this.iframe.style.left = '50%';
+		this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
+		this.iframe.style.position = 'absolute';
+		this.iframe.style.opacity = 0;
+	}
 
 	this.element.parentNode.appendChild(this.iframe);
 	this.iframe.parentNode.removeChild(this.element);
@@ -281,9 +297,11 @@ YoutubeBackground.prototype.buildHTML = function () {
 
 	if (this.params['load-background']) {
 		wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
-		wrapper_styles['background-size'] = 'cover';
-		wrapper_styles['background-repeat'] = 'no-repeat';
-		wrapper_styles['background-position'] = 'center';
+		if (this.params['inline-styles']) {
+			wrapper_styles['background-size'] = 'cover';
+			wrapper_styles['background-repeat'] = 'no-repeat';
+			wrapper_styles['background-position'] = 'center';
+		}
 	}
 
 	for (var property in wrapper_styles) {
