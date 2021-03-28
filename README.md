@@ -75,7 +75,9 @@ Noted properties can be added as html attributes as:
 * **data-ytbg-mobile**
 * **data-ytbg-offset**
 * **data-ytbg-resolution**
+* **data-ytbg-fit-box**
 * **data-ytbg-load-background**
+* **data-ytbg-inline-styles**
 
 #### Example - Properties as HTML attributes
 
@@ -97,10 +99,34 @@ Noted properties can be added as html attributes as:
     <script type="text/javascript">
         jQuery(document).ready(function() {
             jQuery('[data-youtube]').youtube_background({
-				'play-button': true
-			});
+      				'play-button': true
+      			});
         });
     </script>
+```
+
+## Development
+
+Development setup uses **GULP with Rollup** to bundle ES modules into IIFE `jquery.youtube-background.js` and  `jquery.youtube-background.min.js`
+
+To install the required packages for running **GULP**, run:
+
+```
+npm install
+```
+
+To run the server on `http://localhost:4040`, run:
+
+```
+gulp
+```
+
+Code will automatically be packaged into IIFE while you develop.
+
+To generate minified version of the code, run:
+
+```
+gulp build --production
 ```
 
 ## todo
