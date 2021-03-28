@@ -1,6 +1,4 @@
 import { YoutubeBackground } from './youtube-background.js';
-import { VimeoBackground } from './vimeo-background.js';
-import { ActivityMonitor } from './activity-monitor.js';
 
 export function VideoBackgrounds(selector, params) {
 	this.elements = selector;
@@ -34,45 +32,16 @@ export function VideoBackgrounds(selector, params) {
       if (vid_data.type === 'YOUTUBE') {
         var yb = new YoutubeBackground(element, params, vid_data.id, uid);
         this.index[uid] = yb;
-      } else if (vid_data.type === 'VIMEO') {
-        var vm = new VimeoBackground(element, params, vid_data.id, uid);
-        this.index[uid] = vm;
       }
 		}
 
 		var self = this;
 
-		this.initYTPlayers(function() {
-			//TODO: FIX!
-			if (params &&
-				(params.hasOwnProperty('activity_timeout')
-					|| params.hasOwnProperty('inactivity_timeout'))) {
-				this.activity_monitor = new ActivityMonitor(function () {
-						self.playVideos();
-					}, function() {
-						self.pauseVideos();
-					},
-					params ? params.activity_timeout : null,
-					params ? params.inactivity_timeout : null,
-					['mousemove', 'scroll']
-				);
-			}
-		});
+		this.initYTPlayers();
 	};
 
 	this.__init__();
 }
-
-VideoBackgrounds.prototype.getYTID = function (link) {
-	if (link !== undefined && link !== null) {
-		var pts = link.match(this.re.YOUTUBE);
-		if (pts && pts.length) {
-			this.re.YOUTUBE.lastIndex = 0; //regex needs a reset in for loops, I always forget this
-			return pts[1];
-		}
-	}
-	return null;
-};
 
 VideoBackgrounds.prototype.getVidID = function (link) {
   if (link !== undefined && link !== null) {
@@ -85,7 +54,7 @@ VideoBackgrounds.prototype.getVidID = function (link) {
         return {
           id: pts[1],
           type: k
-        }
+        };
       }
     }
   }
