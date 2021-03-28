@@ -63,17 +63,6 @@ export function VideoBackgrounds(selector, params) {
 	this.__init__();
 }
 
-VideoBackgrounds.prototype.getYTID = function (link) {
-	if (link !== undefined && link !== null) {
-		var pts = link.match(this.re.YOUTUBE);
-		if (pts && pts.length) {
-			this.re.YOUTUBE.lastIndex = 0; //regex needs a reset in for loops, I always forget this
-			return pts[1];
-		}
-	}
-	return null;
-};
-
 VideoBackgrounds.prototype.getVidID = function (link) {
   if (link !== undefined && link !== null) {
     for (var k in this.re) {
