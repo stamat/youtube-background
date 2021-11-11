@@ -257,6 +257,7 @@
     } else {
       var self = this;
 
+      //TODO❗️: maybe a spacer or at least add requestAnimationFrame
       function onResize() {
         var h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
         var w = self.iframe.parentNode.offsetWidth + self.params.offset;
