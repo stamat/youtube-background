@@ -33,7 +33,8 @@ export function YoutubeBackground(elem, params, id, uid) {
 		'onStatusChange': function() {},
 		'inline-styles': true,
     'fit-box': false,
-		'offset': 200
+		'offset': 200,
+    'start-at': 0
 	};
 
 	this.__init__ = function () {
@@ -100,19 +101,28 @@ YoutubeBackground.prototype.initYTPlayer = function () {
 	}
 };
 
+YoutubeBackground.prototype.seekTo = function (seconds) {
+  if (seconds > 0) {
+    this.player.seekTo(seconds, true);
+  }
+}
+
 YoutubeBackground.prototype.onVideoPlayerReady = function (event) {
 	if (this.params.autoplay) {
-		event.target.playVideo();
+    this.seekTo(this.params['start-at']);
+		this.player.playVideo();
 	}
 };
 
 YoutubeBackground.prototype.onVideoStateChange = function (event) {
 	if (event.data === 0 && this.params.loop) {
-		event.target.playVideo();
+    this.seekTo(this.params['start-at']);
+		this.player.playVideo();
 	}
 
 	if (event.data === -1 && this.params.autoplay) {
-		event.target.playVideo();
+    this.seekTo(this.params['start-at']);
+		this.player.playVideo();
 	}
 
 	if (event.data === 1) {
@@ -141,6 +151,10 @@ YoutubeBackground.prototype.parseProperties = function (params) {
     if (data !== undefined && data !== null) {
 			data = data === 'false' ? false : data;
 			this.params[k] = data;
+
+      if (k === 'start-at') {
+        this.params[k] = parseInt(data, 10);
+      }
 		}
 	}
 
@@ -283,6 +297,7 @@ YoutubeBackground.prototype.play = function () {
 	}
 
 	if (this.player) {
+    this.seekTo(this.params['start-at']);
 		this.player.playVideo();
 	}
 }
