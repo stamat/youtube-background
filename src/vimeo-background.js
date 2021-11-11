@@ -27,7 +27,8 @@ export function VimeoBackground(elem, params, id, uid) {
     'resolution': '16:9',
     'inline-styles': true,
     'fit-box': false,
-    'offset': 200
+    'offset': 200,
+    'start-at': 0
   };
 
   this.__init__ = function () {
@@ -65,6 +66,7 @@ VimeoBackground.prototype.parseProperties = function (params) {
 
     if (data !== undefined && data !== null) {
       data = data === 'false' ? false : data;
+      data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
       this.params[k] = data;
     }
   }
@@ -91,6 +93,11 @@ VimeoBackground.prototype.injectIFrame = function () {
 
   if (this.params.loop) {
     src += '&loop=1&autopause=0';
+  }
+
+  //WARN❗️ this is a hash not a query param
+  if (this.params['start-at']) {
+    src += '#t=' + this.params['start-at'] + 's';
   }
 
   this.iframe.src = src;
