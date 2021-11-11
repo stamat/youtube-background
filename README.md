@@ -1,5 +1,5 @@
 # jquery.youtube-background
-v1.0.7
+v1.0.9
 
 ~~Another 100 liner in a form of a~~ jQuery plugin created to facilitate YouTube embeds as a cover background using YouTube Embed API.
 
@@ -64,6 +64,7 @@ Property | Default | Accepts | Description
 **offset** | 200 | int | showinfo:0 id deprecated since September 25, 2018. - this setting makes the video a bit larger than it's viewport to hide the info elements
 **resolution** | 16:9 | string | declare video resolution (work in progress)
 **pause** | false | boolean | Adds a toggle pause button (deprecated)
+**start-at** | 0 | int | Video starts playing at desired time in seconds
 
 Noted properties can be added as html attributes as:
 
@@ -78,6 +79,7 @@ Noted properties can be added as html attributes as:
 * **data-ytbg-fit-box**
 * **data-ytbg-load-background**
 * **data-ytbg-inline-styles**
+* **data-ytbg-start-at**
 
 #### Example - Properties as HTML attributes
 
@@ -137,8 +139,7 @@ gulp build --production
 - [x] Test the execution order
 - [x] Refactor the code to provide foundation for unified solution from multiple providers and sources called video-background
 - [x] https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
-- [ ] Pause and mute on inactivity option
-- [ ] Play only when in viewport if IntersectionObserver available, also can be toggled as an option
+- [ ] Pause and mute on inactivity option - Play only when in viewport if IntersectionObserver available, also can be toggled as an option
 - [ ] Perform final tests on BrowserStack and comment the code
 
 THE END.
