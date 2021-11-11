@@ -150,11 +150,8 @@ YoutubeBackground.prototype.parseProperties = function (params) {
 
     if (data !== undefined && data !== null) {
 			data = data === 'false' ? false : data;
+      data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
 			this.params[k] = data;
-
-      if (k === 'start-at') {
-        this.params[k] = parseInt(data, 10);
-      }
 		}
 	}
 
