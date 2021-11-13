@@ -1,7 +1,8 @@
-# jquery.youtube-background
-v1.0.9
+# youtube-background
+[![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
+[![CSS gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
 
-~~Another 100 liner in a form of a~~ jQuery plugin created to facilitate YouTube embeds as a cover background using YouTube Embed API.
+~~Another 100 liner in a form of a~~ simple script (or jQuery plugin) to facilitate YouTube embeds as a cover background using YouTube Embed API.
 
 I wrote this code several times over the years and never bothered to make it reusable. Now when I needed it again I could not even find where I wrote it last...
 
@@ -16,6 +17,35 @@ Goodbye careless days... I'm getting old...
 * Mute/Unmute button
 * No CSS required
 * No longer jQuery dependant
+
+## Installation
+
+### As a JS module
+
+To install the package from NPM run the good old command
+```
+npm install youtube-background
+```
+
+To import it in your script add:
+
+```
+import 'youtube-background';
+```
+
+Don't forget to point your bundler to use `node_modules` as include paths.
+
+If you wish to use it as a jQuery plugin, make sure you import jQuery as well.
+
+### Over CDN
+
+```
+<script type="text/javascript" src="https://unpkg.com/browse/youtube-background@1.0.10/jquery.youtube-background.js"></script>
+```
+or minified:
+```
+<script type="text/javascript" src="https://unpkg.com/browse/youtube-background@1.0.10/jquery.youtube-background.min.js"></script>
+```
 
 ## Usage
 
@@ -107,6 +137,15 @@ Noted properties can be added as html attributes as:
     </script>
 ```
 
+### Events
+
+* **video-background-play** - video starts playing
+* **video-background-pause** - video is paused
+* **video-background-mute** - video sound is muted
+* **video-background-unmute** - video sound is unmuted
+
+Events bubble. If you go vanilla, you can get the video object via `event.detail`.
+
 ## Development
 
 Development setup uses **GULP with Rollup** to bundle ES modules into IIFE `jquery.youtube-background.js` and  `jquery.youtube-background.min.js`
@@ -135,7 +174,7 @@ gulp build --production
 - [x] Autoplay property
 - [x] Mute property and button #4
 - [x] Add another wrapper so video can fade in when loaded
-- [ ] Add play-pause, mute-unmute events
+- [x] Add play-pause, mute-unmute events
 - [x] Test the execution order
 - [x] Refactor the code to provide foundation for unified solution from multiple providers and sources called video-background
 - [x] https://developers.google.com/web/updates/2017/09/autoplay-policy-changes

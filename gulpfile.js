@@ -75,7 +75,7 @@ gulp.task('lint-js', function() {
 
 gulp.task('server', async function () {
   connect.server({
-    port: 4040,
+    port: argv.port || 4040,
     livereload: true
   });
 });
