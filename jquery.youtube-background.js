@@ -185,6 +185,7 @@
     if (event.data === -1 && this.params.autoplay) {
       this.seekTo(this.params['start-at']);
       this.player.playVideo();
+      this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
     }
 
     if (event.data === 1) {
@@ -255,8 +256,7 @@
       this.iframe.style.opacity = 0;
     }
 
-    this.element.parentNode.appendChild(this.iframe);
-    this.iframe.parentNode.removeChild(this.element);
+    this.element.appendChild(this.iframe);
 
     if (this.params['fit-box']) {
       this.iframe.style.width = '100%';
@@ -287,13 +287,7 @@
   YoutubeBackground.prototype.buildHTML = function () {
     const parent = this.element.parentNode;
     // wrap
-    const wrapper = document.createElement('div');
-    wrapper.className = 'youtube-background';
-    parent.insertBefore(wrapper, this.element);
-    wrapper.appendChild(this.element);
-    const id = this.element.id;
-    this.element.id = '';
-    wrapper.id = id;
+    addClass(this.element, 'youtube-background');
 
     //set css rules
     const wrapper_styles = {
@@ -321,14 +315,13 @@
 
     if (this.params['inline-styles']) {
       for (let property in wrapper_styles) {
-        wrapper.style[property] = wrapper_styles[property];
+        this.element.style[property] = wrapper_styles[property];
       }
-
-      wrapper.parentNode.style.position = 'relative';
+      parent.style.position = 'relative';
     }
 
     if (this.is_mobile && !this.params.mobile) {
-      return wrapper;
+      return this.element;
     }
 
     // set play/mute controls wrap
@@ -342,13 +335,14 @@
       controls.style['z-index'] = 2;
 
       this.controls_element = controls;
-      wrapper.parentNode.appendChild(controls);
+      parent.appendChild(controls);
     }
 
-    return wrapper;
+    return this.element;
   };
 
   YoutubeBackground.prototype.play = function () {
+    //TODO: solve this with ARIA toggle states. P.S. warning repetitive code!!!
     if (this.buttons.hasOwnProperty('play')) {
       const btn_obj = this.buttons.play;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
@@ -361,10 +355,12 @@
         this.seekTo(this.params['start-at']);
       }
       this.player.playVideo();
+      this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
     }
   };
 
   YoutubeBackground.prototype.pause = function () {
+    //TODO: solve this with ARIA toggle states
     if (this.buttons.hasOwnProperty('play')) {
       const btn_obj = this.buttons.play;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
@@ -374,10 +370,12 @@
 
     if (this.player) {
       this.player.pauseVideo();
+      this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
     }
   };
 
   YoutubeBackground.prototype.unmute = function () {
+    //TODO: solve this with ARIA toggle states
     if (this.buttons.hasOwnProperty('mute')) {
       const btn_obj = this.buttons.mute;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
@@ -387,10 +385,12 @@
 
     if (this.player) {
       this.player.unMute();
+      this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
     }
   };
 
   YoutubeBackground.prototype.mute = function () {
+    //TODO: solve this with ARIA toggle states
     if (this.buttons.hasOwnProperty('mute')) {
       const btn_obj = this.buttons.mute;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
@@ -400,6 +400,7 @@
 
     if (this.player) {
       this.player.mute();
+      this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
     }
   };
 
@@ -410,6 +411,7 @@
     btn.innerHTML = obj.innerHtml;
     addClass(btn.firstChild, obj.stateChildClassNames[0]);
 
+    //TODO: solve this with ARIA toggle states
     if (this.params[obj.condition_parameter] === obj.initialState) {
       addClass(btn, obj.stateClassName);
       removeClass(btn.firstChild, obj.stateChildClassNames[0]);

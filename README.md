@@ -137,6 +137,15 @@ Noted properties can be added as html attributes as:
     </script>
 ```
 
+### Events
+
+* **video-background-play** - video starts playing
+* **video-background-pause** - video is paused
+* **video-background-mute** - video sound is muted
+* **video-background-unmute** - video sound is unmuted
+
+Events bubble. If you go vanilla, you can get the video object via `event.detail`.
+
 ## Development
 
 Development setup uses **GULP with Rollup** to bundle ES modules into IIFE `jquery.youtube-background.js` and  `jquery.youtube-background.min.js`
@@ -165,7 +174,7 @@ gulp build --production
 - [x] Autoplay property
 - [x] Mute property and button #4
 - [x] Add another wrapper so video can fade in when loaded
-- [ ] Add play-pause, mute-unmute events
+- [x] Add play-pause, mute-unmute events
 - [x] Test the execution order
 - [x] Refactor the code to provide foundation for unified solution from multiple providers and sources called video-background
 - [x] https://developers.google.com/web/updates/2017/09/autoplay-policy-changes

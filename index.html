@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title>jQuery Youtube Background</title>
-        <meta name="description" content="">
+        <title>Youtube Background</title>
+        <meta name="description" content="Simple script for embedding YouTube videos as cover background">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
         <link href="https://fonts.googleapis.com/css?family=Lato:400,700&display=swap" rel="stylesheet">
@@ -97,7 +97,7 @@
                     <div class="content">
                         <div class="inner">
                             <h1>Click the button to pause.</h1>
-                            <h2 style="color: white">P.S. it also starts 10s into the video to skip the video intro</h2>
+                            <h2>P.S. it also starts 10s into the video to skip the video intro</h2>
                         </div>
                     </div>
                 </div>
@@ -115,6 +115,10 @@
         <script type="text/javascript">
             jQuery(document).ready(function() {
       				jQuery('[data-youtube]').youtube_background();
+            });
+
+            document.querySelector('#ytbg2').addEventListener('video-background-pause', function(){
+              console.log(arguments);
             });
         </script>
     </body>
