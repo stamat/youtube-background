@@ -40,17 +40,24 @@ export function isMobile() {
   return is_mobile;
 }
 
+export function getRandomIntInclusive(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+}
+
 export function parseResolutionString(res) {
-  var pts = res.split(/\s?:\s?/i);
+  const pts = res.split(/\s?:\s?/i);
+  const DEFAULT_RESOLUTION = 16/9;
   if (pts.length < 2) {
-    return 16/9;
+    return DEFAULT_RESOLUTION;
   }
 
-  var w = parseInt(pts[0], 10);
-  var h = parseInt(pts[1], 10);
+  const w = parseInt(pts[0], 10);
+  const h = parseInt(pts[1], 10);
 
   if (isNaN(w) || isNaN(h)) {
-    return 16/9;
+    return DEFAULT_RESOLUTION;
   }
 
   return w/h;

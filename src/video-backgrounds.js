@@ -1,6 +1,7 @@
 import { YoutubeBackground } from './youtube-background.js';
 import { VimeoBackground } from './vimeo-background.js';
 import { ActivityMonitor } from './activity-monitor.js';
+import { getRandomIntInclusive } from './utils.js';
 
 export function VideoBackgrounds(selector, params) {
 	this.elements = selector;
@@ -9,30 +10,30 @@ export function VideoBackgrounds(selector, params) {
 		this.elements = document.querySelectorAll(selector);
 	}
 
-	this.index = {};
-	this.re = {};
-	this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+  this.index = {};
+  this.re = {};
+  this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
   this.re.VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
 
-	this.__init__ = function () {
-		for (var i = 0; i < this.elements.length; i++) {
-			var element = this.elements[i];
+  this.__init__ = function () {
+    for (let i = 0; i < this.elements.length; i++) {
+      const element = this.elements[i];
 
-			var link = element.getAttribute('data-youtube');
-			var vid_data = this.getVidID(link);
+      const link = element.getAttribute('data-youtube');
+      const vid_data = this.getVidID(link);
 
       if (!vid_data) {
         continue;
       }
 
-			var uid = this.generateUID(vid_data.id);
+      const uid = this.generateUID(vid_data.id);
 
       if (!uid) {
 				continue;
 			}
 
       if (vid_data.type === 'YOUTUBE') {
-        var yb = new YoutubeBackground(element, params, vid_data.id, uid);
+        const yb = new YoutubeBackground(element, params, vid_data.id, uid);
         this.index[uid] = yb;
       } else if (vid_data.type === 'VIMEO') {
         var vm = new VimeoBackground(element, params, vid_data.id, uid);
@@ -65,8 +66,8 @@ export function VideoBackgrounds(selector, params) {
 
 VideoBackgrounds.prototype.getVidID = function (link) {
   if (link !== undefined && link !== null) {
-    for (var k in this.re) {
-      var pts = link.match(this.re[k]);
+    for (let k in this.re) {
+      const pts = link.match(this.re[k]);
 
       if (pts && pts.length) {
         this.re[k].lastIndex = 0;
@@ -84,38 +85,32 @@ VideoBackgrounds.prototype.getVidID = function (link) {
 
 
 VideoBackgrounds.prototype.generateUID = function (pref) {
-	//index the instance
-	function getRandomIntInclusive(min, max) {
-		min = Math.ceil(min);
-		max = Math.floor(max);
-		return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
-	}
+  //index the instance
+  let uid = pref +'-'+ getRandomIntInclusive(0, 9999);
+  while (this.index.hasOwnProperty(uid)) {
+    uid = pref +'-'+ getRandomIntInclusive(0, 9999);
+  }
 
-	var uid = pref +'-'+ getRandomIntInclusive(0, 9999);
-	while (this.index.hasOwnProperty(uid)) {
-		uid = pref +'-'+ getRandomIntInclusive(0, 9999);
-	}
-
-	return uid;
+  return uid;
 };
 
 VideoBackgrounds.prototype.pauseVideos = function () {
-	for (var k in this.index) {
-		this.index[k].pause();
-	}
+  for (let k in this.index) {
+    this.index[k].pause();
+  }
 };
 
 VideoBackgrounds.prototype.playVideos = function () {
-	for (var k in this.index) {
-		this.index[k].play();
-	}
+  for (let k in this.index) {
+    this.index[k].play();
+  }
 };
 
 VideoBackgrounds.prototype.initYTPlayers = function (callback) {
-	var self = this;
+  const self = this;
 
-	window.onYouTubeIframeAPIReady = function () {
-		for (var k in self.index) {
+  window.onYouTubeIframeAPIReady = function () {
+    for (let k in self.index) {
       if (self.index[k] instanceof YoutubeBackground) {
         self.index[k].initYTPlayer();
       }
