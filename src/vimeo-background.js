@@ -1,10 +1,10 @@
-import { isMobile, parseResolutionString } from './utils.js';
+import { isMobile, addClass, parseResolutionString } from './utils.js';
 
 export function VimeoBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();
 
   this.element = elem;
-  this.ytid = id;
+  this.vid = id;
   this.uid = uid;
   this.player = null;
   this.buttons = {};
@@ -32,7 +32,7 @@ export function VimeoBackground(elem, params, id, uid) {
   };
 
   this.__init__ = function () {
-    if (!this.ytid) {
+    if (!this.vid) {
       return;
     }
 
@@ -43,7 +43,7 @@ export function VimeoBackground(elem, params, id, uid) {
 
     this.buildHTML();
     this.injectIFrame();
-  }
+  };
 
   this.__init__();
 }
@@ -53,7 +53,7 @@ VimeoBackground.prototype.parseProperties = function (params) {
     this.params = this.defaults;
   } else {
     //load in defaults
-    for (var k in this.defaults) {
+    for (let k in this.defaults) {
       if (!this.params.hasOwnProperty(k)) {
         this.params[k] = this.defaults[k];
       }
@@ -61,8 +61,8 @@ VimeoBackground.prototype.parseProperties = function (params) {
   }
 
   // load params from data attributes
-  for (var k in this.params) {
-    var data = this.element.getAttribute('data-ytbg-'+k);
+  for (let k in this.params) {
+    let data = this.element.getAttribute('data-ytbg-'+k);
 
     if (data !== undefined && data !== null) {
       data = data === 'false' ? false : data;
@@ -81,7 +81,7 @@ VimeoBackground.prototype.injectIFrame = function () {
   this.iframe = document.createElement('iframe');
   this.iframe.setAttribute('frameborder', 0);
   this.iframe.setAttribute('allow', ['autoplay; mute']);
-  var src = 'https://player.vimeo.com/video/'+this.ytid+'?background=1&controls=0';
+  let src = 'https://player.vimeo.com/video/'+this.vid+'?background=1&controls=0';
 
   if (this.params.muted) {
     src += '&muted=1';
@@ -114,19 +114,18 @@ VimeoBackground.prototype.injectIFrame = function () {
     this.iframe.style.opacity = 1;
   }
 
-  this.element.parentNode.appendChild(this.iframe);
-  this.iframe.parentNode.removeChild(this.element);
+  this.element.appendChild(this.iframe);
 
   if (this.params['fit-box']) {
     this.iframe.style.width = '100%';
     this.iframe.style.height = '100%';
   } else {
-    var self = this;
+    const self = this;
 
-    function onResize() {
-      var h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
-      var w = self.iframe.parentNode.offsetWidth + self.params.offset;
-      var res = self.params.resolution_mod;
+    const onResize = function() {
+      const h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
+      const w = self.iframe.parentNode.offsetWidth + self.params.offset;
+      const res = self.params.resolution_mod;
 
       if (res > w/h) {
         self.iframe.style.width = h*res + 'px';
@@ -135,7 +134,7 @@ VimeoBackground.prototype.injectIFrame = function () {
         self.iframe.style.width = w + 'px';
         self.iframe.style.height = w/res + 'px';
       }
-    }
+    };
 
     window.addEventListener('resize', onResize);
     onResize();
@@ -143,18 +142,12 @@ VimeoBackground.prototype.injectIFrame = function () {
 };
 
 VimeoBackground.prototype.buildHTML = function () {
-  var parent = this.element.parentNode;
+  const parent = this.element.parentNode;
   // wrap
-  var wrapper = document.createElement('div');
-  wrapper.className = 'youtube-background';
-  parent.insertBefore(wrapper, this.element);
-  wrapper.appendChild(this.element);
-  var id = this.element.id;
-  this.element.id = '';
-  wrapper.id = id;
+  addClass(this.element, 'youtube-background');
 
   //set css rules
-  var wrapper_styles = {
+  const wrapper_styles = {
     "height" : "100%",
     "width" : "100%",
     "z-index": "0",
@@ -167,27 +160,23 @@ VimeoBackground.prototype.buildHTML = function () {
   };
 
   if (!this.params['mute-button']) {
-    wrapper_styles["pointer-events"] = "none" // avoid right mouse click popup menu
+    wrapper_styles["pointer-events"] = "none"; // avoid right mouse click popup menu
   }
 
   if (this.params['load-background']) {
-    //TODO: wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+    //TODO: wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.vid+'/maxresdefault.jpg)';
     wrapper_styles['background-size'] = 'cover';
     wrapper_styles['background-repeat'] = 'no-repeat';
     wrapper_styles['background-position'] = 'center';
   }
 
   if (this.params['inline-styles']) {
-    for (var property in wrapper_styles) {
-      wrapper.style[property] = wrapper_styles[property];
+    for (let property in wrapper_styles) {
+      this.element.style[property] = wrapper_styles[property];
     }
 
-    wrapper.parentNode.style.position = 'relative';
+    parent.style.position = 'relative';
   }
 
-  if (this.is_mobile && !this.params.mobile) {
-    return wrapper;
-  }
-
-  return wrapper;
+  return this.element;
 };
