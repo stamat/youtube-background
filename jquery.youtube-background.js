@@ -1,5 +1,5 @@
 /**
- * jquery.youtube-background v1.0.9 | Nikola Stamatovic <@stamat> | MIT
+ * jquery.youtube-background v1.0.10 | Nikola Stamatovic <@stamat> | MIT
  */
 
 (function () {
@@ -39,25 +39,32 @@
     return is_mobile;
   }
 
+  function getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+  }
+
   function parseResolutionString(res) {
-    var pts = res.split(/\s?:\s?/i);
+    const pts = res.split(/\s?:\s?/i);
+    const DEFAULT_RESOLUTION = 16/9;
     if (pts.length < 2) {
-      return 16/9;
+      return DEFAULT_RESOLUTION;
     }
 
-    var w = parseInt(pts[0], 10);
-    var h = parseInt(pts[1], 10);
+    const w = parseInt(pts[0], 10);
+    const h = parseInt(pts[1], 10);
 
     if (isNaN(w) || isNaN(h)) {
-      return 16/9;
+      return DEFAULT_RESOLUTION;
     }
 
     return w/h;
   }
 
-  var tag = document.createElement('script');
+  const tag = document.createElement('script');
   tag.src = "https://www.youtube.com/player_api";
-  var firstScriptTag = document.getElementsByTagName('script')[0];
+  const firstScriptTag = document.getElementsByTagName('script')[0];
   firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
   function YoutubeBackground(elem, params, id, uid) {
@@ -137,7 +144,7 @@
   }
 
   YoutubeBackground.prototype.initYTPlayer = function () {
-    var self = this;
+    const self = this;
 
     if (window.hasOwnProperty('YT')) {
       this.player = new YT.Player(this.uid, {
@@ -191,7 +198,7 @@
     if (!params) {
       this.params = this.defaults;
     } else {
-      for (var k in this.defaults) {
+      for (let k in this.defaults) {
         if (!params.hasOwnProperty(k)) {
           //load in defaults if the param hasn't been set
           this.params[k] = this.defaults[k];
@@ -200,8 +207,8 @@
     }
 
     // load params from data attributes
-    for (var k in this.params) {
-      var data = this.element.getAttribute('data-ytbg-'+k);
+    for (let k in this.params) {
+      let data = this.element.getAttribute('data-ytbg-'+k);
 
       if (data !== undefined && data !== null) {
         data = data === 'false' ? false : data;
@@ -220,7 +227,7 @@
     this.iframe = document.createElement('iframe');
     this.iframe.setAttribute('frameborder', 0);
     this.iframe.setAttribute('allow', ['autoplay; mute']);
-    var src = 'https://www.youtube.com/embed/'+this.ytid+'?enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin='+window.location.origin;
+    let src = 'https://www.youtube.com/embed/'+this.ytid+'?enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin='+window.location.origin;
 
     if (this.params.muted) {
       src += '&mute=1';
@@ -255,13 +262,13 @@
       this.iframe.style.width = '100%';
       this.iframe.style.height = '100%';
     } else {
-      var self = this;
+      const self = this;
 
       //TODO❗️: maybe a spacer or at least add requestAnimationFrame
       function onResize() {
-        var h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
-        var w = self.iframe.parentNode.offsetWidth + self.params.offset;
-        var res = self.params.resolution_mod;
+        const h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
+        const w = self.iframe.parentNode.offsetWidth + self.params.offset;
+        const res = self.params.resolution_mod;
 
         if (res > w/h) {
           self.iframe.style.width = h*res + 'px';
@@ -278,18 +285,18 @@
   };
 
   YoutubeBackground.prototype.buildHTML = function () {
-    var parent = this.element.parentNode;
+    const parent = this.element.parentNode;
     // wrap
-    var wrapper = document.createElement('div');
+    const wrapper = document.createElement('div');
     wrapper.className = 'youtube-background';
     parent.insertBefore(wrapper, this.element);
     wrapper.appendChild(this.element);
-    var id = this.element.id;
+    const id = this.element.id;
     this.element.id = '';
     wrapper.id = id;
 
     //set css rules
-    var wrapper_styles = {
+    const wrapper_styles = {
       "height" : "100%",
       "width" : "100%",
       "z-index": "0",
@@ -313,7 +320,7 @@
     }
 
     if (this.params['inline-styles']) {
-      for (var property in wrapper_styles) {
+      for (let property in wrapper_styles) {
         wrapper.style[property] = wrapper_styles[property];
       }
 
@@ -326,7 +333,7 @@
 
     // set play/mute controls wrap
     if (this.params['play-button'] || this.params['mute-button']) {
-      var controls = document.createElement('div');
+      const controls = document.createElement('div');
       controls.className = 'video-background-controls';
 
       controls.style.position = 'absolute';
@@ -343,7 +350,7 @@
 
   YoutubeBackground.prototype.play = function () {
     if (this.buttons.hasOwnProperty('play')) {
-      var btn_obj = this.buttons.play;
+      const btn_obj = this.buttons.play;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
@@ -359,7 +366,7 @@
 
   YoutubeBackground.prototype.pause = function () {
     if (this.buttons.hasOwnProperty('play')) {
-      var btn_obj = this.buttons.play;
+      const btn_obj = this.buttons.play;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
@@ -372,7 +379,7 @@
 
   YoutubeBackground.prototype.unmute = function () {
     if (this.buttons.hasOwnProperty('mute')) {
-      var btn_obj = this.buttons.mute;
+      const btn_obj = this.buttons.mute;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
@@ -385,7 +392,7 @@
 
   YoutubeBackground.prototype.mute = function () {
     if (this.buttons.hasOwnProperty('mute')) {
-      var btn_obj = this.buttons.mute;
+      const btn_obj = this.buttons.mute;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
@@ -398,7 +405,7 @@
 
   //TODO: refactor states to be equal for all buttons
   YoutubeBackground.prototype.generateActionButton = function (obj) {
-    var btn = document.createElement('button');
+    const btn = document.createElement('button');
     btn.className = obj.className;
     btn.innerHTML = obj.innerHtml;
     addClass(btn.firstChild, obj.stateChildClassNames[0]);
@@ -409,7 +416,7 @@
       addClass(btn.firstChild, obj.stateChildClassNames[1]);
     }
 
-    var self = this;
+    const self = this;
     btn.addEventListener('click', function(e) {
       if (hasClass(this, obj.stateClassName)) {
         self.state[obj.name] = false;
@@ -438,27 +445,26 @@
     this.index = {};
     this.re = {};
     this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-    this.re.VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
 
     this.__init__ = function () {
-      for (var i = 0; i < this.elements.length; i++) {
-        var element = this.elements[i];
+      for (let i = 0; i < this.elements.length; i++) {
+        const element = this.elements[i];
 
-        var link = element.getAttribute('data-youtube');
-        var vid_data = this.getVidID(link);
+        const link = element.getAttribute('data-youtube');
+        const vid_data = this.getVidID(link);
 
         if (!vid_data) {
           continue;
         }
 
-        var uid = this.generateUID(vid_data.id);
+        const uid = this.generateUID(vid_data.id);
 
         if (!uid) {
           continue;
         }
 
         if (vid_data.type === 'YOUTUBE') {
-          var yb = new YoutubeBackground(element, params, vid_data.id, uid);
+          const yb = new YoutubeBackground(element, params, vid_data.id, uid);
           this.index[uid] = yb;
         }
       }
@@ -471,8 +477,8 @@
 
   VideoBackgrounds.prototype.getVidID = function (link) {
     if (link !== undefined && link !== null) {
-      for (var k in this.re) {
-        var pts = link.match(this.re[k]);
+      for (let k in this.re) {
+        const pts = link.match(this.re[k]);
 
         if (pts && pts.length) {
           this.re[k].lastIndex = 0;
@@ -491,13 +497,7 @@
 
   VideoBackgrounds.prototype.generateUID = function (pref) {
     //index the instance
-    function getRandomIntInclusive(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
-    }
-
-    var uid = pref +'-'+ getRandomIntInclusive(0, 9999);
+    let uid = pref +'-'+ getRandomIntInclusive(0, 9999);
     while (this.index.hasOwnProperty(uid)) {
       uid = pref +'-'+ getRandomIntInclusive(0, 9999);
     }
@@ -506,22 +506,22 @@
   };
 
   VideoBackgrounds.prototype.pauseVideos = function () {
-    for (var k in this.index) {
+    for (let k in this.index) {
       this.index[k].pause();
     }
   };
 
   VideoBackgrounds.prototype.playVideos = function () {
-    for (var k in this.index) {
+    for (let k in this.index) {
       this.index[k].play();
     }
   };
 
   VideoBackgrounds.prototype.initYTPlayers = function (callback) {
-    var self = this;
+    const self = this;
 
     window.onYouTubeIframeAPIReady = function () {
-      for (var k in self.index) {
+      for (let k in self.index) {
         if (self.index[k] instanceof YoutubeBackground) {
           self.index[k].initYTPlayer();
         }
@@ -540,7 +540,7 @@
   if (typeof jQuery == 'function') {
     (function ($) {
       $.fn.youtube_background = function (params) {
-        var $this = $(this);
+        const $this = $(this);
         new VideoBackgrounds(this, params);
         return $this;
       };
