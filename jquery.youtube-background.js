@@ -350,7 +350,9 @@
     }
 
     if (this.player) {
-      this.seekTo(this.params['start-at']);
+      if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
+        this.seekTo(this.params['start-at']);
+      }
       this.player.playVideo();
     }
   };
