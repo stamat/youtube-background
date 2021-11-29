@@ -34,7 +34,8 @@ export function YoutubeBackground(elem, params, id, uid) {
     'inline-styles': true,
     'fit-box': false,
     'offset': 200,
-    'start-at': 0
+    'start-at': 0,
+    'end-at': 0
   };
 
   this.__init__ = function () {
@@ -83,7 +84,6 @@ export function YoutubeBackground(elem, params, id, uid) {
 
 YoutubeBackground.prototype.initYTPlayer = function () {
   const self = this;
-
   if (window.hasOwnProperty('YT')) {
     this.player = new YT.Player(this.uid, {
       events: {
@@ -165,8 +165,8 @@ YoutubeBackground.prototype.parseProperties = function (params) {
 YoutubeBackground.prototype.injectIFrame = function () {
   this.iframe = document.createElement('iframe');
   this.iframe.setAttribute('frameborder', 0);
-  this.iframe.setAttribute('allow', ['autoplay; mute']);
-  let src = 'https://www.youtube.com/embed/'+this.ytid+'?enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin='+window.location.origin;
+  this.iframe.setAttribute('allow', 'autoplay; mute');
+  let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin=${encodeURIComponent(window.location.origin)}`;
 
   if (this.params.muted) {
     src += '&mute=1';
@@ -178,6 +178,10 @@ YoutubeBackground.prototype.injectIFrame = function () {
 
   if (this.params.loop) {
     src += '&loop=1';
+  }
+
+  if (this.params['end-at'] > 0) {
+    src += `&end=${this.params['end-at']}`;
   }
 
   this.iframe.src = src;
