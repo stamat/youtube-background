@@ -33,7 +33,7 @@ To import it in your script add:
 import 'youtube-background';
 ```
 
-Don't forget to point your bundler to use `node_modules` as include paths.
+Don't forget to point your bundler to use `node_modules` as an include path.
 
 If you wish to use it as a jQuery plugin, make sure you import jQuery as well.
 
