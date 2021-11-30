@@ -1,5 +1,5 @@
 /**
- * jquery.youtube-background v1.0.10 | Nikola Stamatovic <@stamat> | MIT
+ * jquery.youtube-background v1.0.11 | Nikola Stamatovic <@stamat> | MIT
  */
 
 (function () {
@@ -12,9 +12,13 @@
     return new RegExp('\\b'+ className+'\\b').test(element.className);
   }
 
-  function addClass(element, className) {
+  function addClass(element, classNames) {
     if (element.classList) {
-      element.classList.add(className);
+      const classes = classNames.split(' ');
+      for (var i = 0; i < classes.length; i++) {
+        const el_class = classes[i];
+        element.classList.add(el_class);
+      }
       return;
     }
 
@@ -62,6 +66,35 @@
     return w/h;
   }
 
+  function parseProperties(params, defaults, element, attr_prefix) {
+    let res_params = {};
+
+    if (!params) {
+      res_params = defaults;
+    } else {
+      for (let k in defaults) {
+        if (!params.hasOwnProperty(k)) {
+          //load in defaults if the param hasn't been set
+          res_params[k] = defaults[k];
+        }
+      }
+    }
+
+    if (!element) return res_params;
+    // load params from data attributes
+    for (let k in res_params) {
+      let data = element.getAttribute(attr_prefix+k);
+
+      if (data !== undefined && data !== null) {
+        data = data === 'false' ? false : data;
+        data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
+        res_params[k] = data;
+      }
+    }
+
+    return res_params;
+  }
+
   const tag = document.createElement('script');
   tag.src = "https://www.youtube.com/player_api";
   const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -82,7 +115,7 @@
 
     this.params = {};
 
-    this.defaults = {
+    const DEFAULTS = {
       'pause': false, //deprecated
       'play-button': false,
       'mute-button': false,
@@ -105,11 +138,14 @@
         return;
       }
 
-      this.parseProperties(params);
+      this.params = parseProperties(params, DEFAULTS, this.element, 'data-ytbg-');
+      //pause deprecated
+      if (this.params.pause) {
+        this.params['play-button'] = this.params.pause;
+      }
       this.params.resolution_mod = parseResolutionString(this.params.resolution);
       this.state.playing = this.params.autoplay;
       this.state.muted = this.params.muted;
-
       this.buildHTML();
       this.injectIFrame();
 
@@ -195,40 +231,11 @@
     this.params["onStatusChange"](event);
   };
 
-  YoutubeBackground.prototype.parseProperties = function (params) {
-    if (!params) {
-      this.params = this.defaults;
-    } else {
-      for (let k in this.defaults) {
-        if (!params.hasOwnProperty(k)) {
-          //load in defaults if the param hasn't been set
-          this.params[k] = this.defaults[k];
-        }
-      }
-    }
-
-    // load params from data attributes
-    for (let k in this.params) {
-      let data = this.element.getAttribute('data-ytbg-'+k);
-
-      if (data !== undefined && data !== null) {
-        data = data === 'false' ? false : data;
-        data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
-        this.params[k] = data;
-      }
-    }
-
-    //pause deprecated
-    if (this.params.pause) {
-      this.params['play-button'] = this.params.pause;
-    }
-  };
-
   YoutubeBackground.prototype.injectIFrame = function () {
     this.iframe = document.createElement('iframe');
     this.iframe.setAttribute('frameborder', 0);
     this.iframe.setAttribute('allow', 'autoplay; mute');
-    let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin=${encodeURIComponent(window.location.origin)}`;
+    let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
 
     if (this.params.muted) {
       src += '&mute=1';
@@ -291,7 +298,7 @@
   YoutubeBackground.prototype.buildHTML = function () {
     const parent = this.element.parentNode;
     // wrap
-    addClass(this.element, 'youtube-background');
+    addClass(this.element, 'youtube-background video-background');
 
     //set css rules
     const wrapper_styles = {
@@ -456,7 +463,7 @@
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
 
-        const link = element.getAttribute('data-youtube');
+        const link = element.getAttribute('data-youtube') || element.getAttribute('data-video');
         const vid_data = this.getVidID(link);
 
         if (!vid_data) {
@@ -469,9 +476,11 @@
           continue;
         }
 
-        if (vid_data.type === 'YOUTUBE') {
-          const yb = new YoutubeBackground(element, params, vid_data.id, uid);
-          this.index[uid] = yb;
+        switch (vid_data.type) {
+          case 'YOUTUBE':
+            const yb = new YoutubeBackground(element, params, vid_data.id, uid);
+            this.index[uid] = yb;
+            break;
         }
       }
 
@@ -491,7 +500,9 @@
 
           return {
             id: pts[1],
-            type: k
+            type: k,
+            regex_pts: pts,
+            link: link
           };
         }
       }

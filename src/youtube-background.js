@@ -1,4 +1,4 @@
-import { isMobile, addClass, hasClass, removeClass, parseResolutionString } from './utils.js';
+import { isMobile, addClass, hasClass, removeClass, parseProperties, parseResolutionString } from './utils.js';
 
 const tag = document.createElement('script');
 tag.src = "https://www.youtube.com/player_api";
@@ -20,7 +20,7 @@ export function YoutubeBackground(elem, params, id, uid) {
 
   this.params = {};
 
-  this.defaults = {
+  const DEFAULTS = {
     'pause': false, //deprecated
     'play-button': false,
     'mute-button': false,
@@ -43,11 +43,14 @@ export function YoutubeBackground(elem, params, id, uid) {
       return;
     }
 
-    this.parseProperties(params);
+    this.params = parseProperties(params, DEFAULTS, this.element, 'data-ytbg-');
+    //pause deprecated
+    if (this.params.pause) {
+      this.params['play-button'] = this.params.pause;
+    }
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
-
     this.buildHTML();
     this.injectIFrame();
 
@@ -133,40 +136,11 @@ YoutubeBackground.prototype.onVideoStateChange = function (event) {
   this.params["onStatusChange"](event);
 };
 
-YoutubeBackground.prototype.parseProperties = function (params) {
-  if (!params) {
-    this.params = this.defaults;
-  } else {
-    for (let k in this.defaults) {
-      if (!params.hasOwnProperty(k)) {
-        //load in defaults if the param hasn't been set
-        this.params[k] = this.defaults[k];
-      }
-    }
-  }
-
-  // load params from data attributes
-  for (let k in this.params) {
-    let data = this.element.getAttribute('data-ytbg-'+k);
-
-    if (data !== undefined && data !== null) {
-      data = data === 'false' ? false : data;
-      data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
-      this.params[k] = data;
-    }
-  }
-
-  //pause deprecated
-  if (this.params.pause) {
-    this.params['play-button'] = this.params.pause;
-  }
-};
-
 YoutubeBackground.prototype.injectIFrame = function () {
   this.iframe = document.createElement('iframe');
   this.iframe.setAttribute('frameborder', 0);
   this.iframe.setAttribute('allow', 'autoplay; mute');
-  let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin=${encodeURIComponent(window.location.origin)}`;
+  let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
 
   if (this.params.muted) {
     src += '&mute=1';
@@ -229,7 +203,7 @@ YoutubeBackground.prototype.injectIFrame = function () {
 YoutubeBackground.prototype.buildHTML = function () {
   const parent = this.element.parentNode;
   // wrap
-  addClass(this.element, 'youtube-background');
+  addClass(this.element, 'youtube-background video-background');
 
   //set css rules
   const wrapper_styles = {
