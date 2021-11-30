@@ -16,7 +16,7 @@ export function VideoBackgrounds(selector, params) {
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
 
-      const link = element.getAttribute('data-youtube');
+      const link = element.getAttribute('data-youtube') || element.getAttribute('data-video');
       const vid_data = this.getVidID(link);
 
       if (!vid_data) {
@@ -29,9 +29,11 @@ export function VideoBackgrounds(selector, params) {
         continue;
       }
 
-      if (vid_data.type === 'YOUTUBE') {
-        const yb = new YoutubeBackground(element, params, vid_data.id, uid);
-        this.index[uid] = yb;
+      switch (vid_data.type) {
+        case 'YOUTUBE':
+          const yb = new YoutubeBackground(element, params, vid_data.id, uid);
+          this.index[uid] = yb;
+          break;
       }
     }
 
@@ -51,7 +53,9 @@ VideoBackgrounds.prototype.getVidID = function (link) {
 
         return {
           id: pts[1],
-          type: k
+          type: k,
+          regex_pts: pts,
+          link: link
         };
       }
     }

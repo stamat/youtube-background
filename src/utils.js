@@ -5,9 +5,13 @@ export function hasClass(element, className) {
   return new RegExp('\\b'+ className+'\\b').test(element.className);
 }
 
-export function addClass(element, className) {
+export function addClass(element, classNames) {
   if (element.classList) {
-    element.classList.add(className);
+    const classes = classNames.split(' ');
+    for (var i = 0; i < classes.length; i++) {
+      const el_class = classes[i];
+      element.classList.add(el_class);
+    }
     return;
   }
 
@@ -62,3 +66,32 @@ export function parseResolutionString(res) {
 
   return w/h;
 }
+
+export function parseProperties(params, defaults, element, attr_prefix) {
+  let res_params = {};
+
+  if (!params) {
+    res_params = defaults;
+  } else {
+    for (let k in defaults) {
+      if (!params.hasOwnProperty(k)) {
+        //load in defaults if the param hasn't been set
+        res_params[k] = defaults[k];
+      }
+    }
+  }
+
+  if (!element) return res_params;
+  // load params from data attributes
+  for (let k in res_params) {
+    let data = element.getAttribute(attr_prefix+k);
+
+    if (data !== undefined && data !== null) {
+      data = data === 'false' ? false : data;
+      data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
+      res_params[k] = data;
+    }
+  }
+
+  return res_params;
+};
