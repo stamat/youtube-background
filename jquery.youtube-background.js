@@ -1,5 +1,5 @@
 /**
- * jquery.youtube-background v1.0.10 | Nikola Stamatovic <@stamat> | MIT
+ * jquery.youtube-background v1.0.11 | Nikola Stamatovic <@stamat> | MIT
  */
 
 (function () {
@@ -12,9 +12,13 @@
     return new RegExp('\\b'+ className+'\\b').test(element.className);
   }
 
-  function addClass(element, className) {
+  function addClass(element, classNames) {
     if (element.classList) {
-      element.classList.add(className);
+      const classes = classNames.split(' ');
+      for (var i = 0; i < classes.length; i++) {
+        const el_class = classes[i];
+        element.classList.add(el_class);
+      }
       return;
     }
 
@@ -62,6 +66,35 @@
     return w/h;
   }
 
+  function parseProperties(params, defaults, element, attr_prefix) {
+    let res_params = {};
+
+    if (!params) {
+      res_params = defaults;
+    } else {
+      for (let k in defaults) {
+        if (!params.hasOwnProperty(k)) {
+          //load in defaults if the param hasn't been set
+          res_params[k] = defaults[k];
+        }
+      }
+    }
+
+    if (!element) return res_params;
+    // load params from data attributes
+    for (let k in res_params) {
+      let data = element.getAttribute(attr_prefix+k);
+
+      if (data !== undefined && data !== null) {
+        data = data === 'false' ? false : data;
+        data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
+        res_params[k] = data;
+      }
+    }
+
+    return res_params;
+  }
+
   const tag = document.createElement('script');
   tag.src = "https://www.youtube.com/player_api";
   const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -82,7 +115,7 @@
 
     this.params = {};
 
-    this.defaults = {
+    const DEFAULTS = {
       'pause': false, //deprecated
       'play-button': false,
       'mute-button': false,
@@ -96,7 +129,8 @@
       'inline-styles': true,
       'fit-box': false,
       'offset': 200,
-      'start-at': 0
+      'start-at': 0,
+      'end-at': 0
     };
 
     this.__init__ = function () {
@@ -104,11 +138,14 @@
         return;
       }
 
-      this.parseProperties(params);
+      this.params = parseProperties(params, DEFAULTS, this.element, 'data-ytbg-');
+      //pause deprecated
+      if (this.params.pause) {
+        this.params['play-button'] = this.params.pause;
+      }
       this.params.resolution_mod = parseResolutionString(this.params.resolution);
       this.state.playing = this.params.autoplay;
       this.state.muted = this.params.muted;
-
       this.buildHTML();
       this.injectIFrame();
 
@@ -145,7 +182,6 @@
 
   YoutubeBackground.prototype.initYTPlayer = function () {
     const self = this;
-
     if (window.hasOwnProperty('YT')) {
       this.player = new YT.Player(this.uid, {
         events: {
@@ -195,40 +231,11 @@
     this.params["onStatusChange"](event);
   };
 
-  YoutubeBackground.prototype.parseProperties = function (params) {
-    if (!params) {
-      this.params = this.defaults;
-    } else {
-      for (let k in this.defaults) {
-        if (!params.hasOwnProperty(k)) {
-          //load in defaults if the param hasn't been set
-          this.params[k] = this.defaults[k];
-        }
-      }
-    }
-
-    // load params from data attributes
-    for (let k in this.params) {
-      let data = this.element.getAttribute('data-ytbg-'+k);
-
-      if (data !== undefined && data !== null) {
-        data = data === 'false' ? false : data;
-        data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
-        this.params[k] = data;
-      }
-    }
-
-    //pause deprecated
-    if (this.params.pause) {
-      this.params['play-button'] = this.params.pause;
-    }
-  };
-
   YoutubeBackground.prototype.injectIFrame = function () {
     this.iframe = document.createElement('iframe');
     this.iframe.setAttribute('frameborder', 0);
-    this.iframe.setAttribute('allow', ['autoplay; mute']);
-    let src = 'https://www.youtube.com/embed/'+this.ytid+'?enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin='+window.location.origin;
+    this.iframe.setAttribute('allow', 'autoplay; mute');
+    let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
 
     if (this.params.muted) {
       src += '&mute=1';
@@ -240,6 +247,10 @@
 
     if (this.params.loop) {
       src += '&loop=1';
+    }
+
+    if (this.params['end-at'] > 0) {
+      src += `&end=${this.params['end-at']}`;
     }
 
     this.iframe.src = src;
@@ -287,7 +298,7 @@
   YoutubeBackground.prototype.buildHTML = function () {
     const parent = this.element.parentNode;
     // wrap
-    addClass(this.element, 'youtube-background');
+    addClass(this.element, 'youtube-background video-background');
 
     //set css rules
     const wrapper_styles = {
@@ -437,270 +448,22 @@
     this.controls_element.appendChild(btn);
   };
 
-  function VimeoBackground(elem, params, id, uid) {
-    this.is_mobile = isMobile();
-
-    this.element = elem;
-    this.vid = id;
-    this.uid = uid;
-    this.player = null;
-    this.buttons = {};
-
-    this.state = {};
-    this.state.play = false;
-    this.state.mute = false;
-
-    this.params = {};
-
-    this.defaults = {
-      'pause': false, //deprecated
-      'play-button': false,
-      'mute-button': false,
-      'autoplay': true,
-      'muted': true,
-      'loop': true,
-      'mobile': false,
-      'load-background': true,
-      'resolution': '16:9',
-      'inline-styles': true,
-      'fit-box': false,
-      'offset': 200,
-      'start-at': 0
-    };
-
-    this.__init__ = function () {
-      if (!this.vid) {
-        return;
-      }
-
-      this.parseProperties(params);
-      this.params.resolution_mod = parseResolutionString(this.params.resolution);
-      this.state.playing = this.params.autoplay;
-      this.state.muted = this.params.muted;
-
-      this.buildHTML();
-      this.injectIFrame();
-    };
-
-    this.__init__();
-  }
-
-  VimeoBackground.prototype.parseProperties = function (params) {
-    if (!params) {
-      this.params = this.defaults;
-    } else {
-      //load in defaults
-      for (let k in this.defaults) {
-        if (!this.params.hasOwnProperty(k)) {
-          this.params[k] = this.defaults[k];
-        }
-      }
-    }
-
-    // load params from data attributes
-    for (let k in this.params) {
-      let data = this.element.getAttribute('data-ytbg-'+k);
-
-      if (data !== undefined && data !== null) {
-        data = data === 'false' ? false : data;
-        data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
-        this.params[k] = data;
-      }
-    }
-
-    //pause deprecated
-    if (this.params.pause) {
-      this.params['play-button'] = this.params.pause;
-    }
-  };
-
-  VimeoBackground.prototype.injectIFrame = function () {
-    this.iframe = document.createElement('iframe');
-    this.iframe.setAttribute('frameborder', 0);
-    this.iframe.setAttribute('allow', ['autoplay; mute']);
-    let src = 'https://player.vimeo.com/video/'+this.vid+'?background=1&controls=0';
-
-    if (this.params.muted) {
-      src += '&muted=1';
-    }
-
-    if (this.params.autoplay) {
-      src += '&autoplay=1';
-    }
-
-    if (this.params.loop) {
-      src += '&loop=1&autopause=0';
-    }
-
-    //WARN❗️ this is a hash not a query param
-    if (this.params['start-at']) {
-      src += '#t=' + this.params['start-at'] + 's';
-    }
-
-    this.iframe.src = src;
-
-    if (this.uid) {
-      this.iframe.id = this.uid;
-    }
-
-    if (this.params['inline-styles']) {
-      this.iframe.style.top = '50%';
-      this.iframe.style.left = '50%';
-      this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
-      this.iframe.style.position = 'absolute';
-      this.iframe.style.opacity = 1;
-    }
-
-    this.element.appendChild(this.iframe);
-
-    if (this.params['fit-box']) {
-      this.iframe.style.width = '100%';
-      this.iframe.style.height = '100%';
-    } else {
-      const self = this;
-
-      const onResize = function() {
-        const h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
-        const w = self.iframe.parentNode.offsetWidth + self.params.offset;
-        const res = self.params.resolution_mod;
-
-        if (res > w/h) {
-          self.iframe.style.width = h*res + 'px';
-          self.iframe.style.height = h + 'px';
-        } else {
-          self.iframe.style.width = w + 'px';
-          self.iframe.style.height = w/res + 'px';
-        }
-      };
-
-      window.addEventListener('resize', onResize);
-      onResize();
-    }
-  };
-
-  VimeoBackground.prototype.buildHTML = function () {
-    const parent = this.element.parentNode;
-    // wrap
-    addClass(this.element, 'youtube-background');
-
-    //set css rules
-    const wrapper_styles = {
-      "height" : "100%",
-      "width" : "100%",
-      "z-index": "0",
-      "position": "absolute",
-      "overflow": "hidden",
-      "top": 0, // added by @insad
-      "left": 0,
-      "bottom": 0,
-      "right": 0
-    };
-
-    if (!this.params['mute-button']) {
-      wrapper_styles["pointer-events"] = "none"; // avoid right mouse click popup menu
-    }
-
-    if (this.params['load-background']) {
-      //TODO: wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.vid+'/maxresdefault.jpg)';
-      wrapper_styles['background-size'] = 'cover';
-      wrapper_styles['background-repeat'] = 'no-repeat';
-      wrapper_styles['background-position'] = 'center';
-    }
-
-    if (this.params['inline-styles']) {
-      for (let property in wrapper_styles) {
-        this.element.style[property] = wrapper_styles[property];
-      }
-
-      parent.style.position = 'relative';
-    }
-
-    return this.element;
-  };
-
-  function ActivityMonitor(on_activity, on_inactivity, activity_timeout, inactivity_timeout, events) {
-  	this.timer = null;
-  	this.timeout = inactivity_timeout || 10000;
-  	this.activity_timer = null; //for event throttling
-  	this.activity_timeout = activity_timeout || 1000;
-  	this.last_activity = null;
-
-  	this.resetTimer = function() {
-  		if (this.timer) {
-  			clearTimeout(this.timer);
-  			this.timer = null;
-  		}
-
-  		var self = this;
-  		this.timer = setTimeout(function() {
-  			if (self.last_activity + self.timeout + self.activity_timeout
-  				>= new Date().getTime()) {
-  				if (on_inactivity) {
-  					on_inactivity();
-  				}
-  			}
-  		}, this.timeout);
-  	};
-
-  	this.logActivity = function() {
-  		this.last_activity = new Date().getTime();
-
-  		if (on_activity) {
-  			on_activity();
-  		}
-  	};
-
-  	this.onActivity = function() {
-  		if (!this.activity_timer) {
-  			var self = this;
-  			this.activity_timer = setTimeout(function(){
-  				self.logActivity();
-  				self.resetTimer();
-
-  				clearTimeout(self.activity_timer);
-  				self.activity_timer = null;
-  			}, this.activity_timeout);
-  		}
-  	};
-
-  	this.__init__ = function() {
-  		var self = this;
-
-  		if (!events) {
-  			events = ['click', 'mousemove', 'scroll'];
-  		} else {
-  			if (typeof events === 'string') {
-  				events = [events];
-  			}
-  		}
-
-  		for (var i = 0; i < events.length; i++) {
-  			document.addEventListener(events[i], function() {
-  				self.onActivity();
-  			});
-  		}
-  	};
-
-  	this.__init__();
-  }
-
   function VideoBackgrounds(selector, params) {
-  	this.elements = selector;
+    this.elements = selector;
 
-  	if (typeof selector === 'string') {
-  		this.elements = document.querySelectorAll(selector);
-  	}
+    if (typeof selector === 'string') {
+      this.elements = document.querySelectorAll(selector);
+    }
 
     this.index = {};
     this.re = {};
     this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-    this.re.VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
 
     this.__init__ = function () {
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
 
-        const link = element.getAttribute('data-youtube');
+        const link = element.getAttribute('data-youtube') || element.getAttribute('data-video');
         const vid_data = this.getVidID(link);
 
         if (!vid_data) {
@@ -710,39 +473,21 @@
         const uid = this.generateUID(vid_data.id);
 
         if (!uid) {
-  				continue;
-  			}
-
-        if (vid_data.type === 'YOUTUBE') {
-          const yb = new YoutubeBackground(element, params, vid_data.id, uid);
-          this.index[uid] = yb;
-        } else if (vid_data.type === 'VIMEO') {
-          var vm = new VimeoBackground(element, params, vid_data.id, uid);
-          this.index[uid] = vm;
+          continue;
         }
-  		}
 
-  		var self = this;
+        switch (vid_data.type) {
+          case 'YOUTUBE':
+            const yb = new YoutubeBackground(element, params, vid_data.id, uid);
+            this.index[uid] = yb;
+            break;
+        }
+      }
 
-  		this.initYTPlayers(function() {
-  			//TODO: FIX!
-  			if (params &&
-  				(params.hasOwnProperty('activity_timeout')
-  					|| params.hasOwnProperty('inactivity_timeout'))) {
-  				this.activity_monitor = new ActivityMonitor(function () {
-  						self.playVideos();
-  					}, function() {
-  						self.pauseVideos();
-  					},
-  					params ? params.activity_timeout : null,
-  					params ? params.inactivity_timeout : null,
-  					['mousemove', 'scroll']
-  				);
-  			}
-  		});
-  	};
+      this.initYTPlayers();
+    };
 
-  	this.__init__();
+    this.__init__();
   }
 
   VideoBackgrounds.prototype.getVidID = function (link) {
@@ -755,13 +500,15 @@
 
           return {
             id: pts[1],
-            type: k
-          }
+            type: k,
+            regex_pts: pts,
+            link: link
+          };
         }
       }
     }
 
-  	return null;
+    return null;
   };
 
 
@@ -795,16 +542,16 @@
         if (self.index[k] instanceof YoutubeBackground) {
           self.index[k].initYTPlayer();
         }
-  		}
+      }
 
-  		if (callback) {
-  			setTimeout(callback, 100);
-  		}
-  	};
+      if (callback) {
+        setTimeout(callback, 100);
+      }
+    };
 
-  	if (window.hasOwnProperty('YT') && window.YT.loaded) {
-  		window.onYouTubeIframeAPIReady();
-  	}
+    if (window.hasOwnProperty('YT') && window.YT.loaded) {
+      window.onYouTubeIframeAPIReady();
+    }
   };
 
   if (typeof jQuery == 'function') {

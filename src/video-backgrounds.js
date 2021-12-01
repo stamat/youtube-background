@@ -4,11 +4,11 @@ import { ActivityMonitor } from './activity-monitor.js';
 import { getRandomIntInclusive } from './utils.js';
 
 export function VideoBackgrounds(selector, params) {
-	this.elements = selector;
+  this.elements = selector;
 
-	if (typeof selector === 'string') {
-		this.elements = document.querySelectorAll(selector);
-	}
+  if (typeof selector === 'string') {
+    this.elements = document.querySelectorAll(selector);
+  }
 
   this.index = {};
   this.re = {};
@@ -19,7 +19,7 @@ export function VideoBackgrounds(selector, params) {
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
 
-      const link = element.getAttribute('data-youtube');
+      const link = element.getAttribute('data-youtube') || element.getAttribute('data-video');
       const vid_data = this.getVidID(link);
 
       if (!vid_data) {
@@ -29,39 +29,42 @@ export function VideoBackgrounds(selector, params) {
       const uid = this.generateUID(vid_data.id);
 
       if (!uid) {
-				continue;
-			}
-
-      if (vid_data.type === 'YOUTUBE') {
-        const yb = new YoutubeBackground(element, params, vid_data.id, uid);
-        this.index[uid] = yb;
-      } else if (vid_data.type === 'VIMEO') {
-        var vm = new VimeoBackground(element, params, vid_data.id, uid);
-        this.index[uid] = vm;
+        continue;
       }
-		}
 
-		var self = this;
+      switch (vid_data.type) {
+        case 'YOUTUBE':
+          const yb = new YoutubeBackground(element, params, vid_data.id, uid);
+          this.index[uid] = yb;
+          break;
+        case 'VIMEO':
+          var vm = new VimeoBackground(element, params, vid_data.id, uid);
+          this.index[uid] = vm;
+          break;
+      }
+    }
 
-		this.initYTPlayers(function() {
-			//TODO: FIX!
-			if (params &&
-				(params.hasOwnProperty('activity_timeout')
-					|| params.hasOwnProperty('inactivity_timeout'))) {
-				this.activity_monitor = new ActivityMonitor(function () {
-						self.playVideos();
-					}, function() {
-						self.pauseVideos();
-					},
-					params ? params.activity_timeout : null,
-					params ? params.inactivity_timeout : null,
-					['mousemove', 'scroll']
-				);
-			}
-		});
-	};
+    var self = this;
 
-	this.__init__();
+    this.initYTPlayers(function() {
+      //TODO: FIX!
+      if (params &&
+        (params.hasOwnProperty('activity_timeout')
+          || params.hasOwnProperty('inactivity_timeout'))) {
+        this.activity_monitor = new ActivityMonitor(function () {
+            self.playVideos();
+          }, function() {
+            self.pauseVideos();
+          },
+          params ? params.activity_timeout : null,
+          params ? params.inactivity_timeout : null,
+          ['mousemove', 'scroll']
+        );
+      }
+    });
+  };
+
+  this.__init__();
 }
 
 VideoBackgrounds.prototype.getVidID = function (link) {
@@ -74,13 +77,15 @@ VideoBackgrounds.prototype.getVidID = function (link) {
 
         return {
           id: pts[1],
-          type: k
-        }
+          type: k,
+          regex_pts: pts,
+          link: link
+        };
       }
     }
   }
 
-	return null;
+  return null;
 };
 
 
@@ -114,14 +119,14 @@ VideoBackgrounds.prototype.initYTPlayers = function (callback) {
       if (self.index[k] instanceof YoutubeBackground) {
         self.index[k].initYTPlayer();
       }
-		}
+    }
 
-		if (callback) {
-			setTimeout(callback, 100);
-		}
-	};
+    if (callback) {
+      setTimeout(callback, 100);
+    }
+  };
 
-	if (window.hasOwnProperty('YT') && window.YT.loaded) {
-		window.onYouTubeIframeAPIReady();
-	}
+  if (window.hasOwnProperty('YT') && window.YT.loaded) {
+    window.onYouTubeIframeAPIReady();
+  }
 };

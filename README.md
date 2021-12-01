@@ -1,5 +1,5 @@
-# youtube-background
-[![npm version](https://badge.fury.io/js/youtube-background.svg)](https://www.npmjs.com/package/youtube-background)
+# 📺 youtube-background
+[![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
 [![CSS gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
 
 ~~Another 100 liner in a form of a~~ simple script (or jQuery plugin) to facilitate YouTube embeds as a cover background using YouTube Embed API.
@@ -8,7 +8,7 @@ I wrote this code several times over the years and never bothered to make it reu
 
 Goodbye careless days... I'm getting old...
 
-[DEMO HERE ⤻](http://stamat.github.io/jquery.youtube-background/)
+[DEMO HERE ➡️](http://stamat.github.io/youtube-background/)
 
 ## Features
 
@@ -95,6 +95,7 @@ Property | Default | Accepts | Description
 **resolution** | 16:9 | string | declare video resolution (work in progress)
 **pause** | false | boolean | Adds a toggle pause button (deprecated)
 **start-at** | 0 | int | Video starts playing at desired time in seconds
+**end-at** | 0 | int | Video ends playing at desired time in seconds. 0 means it will play to the end.
 
 Noted properties can be added as html attributes as:
 
@@ -110,6 +111,7 @@ Noted properties can be added as html attributes as:
 * **data-ytbg-load-background**
 * **data-ytbg-inline-styles**
 * **data-ytbg-start-at**
+* **data-ytbg-end-at**
 
 #### Example - Properties as HTML attributes
 
