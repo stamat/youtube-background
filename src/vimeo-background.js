@@ -1,4 +1,4 @@
-import { isMobile, addClass, parseResolutionString } from './utils.js';
+import { isMobile, addClass, parseResolutionString, parseProperties } from './utils.js';
 
 export function VimeoBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();
@@ -15,7 +15,7 @@ export function VimeoBackground(elem, params, id, uid) {
 
   this.params = {};
 
-  this.defaults = {
+  const DEFAULTS = {
     'pause': false, //deprecated
     'play-button': false,
     'mute-button': false,
@@ -36,7 +36,11 @@ export function VimeoBackground(elem, params, id, uid) {
       return;
     }
 
-    this.parseProperties(params);
+    this.params = parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
+    //pause deprecated
+    if (this.params.pause) {
+      this.params['play-button'] = this.params.pause;
+    }
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
@@ -47,35 +51,6 @@ export function VimeoBackground(elem, params, id, uid) {
 
   this.__init__();
 }
-
-VimeoBackground.prototype.parseProperties = function (params) {
-  if (!params) {
-    this.params = this.defaults;
-  } else {
-    //load in defaults
-    for (let k in this.defaults) {
-      if (!this.params.hasOwnProperty(k)) {
-        this.params[k] = this.defaults[k];
-      }
-    }
-  }
-
-  // load params from data attributes
-  for (let k in this.params) {
-    let data = this.element.getAttribute('data-ytbg-'+k);
-
-    if (data !== undefined && data !== null) {
-      data = data === 'false' ? false : data;
-      data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
-      this.params[k] = data;
-    }
-  }
-
-  //pause deprecated
-  if (this.params.pause) {
-    this.params['play-button'] = this.params.pause;
-  }
-};
 
 VimeoBackground.prototype.injectIFrame = function () {
   this.iframe = document.createElement('iframe');

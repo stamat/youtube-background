@@ -1,5 +1,6 @@
 import { YoutubeBackground } from './youtube-background.js';
 import { VimeoBackground } from './vimeo-background.js';
+import { VideoBackground } from './video-background.js';
 import { ActivityMonitor } from './activity-monitor.js';
 import { getRandomIntInclusive } from './utils.js';
 
@@ -14,12 +15,13 @@ export function VideoBackgrounds(selector, params) {
   this.re = {};
   this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
   this.re.VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
+  this.re.VIDEO = /\/[^\/]+\.(mp4|ogg|ogv|ogm|webm|avi)$/i;
 
   this.__init__ = function () {
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
 
-      const link = element.getAttribute('data-youtube') || element.getAttribute('data-video');
+      const link = element.getAttribute('data-youtube') || element.getAttribute('data-vbg');
       const vid_data = this.getVidID(link);
 
       if (!vid_data) {
@@ -38,8 +40,12 @@ export function VideoBackgrounds(selector, params) {
           this.index[uid] = yb;
           break;
         case 'VIMEO':
-          var vm = new VimeoBackground(element, params, vid_data.id, uid);
+          const vm = new VimeoBackground(element, params, vid_data.id, uid);
           this.index[uid] = vm;
+          break;
+        case 'VIDEO':
+          const vid = new VideoBackground(element, params, vid_data, uid);
+          this.index[uid] = vid;
           break;
       }
     }

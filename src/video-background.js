@@ -1,15 +1,11 @@
-import { isMobile, addClass, hasClass, removeClass, parseProperties, parseResolutionString } from './utils.js';
+import { isMobile, addClass, hasClass, removeClass, parseResolutionString, parseProperties } from './utils.js';
 
-const tag = document.createElement('script');
-tag.src = "https://www.youtube.com/player_api";
-const firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-export function YoutubeBackground(elem, params, id, uid) {
+export function VideoBackground(elem, params, vid_data, uid) {
   this.is_mobile = isMobile();
 
   this.element = elem;
-  this.ytid = id;
+  this.link = vid_data.link;
+  this.ext = video_data.id;
   this.uid = uid;
   this.player = null;
   this.buttons = {};
@@ -19,6 +15,15 @@ export function YoutubeBackground(elem, params, id, uid) {
   this.state.mute = false;
 
   this.params = {};
+
+  const MIME_MAP = {
+    'ogv' : 'video/ogg',
+    'ogm' : 'video/ogg',
+    'ogg' : 'video/ogg',
+    'avi' : 'video/avi',
+    'mp4' : 'video/mp4',
+    'webm' : 'video/webm'
+  };
 
   const DEFAULTS = {
     'pause': false, //deprecated
@@ -39,10 +44,11 @@ export function YoutubeBackground(elem, params, id, uid) {
   };
 
   this.__init__ = function () {
-    if (!this.ytid) {
+    if (!this.link || !this.ext) {
       return;
     }
 
+    this.mime = MIME_MAP[this.ext.toLowerCase()];
     this.params = parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
     //pause deprecated
     if (this.params.pause) {
@@ -51,6 +57,7 @@ export function YoutubeBackground(elem, params, id, uid) {
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
+
     this.buildHTML();
     this.injectIFrame();
 
@@ -85,7 +92,7 @@ export function YoutubeBackground(elem, params, id, uid) {
   this.__init__();
 }
 
-YoutubeBackground.prototype.initYTPlayer = function () {
+VideoBackground.prototype.initPlayer = function () {
   const self = this;
   if (window.hasOwnProperty('YT')) {
     this.player = new YT.Player(this.uid, {
@@ -104,20 +111,20 @@ YoutubeBackground.prototype.initYTPlayer = function () {
   }
 };
 
-YoutubeBackground.prototype.seekTo = function (seconds) {
+VideoBackground.prototype.seekTo = function (seconds) {
   if (seconds > 0) {
     this.player.seekTo(seconds, true);
   }
 }
 
-YoutubeBackground.prototype.onVideoPlayerReady = function (event) {
+VideoBackground.prototype.onVideoPlayerReady = function (event) {
   if (this.params.autoplay) {
     this.seekTo(this.params['start-at']);
     this.player.playVideo();
   }
 };
 
-YoutubeBackground.prototype.onVideoStateChange = function (event) {
+VideoBackground.prototype.onVideoStateChange = function (event) {
   if (event.data === 0 && this.params.loop) {
     this.seekTo(this.params['start-at']);
     this.player.playVideo();
@@ -136,11 +143,11 @@ YoutubeBackground.prototype.onVideoStateChange = function (event) {
   this.params["onStatusChange"](event);
 };
 
-YoutubeBackground.prototype.injectIFrame = function () {
+VideoBackground.prototype.injectIFrame = function () {
   this.iframe = document.createElement('iframe');
   this.iframe.setAttribute('frameborder', 0);
   this.iframe.setAttribute('allow', 'autoplay; mute');
-  let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
+  let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin=${encodeURIComponent(window.location.origin)}`;
 
   if (this.params.muted) {
     src += '&mute=1';
@@ -200,10 +207,10 @@ YoutubeBackground.prototype.injectIFrame = function () {
   }
 };
 
-YoutubeBackground.prototype.buildHTML = function () {
+VideoBackground.prototype.buildHTML = function () {
   const parent = this.element.parentNode;
   // wrap
-  addClass(this.element, 'youtube-background video-background');
+  addClass(this.element, 'video-background');
 
   //set css rules
   const wrapper_styles = {
@@ -257,7 +264,7 @@ YoutubeBackground.prototype.buildHTML = function () {
   return this.element;
 };
 
-YoutubeBackground.prototype.play = function () {
+VideoBackground.prototype.play = function () {
   //TODO: solve this with ARIA toggle states. P.S. warning repetitive code!!!
   if (this.buttons.hasOwnProperty('play')) {
     const btn_obj = this.buttons.play;
@@ -275,7 +282,7 @@ YoutubeBackground.prototype.play = function () {
   }
 }
 
-YoutubeBackground.prototype.pause = function () {
+VideoBackground.prototype.pause = function () {
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('play')) {
     const btn_obj = this.buttons.play;
@@ -290,7 +297,7 @@ YoutubeBackground.prototype.pause = function () {
   }
 }
 
-YoutubeBackground.prototype.unmute = function () {
+VideoBackground.prototype.unmute = function () {
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('mute')) {
     const btn_obj = this.buttons.mute;
@@ -305,7 +312,7 @@ YoutubeBackground.prototype.unmute = function () {
   }
 }
 
-YoutubeBackground.prototype.mute = function () {
+VideoBackground.prototype.mute = function () {
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('mute')) {
     const btn_obj = this.buttons.mute;
@@ -321,7 +328,7 @@ YoutubeBackground.prototype.mute = function () {
 }
 
 //TODO: refactor states to be equal for all buttons
-YoutubeBackground.prototype.generateActionButton = function (obj) {
+VideoBackground.prototype.generateActionButton = function (obj) {
   const btn = document.createElement('button');
   btn.className = obj.className;
   btn.innerHTML = obj.innerHtml;
