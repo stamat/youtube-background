@@ -5,7 +5,7 @@ export function VideoBackground(elem, params, vid_data, uid) {
 
   this.element = elem;
   this.link = vid_data.link;
-  this.ext = video_data.id;
+  this.ext = vid_data.id;
   this.uid = uid;
   this.player = null;
   this.buttons = {};
@@ -33,14 +33,14 @@ export function VideoBackground(elem, params, vid_data, uid) {
     'muted': true,
     'loop': true,
     'mobile': false,
-    'load-background': true,
     'resolution': '16:9',
     'onStatusChange': function() {},
     'inline-styles': true,
     'fit-box': false,
     'offset': 200,
     'start-at': 0,
-    'end-at': 0
+    'end-at': 0,
+    'poster': null
   };
 
   this.__init__ = function () {
@@ -59,7 +59,7 @@ export function VideoBackground(elem, params, vid_data, uid) {
     this.state.muted = this.params.muted;
 
     this.buildHTML();
-    this.injectIFrame();
+    this.injectPlayer();
 
 
     if (this.params['play-button']) {
@@ -92,113 +92,76 @@ export function VideoBackground(elem, params, vid_data, uid) {
   this.__init__();
 }
 
-VideoBackground.prototype.initPlayer = function () {
+VideoBackground.prototype.seekTo = function (seconds) {
+  if (this.player.hasOwnProperty('fastSeek')) {
+    this.player.fastSeek(seconds);
+    return;
+  }
+  this.player.currentTime = seconds;
+}
+
+VideoBackground.prototype.injectPlayer = function () {
+  this.player = document.createElement('video');
+  this.player.muted = this.params.muted;
+  this.player.autoplay = this.params.autoplay;
+  this.player.loop = this.params.loop;
+  this.player.playsinline = true;
+
+  this.player.setAttribute('id', this.uid)
+
+  if (this.params['inline-styles']) {
+    this.player.style.top = '50%';
+    this.player.style.left = '50%';
+    this.player.style.transform = 'translateX(-50%) translateY(-50%)';
+    this.player.style.position = 'absolute';
+    this.player.style.opacity = 0;
+
+    this.player.addEventListener('canplay', (e) => {
+      e.target.style.opacity = 1;
+    });
+  }
+
   const self = this;
-  if (window.hasOwnProperty('YT')) {
-    this.player = new YT.Player(this.uid, {
-      events: {
-        'onReady': function(event) {
-          self.onVideoPlayerReady(event);
-        },
-        'onStateChange': function(event) {
-          self.onVideoStateChange(event);
-        },
-        'onError' : function(event) {
-          //console.error('player_api', event);
-        }
+  /*
+  this.player.addEventListener('canplay', (e) => {
+    if (self.params['start-at'] && self.params.autoplay) {
+      self.seekTo(self.params['start-at']);
+    }
+  });
+
+  this.player.addEventListener('canplaythrough', (e) => {
+    if (self.params['end-at'] > 0) {
+    self.player.addEventListener('timeupdate', (e) => {
+      if (self.params['end-at'] >= self.player.currentTime) {
+        self.seekTo(self.params['start-at']);
       }
     });
   }
-};
+  });
+  */
 
-VideoBackground.prototype.seekTo = function (seconds) {
-  if (seconds > 0) {
-    this.player.seekTo(seconds, true);
-  }
-}
-
-VideoBackground.prototype.onVideoPlayerReady = function (event) {
-  if (this.params.autoplay) {
-    this.seekTo(this.params['start-at']);
-    this.player.playVideo();
-  }
-};
-
-VideoBackground.prototype.onVideoStateChange = function (event) {
-  if (event.data === 0 && this.params.loop) {
-    this.seekTo(this.params['start-at']);
-    this.player.playVideo();
-  }
-
-  if (event.data === -1 && this.params.autoplay) {
-    this.seekTo(this.params['start-at']);
-    this.player.playVideo();
-    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
-  }
-
-  if (event.data === 1) {
-    this.iframe.style.opacity = 1;
-  }
-
-  this.params["onStatusChange"](event);
-};
-
-VideoBackground.prototype.injectIFrame = function () {
-  this.iframe = document.createElement('iframe');
-  this.iframe.setAttribute('frameborder', 0);
-  this.iframe.setAttribute('allow', 'autoplay; mute');
-  let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0&origin=${encodeURIComponent(window.location.origin)}`;
-
-  if (this.params.muted) {
-    src += '&mute=1';
-  }
-
-  if (this.params.autoplay) {
-    src += '&autoplay=1';
-  }
-
-  if (this.params.loop) {
-    src += '&loop=1';
-  }
-
-  if (this.params['end-at'] > 0) {
-    src += `&end=${this.params['end-at']}`;
-  }
-
-  this.iframe.src = src;
-
-  if (this.uid) {
-    this.iframe.id = this.uid;
-  }
-
-  if (this.params['inline-styles']) {
-    this.iframe.style.top = '50%';
-    this.iframe.style.left = '50%';
-    this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
-    this.iframe.style.position = 'absolute';
-    this.iframe.style.opacity = 0;
-  }
-
-  this.element.appendChild(this.iframe);
+  const source = document.createElement('source');
+  source.setAttribute('src', this.link);
+  source.setAttribute('type', this.mime);
+  this.player.appendChild(source);
+  this.element.appendChild(this.player);
 
   if (this.params['fit-box']) {
-    this.iframe.style.width = '100%';
-    this.iframe.style.height = '100%';
+    this.player.style.width = '100%';
+    this.player.style.height = '100%';
   } else {
-    const self = this;
-
     //TODO❗️: maybe a spacer or at least add requestAnimationFrame
     function onResize() {
-      const h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
-      const w = self.iframe.parentNode.offsetWidth + self.params.offset;
+      const h = self.player.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
+      const w = self.player.parentNode.offsetWidth + self.params.offset;
       const res = self.params.resolution_mod;
 
       if (res > w/h) {
-        self.iframe.style.width = h*res + 'px';
-        self.iframe.style.height = h + 'px';
+        self.player.style.width = h*res + 'px';
+        self.player.style.height = h + 'px';
       } else {
-        self.iframe.style.width = w + 'px';
-        self.iframe.style.height = w/res + 'px';
+        self.player.style.width = w + 'px';
+        self.player.style.height = w/res + 'px';
       }
     }
 
@@ -229,8 +192,8 @@ VideoBackground.prototype.buildHTML = function () {
     wrapper_styles["pointer-events"] = "none" // avoid right mouse click popup menu
   }
 
-  if (this.params['load-background']) {
-    wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+  if (this.params['load-background'] || this.params['poster']) {
+    if (this.params['poster']) wrapper_styles['background-image'] = `url('${this.params['poster']}')`;
     wrapper_styles['background-size'] = 'cover';
     wrapper_styles['background-repeat'] = 'no-repeat';
     wrapper_styles['background-position'] = 'center';
@@ -274,10 +237,10 @@ VideoBackground.prototype.play = function () {
   }
 
   if (this.player) {
-    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
+    /* if (this.params['start-at'] && this.player.currentTime < this.params['start-at'] ) {
       this.seekTo(this.params['start-at']);
-    }
-    this.player.playVideo();
+    } */
+    this.player.play();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
 }
@@ -292,7 +255,7 @@ VideoBackground.prototype.pause = function () {
   }
 
   if (this.player) {
-    this.player.pauseVideo();
+    this.player.pause();
     this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
   }
 }
@@ -307,7 +270,7 @@ VideoBackground.prototype.unmute = function () {
   }
 
   if (this.player) {
-    this.player.unMute();
+    this.player.muted = false;
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
   }
 }
@@ -322,7 +285,7 @@ VideoBackground.prototype.mute = function () {
   }
 
   if (this.player) {
-    this.player.mute();
+    this.player.muted = true;
     this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
   }
 }

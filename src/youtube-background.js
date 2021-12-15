@@ -52,7 +52,7 @@ export function YoutubeBackground(elem, params, id, uid) {
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
     this.buildHTML();
-    this.injectIFrame();
+    this.injectPlayer();
 
 
     if (this.params['play-button']) {
@@ -136,7 +136,7 @@ YoutubeBackground.prototype.onVideoStateChange = function (event) {
   this.params["onStatusChange"](event);
 };
 
-YoutubeBackground.prototype.injectIFrame = function () {
+YoutubeBackground.prototype.injectPlayer = function () {
   this.iframe = document.createElement('iframe');
   this.iframe.setAttribute('frameborder', 0);
   this.iframe.setAttribute('allow', 'autoplay; mute');
@@ -222,8 +222,9 @@ YoutubeBackground.prototype.buildHTML = function () {
     wrapper_styles["pointer-events"] = "none" // avoid right mouse click popup menu
   }
 
-  if (this.params['load-background']) {
-    wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+  if (this.params['load-background'] || this.params['poster']) {
+    if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+    if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
     wrapper_styles['background-size'] = 'cover';
     wrapper_styles['background-repeat'] = 'no-repeat';
     wrapper_styles['background-position'] = 'center';

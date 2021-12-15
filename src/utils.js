@@ -101,6 +101,7 @@ export function parseProperties(params, defaults, element, attr_prefix) {
     if (data !== undefined && data !== null) {
       data = data === 'false' ? false : data;
       data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
+      data = /^\d+\.\d+$/.test(data) ? parseFloat(data) : data;
       res_params[k] = data;
     }
   }

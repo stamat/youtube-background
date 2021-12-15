@@ -46,13 +46,13 @@ export function VimeoBackground(elem, params, id, uid) {
     this.state.muted = this.params.muted;
 
     this.buildHTML();
-    this.injectIFrame();
+    this.injectPlayer();
   };
 
   this.__init__();
 }
 
-VimeoBackground.prototype.injectIFrame = function () {
+VimeoBackground.prototype.injectPlayer = function () {
   this.iframe = document.createElement('iframe');
   this.iframe.setAttribute('frameborder', 0);
   this.iframe.setAttribute('allow', ['autoplay; mute']);
@@ -133,6 +133,14 @@ VimeoBackground.prototype.buildHTML = function () {
     "bottom": 0,
     "right": 0
   };
+
+  if (this.params['load-background'] || this.params['poster']) {
+    //if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+    if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
+    wrapper_styles['background-size'] = 'cover';
+    wrapper_styles['background-repeat'] = 'no-repeat';
+    wrapper_styles['background-position'] = 'center';
+  }
 
   if (!this.params['mute-button']) {
     wrapper_styles["pointer-events"] = "none"; // avoid right mouse click popup menu

@@ -15,7 +15,7 @@ export function VideoBackgrounds(selector, params) {
   this.re = {};
   this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
   this.re.VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
-  this.re.VIDEO = /\/[^\/]+\.(mp4|ogg|ogv|ogm|webm|avi)$/i;
+  this.re.VIDEO = /\/[^\/]+\.(mp4|ogg|ogv|ogm|webm|avi)\s?$/i;
 
   this.__init__ = function () {
     for (let i = 0; i < this.elements.length; i++) {
@@ -74,13 +74,13 @@ export function VideoBackgrounds(selector, params) {
 }
 
 VideoBackgrounds.prototype.getVidID = function (link) {
+  console.log(link);
   if (link !== undefined && link !== null) {
     for (let k in this.re) {
       const pts = link.match(this.re[k]);
 
       if (pts && pts.length) {
         this.re[k].lastIndex = 0;
-
         return {
           id: pts[1],
           type: k,
