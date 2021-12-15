@@ -12,9 +12,9 @@ Goodbye careless days... I'm getting old...
 
 ## Features
 
-* Fade in CSS animation
-* Play/Pause button
-* Mute/Unmute button
+* Fade in CSS animation *(Youtube and HTML5 videos only)*
+* Play/Pause button *(Youtube and HTML5 videos only)*
+* Mute/Unmute button *(Youtube and HTML5 videos only)*
 * No CSS required
 * No longer jQuery dependant
 
@@ -49,11 +49,11 @@ or minified:
 
 ## Usage
 
-Usage is pretty simple, add a data attribute **data-youtube** containing a full YouTube link or just the YouTube ID.
+Usage is pretty simple, add a data attribute **data-vbg** containing a full YouTube, Vimeo or video file link or just the YouTube or Vimeo ID.
 
-You can trigger all elements containing the noted attribute with `$("[data-youtube]").youtube_background();`, or specify your selector, on jQuery document ready event.
+You can trigger all elements containing the noted attribute with `$("[data-vbg]").youtube_background();`, or specify your selector, on jQuery document ready event.
 
-**Note:** From version 1.0.6 **jQuery is no longer a dependency**, but purely optional. To initialise youtube video backgrounds without jQuery use: `new VideoBackgrounds('[data-youtube]');`.
+**Note:** From version 1.0.6 **jQuery is no longer a dependency**, but purely optional. To initialise youtube video backgrounds without jQuery use: `new VideoBackgrounds('[data-vbg]');`.
 
 P.S. *https://www.youtube.com/player_api* is injected automatically, only once per script init. I've seen some implementations like Elementor WP plugin that inject it several times, for no reason. Anyway, you're welcome.
 
@@ -69,11 +69,11 @@ P.S. *https://www.youtube.com/player_api* is injected automatically, only once p
 	</style>
 
 	<!-- target element -->
-    <div data-youtube="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
         jQuery(document).ready(function() {
-            jQuery('[data-youtube]').youtube_background();
+            jQuery('[data-vbg]').youtube_background();
         });
     </script>
 ```
@@ -91,6 +91,7 @@ Property | Default | Accepts | Description
 **fit-box** | false | boolean | Set iframe to fit the container, meaning `width: 100%; height: 100%`
 **inline-styles** | true | boolean | Enable/disable inline styles from the iframe and wrapper. The default wrapper styles are: `background-size: cover;`, `background-repeat: no-repeat;` and `background-position: center;`; the default iframe styles are `top: 50%;`, `left: 50%;`, `transform: translateX(-50%) translateY(-50%);`, `position: absolute;`, and `opacity: 0;`
 **load-background** | true | boolean | Fetch background from youtube
+**poster** | null | string | Provide your own background
 **offset** | 200 | int | showinfo:0 id deprecated since September 25, 2018. - this setting makes the video a bit larger than it's viewport to hide the info elements
 **resolution** | 16:9 | string | declare video resolution (work in progress)
 **pause** | false | boolean | Adds a toggle pause button (deprecated)
@@ -99,24 +100,55 @@ Property | Default | Accepts | Description
 
 Noted properties can be added as html attributes as:
 
-* **data-ytbg-play-button**
-* **data-ytbg-mute-button**
-* **data-ytbg-autoplay**
-* **data-ytbg-mooted**
-* **data-ytbg-loop**
-* **data-ytbg-mobile**
-* **data-ytbg-offset**
-* **data-ytbg-resolution**
-* **data-ytbg-fit-box**
-* **data-ytbg-load-background**
-* **data-ytbg-inline-styles**
-* **data-ytbg-start-at**
-* **data-ytbg-end-at**
+* **data-vbg-play-button**
+* **data-vbg-mute-button**
+* **data-vbg-autoplay**
+* **data-vbg-mooted**
+* **data-vbg-loop**
+* **data-vbg-mobile**
+* **data-vbg-offset**
+* **data-vbg-resolution**
+* **data-vbg-fit-box**
+* **data-vbg-load-background**
+* **data-vbg-poster**
+* **data-vbg-inline-styles**
+* **data-vbg-start-at**
+* **data-vbg-end-at**
+
+#### Vimeo support
+
+Available properties for Vimeo backgrounds:
+
+* muted
+* loop
+* mobile
+* resolution
+* inline-styles
+* fit-box
+* offset
+* start-at
+* poster
+
+### HTML5 Video
+
+Available properties for HTML5 Video backgrounds:
+
+* autoplay
+* muted
+* loop
+* mobile
+* resolution
+* inline-styles
+* fit-box
+* offset
+* play-button
+* mute-button
+* poster
 
 #### Example - Properties as HTML attributes
 
 ```html
-    <div data-ytbg-play-button="true" data-youtube="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+    <div data-vbg-play-button="true" data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
         jQuery(document).ready(function() {
@@ -128,23 +160,26 @@ Noted properties can be added as html attributes as:
 #### Example - Properties as JSON
 
 ```html
-    <div data-youtube="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
         jQuery(document).ready(function() {
-            jQuery('[data-youtube]').youtube_background({
+            jQuery('[data-vbg]').youtube_background({
       				'play-button': true
       			});
         });
     </script>
 ```
 
-### Events
+### Events - Youtube and HTML5 video
 
 * **video-background-play** - video starts playing
 * **video-background-pause** - video is paused
 * **video-background-mute** - video sound is muted
 * **video-background-unmute** - video sound is unmuted
+
+#### Vimeo support
+Vimeo backgrounds currently don't support events
 
 Events bubble. If you go vanilla, you can get the video object via `event.detail`.
 

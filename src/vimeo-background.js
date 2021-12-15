@@ -16,19 +16,20 @@ export function VimeoBackground(elem, params, id, uid) {
   this.params = {};
 
   const DEFAULTS = {
-    'pause': false, //deprecated
-    'play-button': false,
-    'mute-button': false,
+//    'pause': false, //deprecated
+//    'play-button': false,
+//    'mute-button': false,
     'autoplay': true,
     'muted': true,
     'loop': true,
     'mobile': false,
-    'load-background': true,
+//    'load-background': true,
     'resolution': '16:9',
     'inline-styles': true,
     'fit-box': false,
     'offset': 200,
-    'start-at': 0
+    'start-at': 0,
+    'poster': null
   };
 
   this.__init__ = function () {
@@ -79,6 +80,14 @@ VimeoBackground.prototype.injectPlayer = function () {
 
   if (this.uid) {
     this.iframe.id = this.uid;
+  }
+
+  if (this.params['load-background'] || this.params['poster']) {
+    //if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+    if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
+    wrapper_styles['background-size'] = 'cover';
+    wrapper_styles['background-repeat'] = 'no-repeat';
+    wrapper_styles['background-position'] = 'center';
   }
 
   if (this.params['inline-styles']) {

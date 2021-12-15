@@ -35,7 +35,8 @@ export function YoutubeBackground(elem, params, id, uid) {
     'fit-box': false,
     'offset': 200,
     'start-at': 0,
-    'end-at': 0
+    'end-at': 0,
+    'poster': null
   };
 
   this.__init__ = function () {

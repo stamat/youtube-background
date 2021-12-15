@@ -34,12 +34,11 @@ export function VideoBackground(elem, params, vid_data, uid) {
     'loop': true,
     'mobile': false,
     'resolution': '16:9',
-    'onStatusChange': function() {},
     'inline-styles': true,
     'fit-box': false,
     'offset': 200,
-    'start-at': 0,
-    'end-at': 0,
+//    'start-at': 0,
+//    'end-at': 0,
     'poster': null
   };
 
