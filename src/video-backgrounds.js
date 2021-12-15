@@ -1,7 +1,7 @@
 import { YoutubeBackground } from './youtube-background.js';
 import { VimeoBackground } from './vimeo-background.js';
 import { VideoBackground } from './video-background.js';
-import { ActivityMonitor } from './activity-monitor.js';
+//import { ActivityMonitor } from './activity-monitor.js';
 import { getRandomIntInclusive } from './utils.js';
 
 export function VideoBackgrounds(selector, params) {
@@ -52,7 +52,7 @@ export function VideoBackgrounds(selector, params) {
 
     var self = this;
 
-    this.initYTPlayers(function() {
+    this.initYTPlayers(/*function() {
       //TODO: FIX!
       if (params &&
         (params.hasOwnProperty('activity_timeout')
@@ -67,7 +67,7 @@ export function VideoBackgrounds(selector, params) {
           ['mousemove', 'scroll']
         );
       }
-    });
+    }*/);
   };
 
   this.__init__();
