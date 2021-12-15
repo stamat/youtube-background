@@ -110,11 +110,27 @@
                         </div>
                     </div>
                 </div>
+                <div class="example-marquee">
+                    <div id="ytbg0" data-vbg-resolution="4:1" data-vbg="https://vimeo.com/101926580"></div>
+                    <div class="content">
+                        <div class="inner">
+                            <h1>VIMEO!</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="example-marquee">
+                    <div id="ytbg-1" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" data-vbg-play-button="true" data-vbg-mute-button="true"></div>
+                    <div class="content">
+                        <div class="inner">
+                            <h1>HTML5 VIDEO!</h1>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
         <script type="text/javascript">
             jQuery(document).ready(function() {
-      				jQuery('[data-youtube]').youtube_background();
+      				jQuery('[data-youtube], [data-vbg]').youtube_background();
             });
 
             document.querySelector('#ytbg2').addEventListener('video-background-pause', function(){

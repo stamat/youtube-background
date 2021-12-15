@@ -84,11 +84,24 @@ export function parseProperties(params, defaults, element, attr_prefix) {
   if (!element) return res_params;
   // load params from data attributes
   for (let k in res_params) {
-    let data = element.getAttribute(attr_prefix+k);
+    let data;
+
+    if (attr_prefix instanceof Array) {
+      for (var i = 0; i < attr_prefix.length; i++) {
+        const temp_data = element.getAttribute(attr_prefix[i]+k);
+        if (temp_data) {
+          data = temp_data;
+          break;
+        }
+      }
+    } else {
+      data = element.getAttribute(attr_prefix+k);
+    }
 
     if (data !== undefined && data !== null) {
       data = data === 'false' ? false : data;
       data = /^\d+$/.test(data) ? parseInt(data, 10) : data;
+      data = /^\d+\.\d+$/.test(data) ? parseFloat(data) : data;
       res_params[k] = data;
     }
   }
