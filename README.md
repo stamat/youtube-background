@@ -129,7 +129,7 @@ Available properties for Vimeo backgrounds:
 * start-at
 * poster
 
-### HTML5 Video
+#### HTML5 Video support
 
 Available properties for HTML5 Video backgrounds:
 
@@ -177,9 +177,6 @@ Available properties for HTML5 Video backgrounds:
 * **video-background-pause** - video is paused
 * **video-background-mute** - video sound is muted
 * **video-background-unmute** - video sound is unmuted
-
-#### Vimeo support
-Vimeo backgrounds currently don't support events
 
 Events bubble. If you go vanilla, you can get the video object via `event.detail`.
 
