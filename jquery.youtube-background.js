@@ -1,5 +1,5 @@
 /**
- * jquery.youtube-background v1.0.11 | Nikola Stamatovic <@stamat> | MIT
+ * jquery.youtube-background v1.0.12 | Nikola Stamatovic <@stamat> | MIT
  */
 
 (function () {
@@ -304,7 +304,16 @@
         }
       }
 
-      window.addEventListener('resize', onResize);
+      if (window.hasOwnProperty('ResizeObserver')) {
+        const resize_observer = new ResizeObserver(() => {
+          window.requestAnimationFrame(onResize);
+        });
+        resize_observer.observe(this.element);
+      } else {
+        window.addEventListener('resize', () => {
+          window.requestAnimationFrame(onResize);
+        });
+      }
       onResize();
     }
   };
@@ -583,7 +592,16 @@
         }
       };
 
-      window.addEventListener('resize', onResize);
+      if (window.hasOwnProperty('ResizeObserver')) {
+        const resize_observer = new ResizeObserver(() => {
+          window.requestAnimationFrame(onResize);
+        });
+        resize_observer.observe(this.element);
+      } else {
+        window.addEventListener('resize', () => {
+          window.requestAnimationFrame(onResize);
+        });
+      }
       onResize();
     }
   };
@@ -800,7 +818,16 @@
         }
       }
 
-      window.addEventListener('resize', onResize);
+      if (window.hasOwnProperty('ResizeObserver')) {
+        const resize_observer = new ResizeObserver(() => {
+          window.requestAnimationFrame(onResize);
+        });
+        resize_observer.observe(this.element);
+      } else {
+        window.addEventListener('resize', () => {
+          window.requestAnimationFrame(onResize);
+        });
+      }
       onResize();
     }
   };
@@ -1094,7 +1121,6 @@
   }
 
   VideoBackgrounds.prototype.getVidID = function (link) {
-    console.log(link);
     if (link !== undefined && link !== null) {
       for (let k in this.re) {
         const pts = link.match(this.re[k]);

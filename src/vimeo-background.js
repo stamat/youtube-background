@@ -120,7 +120,16 @@ VimeoBackground.prototype.injectPlayer = function () {
       }
     };
 
-    window.addEventListener('resize', onResize);
+    if (window.hasOwnProperty('ResizeObserver')) {
+      const resize_observer = new ResizeObserver(() => {
+        window.requestAnimationFrame(onResize);
+      });
+      resize_observer.observe(this.element);
+    } else {
+      window.addEventListener('resize', () => {
+        window.requestAnimationFrame(onResize);
+      });
+    }
     onResize();
   }
 };

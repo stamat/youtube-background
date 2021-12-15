@@ -74,7 +74,6 @@ export function VideoBackgrounds(selector, params) {
 }
 
 VideoBackgrounds.prototype.getVidID = function (link) {
-  console.log(link);
   if (link !== undefined && link !== null) {
     for (let k in this.re) {
       const pts = link.match(this.re[k]);
