@@ -152,7 +152,7 @@ Available properties for HTML5 Video backgrounds:
 
     <script type="text/javascript">
         jQuery(document).ready(function() {
-            jQuery('[data-youtube]').youtube_background();
+            jQuery('[data-vbg]').youtube_background();
         });
     </script>
 ```
