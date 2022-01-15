@@ -1,5 +1,5 @@
 /**
- * jquery.youtube-background v1.0.12 | Nikola Stamatovic <@stamat> | MIT
+ * jquery.youtube-background v1.0.14 | Nikola Stamatovic <@stamat> | MIT
  */
 
 (function () {
@@ -352,7 +352,10 @@
       for (let property in wrapper_styles) {
         this.element.style[property] = wrapper_styles[property];
       }
-      parent.style.position = 'relative';
+      
+      if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
+        parent.style.position = 'relative';
+      }
     }
 
     if (this.is_mobile && !this.params.mobile) {
@@ -648,7 +651,9 @@
         this.element.style[property] = wrapper_styles[property];
       }
 
-      parent.style.position = 'relative';
+      if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
+        parent.style.position = 'relative';
+      }
     }
 
     return this.element;
@@ -865,7 +870,10 @@
       for (let property in wrapper_styles) {
         this.element.style[property] = wrapper_styles[property];
       }
-      parent.style.position = 'relative';
+
+      if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
+        parent.style.position = 'relative';
+      }
     }
 
     if (this.is_mobile && !this.params.mobile) {

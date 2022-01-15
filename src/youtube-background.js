@@ -244,7 +244,10 @@ YoutubeBackground.prototype.buildHTML = function () {
     for (let property in wrapper_styles) {
       this.element.style[property] = wrapper_styles[property];
     }
-    parent.style.position = 'relative';
+    
+    if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
+      parent.style.position = 'relative';
+    }
   }
 
   if (this.is_mobile && !this.params.mobile) {
