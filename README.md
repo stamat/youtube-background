@@ -40,11 +40,11 @@ If you wish to use it as a jQuery plugin, make sure you import jQuery as well.
 ### Over CDN
 
 ```
-<script type="text/javascript" src="https://unpkg.com/browse/youtube-background@1.0.10/jquery.youtube-background.js"></script>
+<script type="text/javascript" src="https://unpkg.com/youtube-background/jquery.youtube-background.js"></script>
 ```
 or minified:
 ```
-<script type="text/javascript" src="https://unpkg.com/browse/youtube-background@1.0.10/jquery.youtube-background.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/youtube-background/jquery.youtube-background.min.js"></script>
 ```
 
 ## Usage
