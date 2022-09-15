@@ -1,5 +1,5 @@
 /**
- * jquery.youtube-background v1.0.14 | Nikola Stamatovic <@stamat> | MIT
+ * jquery.youtube-background v1.0.15 | Nikola Stamatovic <@stamat> | MIT
  */
 
 (function () {
@@ -135,7 +135,7 @@
       'autoplay': true,
       'muted': true,
       'loop': true,
-      'mobile': false,
+      'mobile': true,
       'load-background': true,
       'resolution': '16:9',
       'onStatusChange': function() {},
@@ -160,7 +160,15 @@
       this.params.resolution_mod = parseResolutionString(this.params.resolution);
       this.state.playing = this.params.autoplay;
       this.state.muted = this.params.muted;
+
       this.buildHTML();
+
+      console.log(this.is_mobile);
+
+      if (this.is_mobile && !this.params.mobile) {
+        return;
+      }
+
       this.injectPlayer();
 
 
@@ -224,6 +232,8 @@
       this.seekTo(this.params['start-at']);
       this.player.playVideo();
     }
+
+    this.iframe.style.opacity = 1;
   };
 
   YoutubeBackground.prototype.onVideoStateChange = function (event) {
@@ -236,10 +246,6 @@
       this.seekTo(this.params['start-at']);
       this.player.playVideo();
       this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
-    }
-
-    if (event.data === 1) {
-      this.iframe.style.opacity = 1;
     }
 
     this.params["onStatusChange"](event);
@@ -352,14 +358,10 @@
       for (let property in wrapper_styles) {
         this.element.style[property] = wrapper_styles[property];
       }
-      
+
       if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
         parent.style.position = 'relative';
       }
-    }
-
-    if (this.is_mobile && !this.params.mobile) {
-      return this.element;
     }
 
     // set play/mute controls wrap
@@ -497,7 +499,7 @@
       'autoplay': true,
       'muted': true,
       'loop': true,
-      'mobile': false,
+      'mobile': true,
   //    'load-background': true,
       'resolution': '16:9',
       'inline-styles': true,
@@ -691,7 +693,7 @@
       'autoplay': true,
       'muted': true,
       'loop': true,
-      'mobile': false,
+      'mobile': true,
       'resolution': '16:9',
       'inline-styles': true,
       'fit-box': false,
@@ -874,10 +876,6 @@
       if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
         parent.style.position = 'relative';
       }
-    }
-
-    if (this.is_mobile && !this.params.mobile) {
-      return this.element;
     }
 
     // set play/mute controls wrap

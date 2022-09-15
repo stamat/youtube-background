@@ -27,7 +27,7 @@ export function YoutubeBackground(elem, params, id, uid) {
     'autoplay': true,
     'muted': true,
     'loop': true,
-    'mobile': false,
+    'mobile': true,
     'load-background': true,
     'resolution': '16:9',
     'onStatusChange': function() {},
@@ -52,7 +52,15 @@ export function YoutubeBackground(elem, params, id, uid) {
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
+
     this.buildHTML();
+
+    console.log(this.is_mobile);
+
+    if (this.is_mobile && !this.params.mobile) {
+      return;
+    }
+
     this.injectPlayer();
 
 
@@ -81,7 +89,7 @@ export function YoutubeBackground(elem, params, id, uid) {
         actions: ['unmute', 'mute']
       });
     }
-  }
+  };
 
   this.__init__();
 }
@@ -116,6 +124,8 @@ YoutubeBackground.prototype.onVideoPlayerReady = function (event) {
     this.seekTo(this.params['start-at']);
     this.player.playVideo();
   }
+
+  this.iframe.style.opacity = 1;
 };
 
 YoutubeBackground.prototype.onVideoStateChange = function (event) {
@@ -128,10 +138,6 @@ YoutubeBackground.prototype.onVideoStateChange = function (event) {
     this.seekTo(this.params['start-at']);
     this.player.playVideo();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
-  }
-
-  if (event.data === 1) {
-    this.iframe.style.opacity = 1;
   }
 
   this.params["onStatusChange"](event);
@@ -244,14 +250,10 @@ YoutubeBackground.prototype.buildHTML = function () {
     for (let property in wrapper_styles) {
       this.element.style[property] = wrapper_styles[property];
     }
-    
+
     if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
       parent.style.position = 'relative';
     }
-  }
-
-  if (this.is_mobile && !this.params.mobile) {
-    return this.element;
   }
 
   // set play/mute controls wrap

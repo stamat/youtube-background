@@ -32,7 +32,7 @@ export function VideoBackground(elem, params, vid_data, uid) {
     'autoplay': true,
     'muted': true,
     'loop': true,
-    'mobile': false,
+    'mobile': true,
     'resolution': '16:9',
     'inline-styles': true,
     'fit-box': false,
@@ -215,10 +215,6 @@ VideoBackground.prototype.buildHTML = function () {
     if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
       parent.style.position = 'relative';
     }
-  }
-
-  if (this.is_mobile && !this.params.mobile) {
-    return this.element;
   }
 
   // set play/mute controls wrap

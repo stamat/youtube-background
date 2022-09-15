@@ -22,7 +22,7 @@ export function VimeoBackground(elem, params, id, uid) {
     'autoplay': true,
     'muted': true,
     'loop': true,
-    'mobile': false,
+    'mobile': true,
 //    'load-background': true,
     'resolution': '16:9',
     'inline-styles': true,
