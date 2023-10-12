@@ -1,0 +1,138 @@
+#!/usr/bin/env node
+
+/**
+ * This script is used to publish a new version of the package.
+ * It can automatically increment the patch version if no version is specified in the package.json and commit the changes.
+ * It can also automatically tag and push the tags.
+ * Using GH CLI, it can also create a release.
+ *
+ * Fucking awesome, right?
+ *
+ * With love, @stamat
+ */
+const readline = require('readline')
+const { exec } = require('child_process')
+const fs = require('fs')
+const path = require('path')
+const argVersion = process.argv[2]
+const packageJson = require(path.join(process.cwd(), './package.json'))
+
+function question(prompt) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  return new Promise((resolve) => {
+    rl.question(prompt, (answer) => {
+      rl.close()
+      resolve(answer)
+    })
+  })
+}
+
+function isValidVersion(version) {
+  return /^(\d+)\.(\d+)\.(\d+)(?:-([\w-]+(?:\.[\w-]+)*))?(?:\+([\w-]+(?:\.[\w-]+)*))?$/.test(version)
+}
+
+function incrementPatchVersion(version) {
+  const parts = version.split('.')
+  const patch = parseInt(parts[2]) + 1
+  return `${parts[0]}.${parts[1]}.${patch}`
+}
+
+function runPromise(child) {
+  child.stdout.on('data', (data) => {
+    console.log(data.toString())
+  })
+
+  child.stderr.on('data', (data) => {
+    console.log(data.toString())
+  })
+
+  return new Promise(function(resolve, reject) {
+    child.addListener('error', reject)
+    child.addListener('exit', resolve)
+  })
+}
+
+async function run(cmd, exitOnError = true) {
+  console.log(cmd)
+  try {
+    await runPromise(exec(cmd))
+  } catch (e) {
+    if (exitOnError) process.exit(1)
+  }
+}
+
+async function publish(version) {
+  packageJson.version = version
+  fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2))
+
+  await run('git add package.json')
+  await run(`git commit -m "Bump version to ${version}"`)
+
+  if (fs.existsSync(path.join(process.cwd(), 'script/build'))) {
+    await run('script/build')
+    await run('git add .')
+    await run(`git commit -m "Build version ${version}"`)
+  }
+
+  await run(`git tag v${version}`)
+  await run('git push')
+  await run('git push --tags')
+
+  const publish = await question('Do you want to publish the package? (y/n): ')
+  if (publish === 'y') {
+    let notesArg = ''
+    const notes = await question('Enter notes for the release (optional): ')
+    if (notes.trim() !== '') {
+      notesArg = ` --notes "${notes}"`
+    }
+    await run(`gh release create v${version} --title "v${version}"${notesArg} --generate-notes --latest`)
+    await run('npm publish')
+  } else {
+    await run('npm publish')
+  }
+}
+
+async function init() {
+  if (!packageJson.version) {
+    console.log('No version found in package.json')
+    process.exit(1)
+  }
+
+  if (argVersion && !isValidVersion(argVersion)) {
+    console.log('Invalid version: ', argVersion)
+    console.log('Current version: ', packageJson.version)
+    process.exit(1)
+  }
+
+  if (argVersion && packageJson.version === argVersion) {
+    console.log('Version is already ', argVersion)
+    process.exit(1)
+  }
+
+  if (!argVersion) {
+    console.log('Current version: ', packageJson.version)
+    const version = incrementPatchVersion(packageJson.version)
+    const answer = await question(`Do you want to increment the version to ${version}? (y/n) `)
+    if (answer === 'y') {
+      publish(version)
+    } else {
+      const desiredVersion = await question(`Enter the desired version: (or press enter to use ${packageJson.version})`)
+      if (desiredVersion.trim() === '') {
+        publish(packageJson.version)
+      } else {
+        if (!isValidVersion(desiredVersion)) {
+          console.log('Invalid version: ', desiredVersion)
+          process.exit(1)
+        }
+        publish(desiredVersion)
+      }
+    }
+  } else {
+    publish(argVersion)
+  }
+}
+init()
