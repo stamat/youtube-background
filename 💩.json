@@ -1,0 +1,24 @@
+{
+  "scripts": [{
+    "in": "src/main.js",
+    "out": "jquery.youtube-background.js",
+    "options": {
+      "sourcemap": true,
+      "minify": true,
+      "format": "iife",
+      "target": "es2019"
+    }
+  }],
+  "banner": "/* {{ name }} v{{ version }} | {{ homepage }} | {{ license }} License */",
+  "serve" : {
+    "port": 4040,
+    "base": "/"
+  },
+  "livereload": true,
+  "watch": [
+    "src"
+  ],
+  "includePaths": [
+    "node_modules"
+  ]
+}

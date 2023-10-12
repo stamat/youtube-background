@@ -182,9 +182,11 @@ Events bubble. If you go vanilla, you can get the video object via `event.detail
 
 ## Development
 
-Development setup uses **GULP with Rollup** to bundle ES modules into IIFE `jquery.youtube-background.js` and  `jquery.youtube-background.min.js`
+Development setup uses **POOPS bundler** to bundle ES modules into IIFE `jquery.youtube-background.js` and  `jquery.youtube-background.min.js`
 
-To install the required packages for running **GULP**, run:
+[POOPS](https://github.com/stamat/poops) is a simple bundler + static site builder that I've created, do give it a try and let me know what you think. It's still in early development, but it's already quite useful.
+
+To install the required package for running **POOPS**, run:
 
 ```
 npm install
@@ -193,15 +195,15 @@ npm install
 To run the server on `http://localhost:4040`, run:
 
 ```
-gulp
+npm run dev
 ```
 
-Code will automatically be packaged into IIFE while you develop.
+Code will automatically be packaged into IIFE while you develop, and the page will automatically reload on changes.
 
-To generate minified version of the code, run:
+To just build the code, without running the local server, run:
 
 ```
-gulp build --production
+npm run build
 ```
 
 ## todo
