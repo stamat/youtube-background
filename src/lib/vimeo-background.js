@@ -115,6 +115,7 @@ VimeoBackground.prototype.onVideoEnded = function (event) {
 VimeoBackground.prototype.onVideoProgress = function (event) {
   if (event.seconds >= this.params['end-at']) {
     this.seekTo(this.params['start-at']);
+    if (!this.params.loop) this.pause(); //TODO: this is not working as intended, we need centralized states
   }
 };
 

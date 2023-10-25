@@ -3637,6 +3637,8 @@
   VimeoBackground.prototype.onVideoProgress = function(event) {
     if (event.seconds >= this.params["end-at"]) {
       this.seekTo(this.params["start-at"]);
+      if (!this.params.loop)
+        this.pause();
     }
   };
   VimeoBackground.prototype.injectPlayer = function() {
