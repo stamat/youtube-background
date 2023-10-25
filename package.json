@@ -31,5 +31,8 @@
   "scripts": {
     "dev": "poops",
     "build": "poops -b"
+  },
+  "dependencies": {
+    "book-of-spells": "^1.0.10"
   }
 }

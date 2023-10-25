@@ -1,4 +1,5 @@
-import { isMobile, addClass, parseResolutionString, parseProperties } from './utils.js';
+import { addClass, parseResolutionString, parseProperties } from './utils.js';
+import { isMobile } from 'book-of-spells';
 
 export function VimeoBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();

@@ -1,4 +1,5 @@
-import { isMobile, addClass, hasClass, removeClass, parseProperties, parseResolutionString } from './utils.js';
+import { addClass, hasClass, removeClass, parseProperties, parseResolutionString } from './utils.js';
+import { isMobile } from 'book-of-spells';
 
 const tag = document.createElement('script');
 tag.src = "https://www.youtube.com/player_api";
