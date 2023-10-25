@@ -2,7 +2,7 @@ import { YoutubeBackground } from './youtube-background.js';
 import { VimeoBackground } from './vimeo-background.js';
 import { VideoBackground } from './video-background.js';
 //import { ActivityMonitor } from './activity-monitor.js';
-import { randomIntInclusive } from 'book-of-spells';
+import { randomIntInclusive, RE_VIDEO, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
 
 export function VideoBackgrounds(selector, params) {
   this.elements = selector;
@@ -13,9 +13,9 @@ export function VideoBackgrounds(selector, params) {
 
   this.index = {};
   this.re = {};
-  this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-  this.re.VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
-  this.re.VIDEO = /\/[^\/]+\.(mp4|ogg|ogv|ogm|webm|avi)\s?$/i;
+  this.re.YOUTUBE = RE_YOUTUBE;
+  this.re.VIMEO = RE_VIMEO;
+  this.re.VIDEO = RE_VIDEO;
 
   this.__init__ = function () {
     for (let i = 0; i < this.elements.length; i++) {
@@ -77,6 +77,7 @@ VideoBackgrounds.prototype.getVidID = function (link) {
   if (link !== undefined && link !== null) {
     for (let k in this.re) {
       const pts = link.match(this.re[k]);
+      console.log(pts)
 
       if (pts && pts.length) {
         this.re[k].lastIndex = 0;

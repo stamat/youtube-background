@@ -56,6 +56,11 @@
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+  // node_modules/book-of-spells/src/regex.mjs
+  var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+  var RE_VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
+  var RE_VIDEO = /(.*\/[^\/]+\.mp4|ogg|ogv|ogm|webm|avi)\s?$/i;
+
   // node_modules/book-of-spells/src/browser.mjs
   function isUserAgentMobile(str) {
     return /\b(BlackBerry|webOS|iPhone|IEMobile)\b/i.test(str) || /\b(Android|Windows Phone|iPad|iPod)\b/i.test(str);
@@ -588,7 +593,7 @@
     this.is_mobile = isMobile();
     this.element = elem;
     this.link = vid_data.link;
-    this.ext = vid_data.id;
+    this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
     this.uid = uid;
     this.player = null;
     this.buttons = {};
@@ -849,9 +854,9 @@
     }
     this.index = {};
     this.re = {};
-    this.re.YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-    this.re.VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
-    this.re.VIDEO = /\/[^\/]+\.(mp4|ogg|ogv|ogm|webm|avi)\s?$/i;
+    this.re.YOUTUBE = RE_YOUTUBE;
+    this.re.VIMEO = RE_VIMEO;
+    this.re.VIDEO = RE_VIDEO;
     this.__init__ = function() {
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
@@ -905,6 +910,7 @@
     if (link !== void 0 && link !== null) {
       for (let k in this.re) {
         const pts = link.match(this.re[k]);
+        console.log(pts);
         if (pts && pts.length) {
           this.re[k].lastIndex = 0;
           return {

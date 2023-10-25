@@ -6,7 +6,7 @@ export function VideoBackground(elem, params, vid_data, uid) {
 
   this.element = elem;
   this.link = vid_data.link;
-  this.ext = vid_data.id;
+  this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
   this.uid = uid;
   this.player = null;
   this.buttons = {};
