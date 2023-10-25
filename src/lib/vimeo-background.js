@@ -97,7 +97,7 @@ VimeoBackground.prototype.seekTo = function (time) {
 
 VimeoBackground.prototype.onVideoPlayerReady = function (event) {
   this.seekTo(this.params['start-at']);
-  if (this.params.autoplay && this.params['always-play']) {
+  if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
     this.player.play();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
@@ -128,7 +128,7 @@ VimeoBackground.prototype.injectPlayer = function () {
     src += '&muted=1';
   }
 
-  if (this.params.autoplay) {
+  if (this.params.autoplay && this.params['always-play']) {
     src += '&autoplay=1';
   }
 

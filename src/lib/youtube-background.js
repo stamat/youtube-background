@@ -15,6 +15,7 @@ export function YoutubeBackground(elem, params, id, uid) {
   this.element.setAttribute('data-vbg-uid', uid);
   this.player = null;
   this.buttons = {};
+  this.isIntersecting = false;
 
   this.state = {};
   this.state.play = false;
@@ -123,7 +124,7 @@ YoutubeBackground.prototype.seekTo = function (seconds) {
 YoutubeBackground.prototype.onVideoPlayerReady = function (event) {
   this.seekTo(this.params['start-at']);
 
-  if (this.params.autoplay && this.params['always-play']) {
+  if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
     this.player.playVideo();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
@@ -156,7 +157,7 @@ YoutubeBackground.prototype.injectPlayer = function () {
     src += '&mute=1';
   }
 
-  if (this.params.autoplay) {
+  if (this.params.autoplay && this.params['always-play']) {
     src += '&autoplay=1';
   }
 

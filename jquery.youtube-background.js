@@ -171,6 +171,7 @@
     this.element.setAttribute("data-vbg-uid", uid);
     this.player = null;
     this.buttons = {};
+    this.isIntersecting = false;
     this.state = {};
     this.state.play = false;
     this.state.mute = false;
@@ -263,7 +264,7 @@
   };
   YoutubeBackground.prototype.onVideoPlayerReady = function(event) {
     this.seekTo(this.params["start-at"]);
-    if (this.params.autoplay && this.params["always-play"]) {
+    if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
       this.player.playVideo();
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
@@ -289,7 +290,7 @@
     if (this.params.muted) {
       src += "&mute=1";
     }
-    if (this.params.autoplay) {
+    if (this.params.autoplay && this.params["always-play"]) {
       src += "&autoplay=1";
     }
     if (this.params.loop) {
@@ -3621,7 +3622,7 @@
   };
   VimeoBackground.prototype.onVideoPlayerReady = function(event) {
     this.seekTo(this.params["start-at"]);
-    if (this.params.autoplay && this.params["always-play"]) {
+    if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
       this.player.play();
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
@@ -3646,7 +3647,7 @@
     if (this.params.muted) {
       src += "&muted=1";
     }
-    if (this.params.autoplay) {
+    if (this.params.autoplay && this.params["always-play"]) {
       src += "&autoplay=1";
     }
     if (this.params.loop) {
@@ -3902,7 +3903,7 @@
   VideoBackground.prototype.injectPlayer = function() {
     this.player = document.createElement("video");
     this.player.muted = this.params.muted;
-    this.player.autoplay = this.params.autoplay && this.params["always-play"];
+    this.player.autoplay = this.params.autoplay && (this.params["always-play"] || this.isIntersecting);
     this.player.loop = this.params.loop;
     this.player.playsinline = true;
     this.player.setAttribute("id", this.uid);
@@ -4061,10 +4062,14 @@
       this.intersectionObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           const uid = entry.target.getAttribute("data-vbg-uid");
-          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting && self2.index[uid].player) {
-            self2.index[uid].play();
+          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
+            self2.index[uid].isIntersecting = true;
+            if (self2.index[uid].player)
+              self2.index[uid].play();
           } else {
-            self2.index[uid].pause();
+            self2.index[uid].isIntersecting = false;
+            if (self2.index[uid].player)
+              self2.index[uid].pause();
           }
         });
       });

@@ -105,7 +105,7 @@ VideoBackground.prototype.seekTo = function (seconds) {
 VideoBackground.prototype.injectPlayer = function () {
   this.player = document.createElement('video');
   this.player.muted = this.params.muted;
-  this.player.autoplay = this.params.autoplay && this.params['always-play'];
+  this.player.autoplay = this.params.autoplay && (this.params['always-play'] || this.isIntersecting);
   this.player.loop = this.params.loop;
   this.player.playsinline = true;
 

@@ -24,10 +24,12 @@ export function VideoBackgrounds(selector, params) {
       entries.forEach(function (entry) {
         const uid = entry.target.getAttribute('data-vbg-uid');
 
-        if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting && self.index[uid].player) {
-          self.index[uid].play();
+        if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
+          self.index[uid].isIntersecting = true;
+          if (self.index[uid].player) self.index[uid].play();
         } else {
-          self.index[uid].pause();
+          self.index[uid].isIntersecting = false;
+          if (self.index[uid].player) self.index[uid].pause();
         }
       });
     });       
