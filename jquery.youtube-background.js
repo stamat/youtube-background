@@ -3573,7 +3573,6 @@
         return;
       }
       this.params = parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
-
       if (this.params.pause) {
         this.params["play-button"] = this.params.pause;
       }
@@ -3753,7 +3752,6 @@
     this.player = new player_es_default(this.iframe);
     this.player.on("loaded", this.onVideoPlayerReady.bind(this));
     this.player.on("ended", this.onVideoEnded.bind(this));
-
     if (this.params["end-at"] > 0)
       this.player.on("progress", this.onVideoProgress.bind(this));
   };

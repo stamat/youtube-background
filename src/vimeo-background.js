@@ -41,7 +41,7 @@ export function VimeoBackground(elem, params, id, uid) {
     }
 
     this.params = parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
-    console.log(this.params)
+    
     //pause deprecated
     if (this.params.pause) {
       this.params['play-button'] = this.params.pause;
@@ -261,7 +261,7 @@ VimeoBackground.prototype.injectPlayer = function () {
   this.player = new Player(this.iframe);
   this.player.on('loaded', this.onVideoPlayerReady.bind(this));
   this.player.on('ended', this.onVideoEnded.bind(this));
-  console.log(this.params)
+  
   if (this.params['end-at'] > 0) this.player.on('progress', this.onVideoProgress.bind(this));
 };
 
