@@ -92,68 +92,6 @@ VimeoBackground.prototype.seekTo = function (time) {
   this.player.setCurrentTime(time);
 };
 
-VimeoBackground.prototype.play = function () {
-  //TODO: solve this with ARIA toggle states. P.S. warning repetitive code!!!
-  if (this.buttons.hasOwnProperty('play')) {
-    const btn_obj = this.buttons.play;
-    removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-  }
-
-  if (this.player) {
-    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
-      this.seekTo(this.params['start-at']);
-    }
-    this.player.play();
-    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
-  }
-};
-
-VimeoBackground.prototype.pause = function () {
-  //TODO: solve this with ARIA toggle states
-  if (this.buttons.hasOwnProperty('play')) {
-    const btn_obj = this.buttons.play;
-    addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-  }
-
-  if (this.player) {
-    this.player.pause();
-    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
-  }
-};
-
-VimeoBackground.prototype.unmute = function () {
-  //TODO: solve this with ARIA toggle states
-  if (this.buttons.hasOwnProperty('mute')) {
-    const btn_obj = this.buttons.mute;
-    removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-  }
-
-  if (this.player) {
-    this.player.setMuted(false);
-    this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
-  }
-};
-
-VimeoBackground.prototype.mute = function () {
-  //TODO: solve this with ARIA toggle states
-  if (this.buttons.hasOwnProperty('mute')) {
-    const btn_obj = this.buttons.mute;
-    addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-  }
-
-  if (this.player) {
-    this.player.setMuted(true);
-    this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
-  }
-};
 
 VimeoBackground.prototype.onVideoPlayerReady = function (event) {
   if (this.params.autoplay) {
@@ -327,4 +265,67 @@ VimeoBackground.prototype.buildHTML = function () {
   }
 
   return this.element;
+};
+
+VimeoBackground.prototype.play = function () {
+  //TODO: solve this with ARIA toggle states. P.S. warning repetitive code!!!
+  if (this.buttons.hasOwnProperty('play')) {
+    const btn_obj = this.buttons.play;
+    removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+  }
+
+  if (this.player) {
+    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
+      this.seekTo(this.params['start-at']);
+    }
+    this.player.play();
+    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
+  }
+};
+
+VimeoBackground.prototype.pause = function () {
+  //TODO: solve this with ARIA toggle states
+  if (this.buttons.hasOwnProperty('play')) {
+    const btn_obj = this.buttons.play;
+    addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+  }
+
+  if (this.player) {
+    this.player.pause();
+    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
+  }
+};
+
+VimeoBackground.prototype.unmute = function () {
+  //TODO: solve this with ARIA toggle states
+  if (this.buttons.hasOwnProperty('mute')) {
+    const btn_obj = this.buttons.mute;
+    removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+  }
+
+  if (this.player) {
+    this.player.setMuted(false);
+    this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
+  }
+};
+
+VimeoBackground.prototype.mute = function () {
+  //TODO: solve this with ARIA toggle states
+  if (this.buttons.hasOwnProperty('mute')) {
+    const btn_obj = this.buttons.mute;
+    addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
+    removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
+    addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
+  }
+
+  if (this.player) {
+    this.player.setMuted(true);
+    this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
+  }
 };
