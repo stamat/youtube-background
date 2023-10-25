@@ -56,8 +56,6 @@ export function YoutubeBackground(elem, params, id, uid) {
 
     this.buildHTML();
 
-    console.log(this.is_mobile);
-
     if (this.is_mobile && !this.params.mobile) {
       return;
     }

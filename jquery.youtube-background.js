@@ -172,7 +172,6 @@
       this.state.playing = this.params.autoplay;
       this.state.muted = this.params.muted;
       this.buildHTML();
-      console.log(this.is_mobile);
       if (this.is_mobile && !this.params.mobile) {
         return;
       }
