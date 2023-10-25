@@ -1,12 +1,12 @@
-import { addClass, hasClass, removeClass, parseResolutionString, parseProperties, generateActionButton } from './utils.js';
+import { addClass, removeClass, parseResolutionString, parseProperties, generateActionButton } from './utils.js';
 import { isMobile } from 'book-of-spells';
+import Player from '@vimeo/player';
 
-export function VideoBackground(elem, params, vid_data, uid) {
+export function VimeoBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();
 
   this.element = elem;
-  this.link = vid_data.link;
-  this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
+  this.vid = id;
   this.uid = uid;
   this.element.setAttribute('data-vbg-uid', uid);
   this.player = null;
@@ -18,15 +18,6 @@ export function VideoBackground(elem, params, vid_data, uid) {
 
   this.params = {};
 
-  const MIME_MAP = {
-    'ogv' : 'video/ogg',
-    'ogm' : 'video/ogg',
-    'ogg' : 'video/ogg',
-    'avi' : 'video/avi',
-    'mp4' : 'video/mp4',
-    'webm' : 'video/webm'
-  };
-
   const DEFAULTS = {
     'pause': false, //deprecated
     'play-button': false,
@@ -35,23 +26,24 @@ export function VideoBackground(elem, params, vid_data, uid) {
     'muted': true,
     'loop': true,
     'mobile': true,
+//    'load-background': true,
     'resolution': '16:9',
     'inline-styles': true,
     'fit-box': false,
     'offset': 200,
-//    'start-at': 0,
-//    'end-at': 0,
+    'start-at': 0,
+    'end-at': 0,
     'poster': null,
     'always-play': false
   };
 
   this.__init__ = function () {
-    if (!this.link || !this.ext) {
+    if (!this.vid) {
       return;
     }
 
-    this.mime = MIME_MAP[this.ext.toLowerCase()];
     this.params = parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
+    
     //pause deprecated
     if (this.params.pause) {
       this.params['play-button'] = this.params.pause;
@@ -61,8 +53,12 @@ export function VideoBackground(elem, params, vid_data, uid) {
     this.state.muted = this.params.muted;
 
     this.buildHTML();
-    this.injectPlayer();
 
+    if (this.is_mobile && !this.params.mobile) {
+      return;
+    }
+
+    this.injectPlayer();
 
     if (this.params['play-button']) {
       generateActionButton(this, {
@@ -89,83 +85,105 @@ export function VideoBackground(elem, params, vid_data, uid) {
         actions: ['unmute', 'mute']
       });
     }
-  }
+  };
 
   this.__init__();
 }
 
-VideoBackground.prototype.seekTo = function (seconds) {
-  if (this.player.hasOwnProperty('fastSeek')) {
-    this.player.fastSeek(seconds);
-    return;
+VimeoBackground.prototype.seekTo = function (time) {
+  this.player.setCurrentTime(time);
+};
+
+
+VimeoBackground.prototype.onVideoPlayerReady = function (event) {
+  this.seekTo(this.params['start-at']);
+  if (this.params.autoplay && this.params['always-play']) {
+    this.player.play();
+    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
-  this.player.currentTime = seconds;
-}
 
-VideoBackground.prototype.injectPlayer = function () {
-  this.player = document.createElement('video');
-  this.player.muted = this.params.muted;
-  this.player.autoplay = this.params.autoplay && this.params['always-play'];
-  this.player.loop = this.params.loop;
-  this.player.playsinline = true;
+  this.iframe.style.opacity = 1;
+};
 
-  this.player.setAttribute('id', this.uid)
+VimeoBackground.prototype.onVideoEnded = function (event) {
+  if (this.params.loop) {
+    this.seekTo(this.params['start-at']);
+    this.player.play();
+  }
+};
+
+VimeoBackground.prototype.onVideoProgress = function (event) {
+  if (event.seconds >= this.params['end-at']) {
+    this.seekTo(this.params['start-at']);
+  }
+};
+
+VimeoBackground.prototype.injectPlayer = function () {
+  this.iframe = document.createElement('iframe');
+  this.iframe.setAttribute('frameborder', 0);
+  this.iframe.setAttribute('allow', ['autoplay; mute']);
+  let src = 'https://player.vimeo.com/video/'+this.vid+'?background=1&controls=0';
+
+  if (this.params.muted) {
+    src += '&muted=1';
+  }
+
+  if (this.params.autoplay) {
+    src += '&autoplay=1';
+  }
+
+  if (this.params.loop) {
+    src += '&loop=1&autopause=0';
+  }
+
+  //WARN❗️ this is a hash not a query param
+  if (this.params['start-at']) {
+    src += '#t=' + this.params['start-at'] + 's';
+  }
+
+  this.iframe.src = src;
+
+  if (this.uid) {
+    this.iframe.id = this.uid;
+  }
+
+  if (this.params['load-background'] || this.params['poster']) {
+    //if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+    if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
+    wrapper_styles['background-size'] = 'cover';
+    wrapper_styles['background-repeat'] = 'no-repeat';
+    wrapper_styles['background-position'] = 'center';
+  }
 
   if (this.params['inline-styles']) {
-    this.player.style.top = '50%';
-    this.player.style.left = '50%';
-    this.player.style.transform = 'translateX(-50%) translateY(-50%)';
-    this.player.style.position = 'absolute';
-    this.player.style.opacity = 0;
-
-    this.player.addEventListener('canplay', (e) => {
-      e.target.style.opacity = 1;
-    });
+    this.iframe.style.top = '50%';
+    this.iframe.style.left = '50%';
+    this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
+    this.iframe.style.position = 'absolute';
+    this.iframe.style.opacity = 1;
   }
 
-  const self = this;
-  /*
-  this.player.addEventListener('canplay', (e) => {
-    if (self.params['start-at'] && self.params.autoplay) {
-      self.seekTo(self.params['start-at']);
-    }
-  });
-
-  this.player.addEventListener('canplaythrough', (e) => {
-    if (self.params['end-at'] > 0) {
-    self.player.addEventListener('timeupdate', (e) => {
-      if (self.params['end-at'] >= self.player.currentTime) {
-        self.seekTo(self.params['start-at']);
-      }
-    });
-  }
-  });
-  */
-
-  const source = document.createElement('source');
-  source.setAttribute('src', this.link);
-  source.setAttribute('type', this.mime);
-  this.player.appendChild(source);
-  this.element.appendChild(this.player);
+  this.element.appendChild(this.iframe);
 
   if (this.params['fit-box']) {
-    this.player.style.width = '100%';
-    this.player.style.height = '100%';
+    this.iframe.style.width = '100%';
+    this.iframe.style.height = '100%';
   } else {
-    //TODO❗️: maybe a spacer or at least add requestAnimationFrame
-    function onResize() {
-      const h = self.player.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
-      const w = self.player.parentNode.offsetWidth + self.params.offset;
+    const self = this;
+
+    const onResize = function() {
+      const h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
+      const w = self.iframe.parentNode.offsetWidth + self.params.offset;
       const res = self.params.resolution_mod;
 
       if (res > w/h) {
-        self.player.style.width = h*res + 'px';
-        self.player.style.height = h + 'px';
+        self.iframe.style.width = h*res + 'px';
+        self.iframe.style.height = h + 'px';
       } else {
-        self.player.style.width = w + 'px';
-        self.player.style.height = w/res + 'px';
+        self.iframe.style.width = w + 'px';
+        self.iframe.style.height = w/res + 'px';
       }
-    }
+    };
 
     if (window.hasOwnProperty('ResizeObserver')) {
       const resize_observer = new ResizeObserver(() => {
@@ -179,12 +197,18 @@ VideoBackground.prototype.injectPlayer = function () {
     }
     onResize();
   }
+
+  this.player = new Player(this.iframe);
+  this.player.on('loaded', this.onVideoPlayerReady.bind(this));
+  this.player.on('ended', this.onVideoEnded.bind(this));
+  
+  if (this.params['end-at'] > 0) this.player.on('progress', this.onVideoProgress.bind(this));
 };
 
-VideoBackground.prototype.buildHTML = function () {
+VimeoBackground.prototype.buildHTML = function () {
   const parent = this.element.parentNode;
   // wrap
-  addClass(this.element, 'video-background');
+  addClass(this.element, 'youtube-background');
 
   //set css rules
   const wrapper_styles = {
@@ -199,12 +223,20 @@ VideoBackground.prototype.buildHTML = function () {
     "right": 0
   };
 
-  if (!this.params['mute-button']) {
-    wrapper_styles["pointer-events"] = "none" // avoid right mouse click popup menu
+  if (this.params['load-background'] || this.params['poster']) {
+    //if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+    if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
+    wrapper_styles['background-size'] = 'cover';
+    wrapper_styles['background-repeat'] = 'no-repeat';
+    wrapper_styles['background-position'] = 'center';
   }
 
-  if (this.params['load-background'] || this.params['poster']) {
-    if (this.params['poster']) wrapper_styles['background-image'] = `url('${this.params['poster']}')`;
+  if (!this.params['mute-button']) {
+    wrapper_styles["pointer-events"] = "none"; // avoid right mouse click popup menu
+  }
+
+  if (this.params['load-background']) {
+    //TODO: wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.vid+'/maxresdefault.jpg)';
     wrapper_styles['background-size'] = 'cover';
     wrapper_styles['background-repeat'] = 'no-repeat';
     wrapper_styles['background-position'] = 'center';
@@ -237,7 +269,7 @@ VideoBackground.prototype.buildHTML = function () {
   return this.element;
 };
 
-VideoBackground.prototype.play = function () {
+VimeoBackground.prototype.play = function () {
   //TODO: solve this with ARIA toggle states. P.S. warning repetitive code!!!
   if (this.buttons.hasOwnProperty('play')) {
     const btn_obj = this.buttons.play;
@@ -247,15 +279,15 @@ VideoBackground.prototype.play = function () {
   }
 
   if (this.player) {
-    /* if (this.params['start-at'] && this.player.currentTime < this.params['start-at'] ) {
+    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
       this.seekTo(this.params['start-at']);
-    } */
+    }
     this.player.play();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
-}
+};
 
-VideoBackground.prototype.pause = function () {
+VimeoBackground.prototype.pause = function () {
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('play')) {
     const btn_obj = this.buttons.play;
@@ -268,9 +300,9 @@ VideoBackground.prototype.pause = function () {
     this.player.pause();
     this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
   }
-}
+};
 
-VideoBackground.prototype.unmute = function () {
+VimeoBackground.prototype.unmute = function () {
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('mute')) {
     const btn_obj = this.buttons.mute;
@@ -280,12 +312,12 @@ VideoBackground.prototype.unmute = function () {
   }
 
   if (this.player) {
-    this.player.muted = false;
+    this.player.setMuted(false);
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
   }
-}
+};
 
-VideoBackground.prototype.mute = function () {
+VimeoBackground.prototype.mute = function () {
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('mute')) {
     const btn_obj = this.buttons.mute;
@@ -295,7 +327,7 @@ VideoBackground.prototype.mute = function () {
   }
 
   if (this.player) {
-    this.player.muted = true;
+    this.player.setMuted(true);
     this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
   }
-}
+};

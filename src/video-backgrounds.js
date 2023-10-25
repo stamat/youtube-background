@@ -1,7 +1,7 @@
-import { YoutubeBackground } from './youtube-background.js';
-import { VimeoBackground } from './vimeo-background.js';
-import { VideoBackground } from './video-background.js';
-//import { ActivityMonitor } from './activity-monitor.js';
+import { YoutubeBackground } from './lib/youtube-background.js';
+import { VimeoBackground } from './lib/vimeo-background.js';
+import { VideoBackground } from './lib/video-background.js';
+//import { ActivityMonitor } from './lib/activity-monitor.js';
 import { randomIntInclusive, RE_VIDEO, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
 
 export function VideoBackgrounds(selector, params) {

@@ -1,4 +1,4 @@
-import { addClass, hasClass, removeClass, parseProperties, parseResolutionString, generateActionButton } from './utils.js';
+import { addClass, removeClass, parseProperties, parseResolutionString, generateActionButton } from './utils.js';
 import { isMobile } from 'book-of-spells';
 
 const tag = document.createElement('script');

@@ -1,4 +1,4 @@
-/* youtube-background v1.0.16 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.15 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // node_modules/book-of-spells/src/helpers.mjs
   function stringToBoolean(str) {
@@ -75,7 +75,7 @@
     return isUserAgentMobile(navigator.userAgent);
   }
 
-  // src/utils.js
+  // src/lib/utils.js
   function hasClass(element, className) {
     return element.classList.contains(className);
   }
@@ -158,7 +158,7 @@
     obj.controls_element.appendChild(btn);
   }
 
-  // src/youtube-background.js
+  // src/lib/youtube-background.js
   var tag = document.createElement("script");
   tag.src = "https://www.youtube.com/player_api";
   var firstScriptTag = document.getElementsByTagName("script")[0];
@@ -3541,7 +3541,7 @@
   }
   var player_es_default = Player;
 
-  // src/vimeo-background.js
+  // src/lib/vimeo-background.js
   function VimeoBackground(elem, params, id, uid) {
     this.is_mobile = isMobile();
     this.element = elem;
@@ -3811,7 +3811,7 @@
     }
   };
 
-  // src/video-background.js
+  // src/lib/video-background.js
   function VideoBackground(elem, params, vid_data, uid) {
     this.is_mobile = isMobile();
     this.element = elem;
