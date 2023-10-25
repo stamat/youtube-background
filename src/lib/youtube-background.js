@@ -97,7 +97,7 @@ export function YoutubeBackground(elem, params, id, uid) {
 
 YoutubeBackground.prototype.initYTPlayer = function () {
   const self = this;
-  if (window.hasOwnProperty('YT')) {
+  if (window.hasOwnProperty('YT') && this.player === null) {
     this.player = new YT.Player(this.uid, {
       events: {
         'onReady': function(event) {

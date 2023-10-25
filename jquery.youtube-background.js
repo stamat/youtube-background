@@ -241,7 +241,7 @@
   }
   YoutubeBackground.prototype.initYTPlayer = function() {
     const self2 = this;
-    if (window.hasOwnProperty("YT")) {
+    if (window.hasOwnProperty("YT") && this.player === null) {
       this.player = new YT.Player(this.uid, {
         events: {
           "onReady": function(event) {
