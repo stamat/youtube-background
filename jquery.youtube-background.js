@@ -4070,37 +4070,40 @@
       });
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
-        const link = element.getAttribute("data-youtube") || element.getAttribute("data-vbg");
-        const vid_data = this.getVidID(link);
-        if (!vid_data) {
-          continue;
-        }
-        const uid = this.generateUID(vid_data.id);
-        if (!uid) {
-          continue;
-        }
-        switch (vid_data.type) {
-          case "YOUTUBE":
-            const yb = new YoutubeBackground(element, params, vid_data.id, uid);
-            this.index[uid] = yb;
-            break;
-          case "VIMEO":
-            const vm = new VimeoBackground(element, params, vid_data.id, uid);
-            this.index[uid] = vm;
-            break;
-          case "VIDEO":
-            const vid = new VideoBackground(element, params, vid_data, uid);
-            this.index[uid] = vid;
-            break;
-        }
-        if (!this.index[uid].params["always-play"]) {
-          this.intersectionObserver.observe(this.index[uid].element);
-        }
+        this.add(element, params);
       }
       this.initYTPlayers();
     };
     this.__init__();
   }
+  VideoBackgrounds.prototype.add = function(element, params) {
+    const link = element.getAttribute("data-youtube") || element.getAttribute("data-vbg");
+    const vid_data = this.getVidID(link);
+    if (!vid_data) {
+      return;
+    }
+    const uid = this.generateUID(vid_data.id);
+    if (!uid) {
+      return;
+    }
+    switch (vid_data.type) {
+      case "YOUTUBE":
+        const yb = new YoutubeBackground(element, params, vid_data.id, uid);
+        this.index[uid] = yb;
+        break;
+      case "VIMEO":
+        const vm = new VimeoBackground(element, params, vid_data.id, uid);
+        this.index[uid] = vm;
+        break;
+      case "VIDEO":
+        const vid = new VideoBackground(element, params, vid_data, uid);
+        this.index[uid] = vid;
+        break;
+    }
+    if (!this.index[uid].params["always-play"]) {
+      this.intersectionObserver.observe(this.index[uid].element);
+    }
+  };
   VideoBackgrounds.prototype.getVidID = function(link) {
     if (link !== void 0 && link !== null) {
       for (let k in this.re) {
