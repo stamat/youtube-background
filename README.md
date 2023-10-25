@@ -212,15 +212,4 @@ To just build the code, without running the local server, run:
 npm run build
 ```
 
-## todo
-- [x] Autoplay property
-- [x] Mute property and button #4
-- [x] Add another wrapper so video can fade in when loaded
-- [x] Add play-pause, mute-unmute events
-- [x] Test the execution order
-- [x] Refactor the code to provide foundation for unified solution from multiple providers and sources called video-background
-- [x] https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
-- [ ] Pause and mute on inactivity option - Play only when in viewport if IntersectionObserver available, also can be toggled as an option
-- [ ] Perform final tests on BrowserStack and comment the code
-
 THE END.
