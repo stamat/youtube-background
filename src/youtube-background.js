@@ -12,6 +12,7 @@ export function YoutubeBackground(elem, params, id, uid) {
   this.element = elem;
   this.ytid = id;
   this.uid = uid;
+  this.element.setAttribute('data-vbg-uid', uid);
   this.player = null;
   this.buttons = {};
 

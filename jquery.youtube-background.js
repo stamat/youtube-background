@@ -168,6 +168,7 @@
     this.element = elem;
     this.ytid = id;
     this.uid = uid;
+    this.element.setAttribute("data-vbg-uid", uid);
     this.player = null;
     this.buttons = {};
     this.state = {};
@@ -3544,6 +3545,7 @@
     this.element = elem;
     this.vid = id;
     this.uid = uid;
+    this.element.setAttribute("data-vbg-uid", uid);
     this.player = null;
     this.buttons = {};
     this.state = {};
@@ -3813,6 +3815,7 @@
     this.link = vid_data.link;
     this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
     this.uid = uid;
+    this.element.setAttribute("data-vbg-uid", uid);
     this.player = null;
     this.buttons = {};
     this.state = {};
@@ -4050,6 +4053,17 @@
     this.re.VIMEO = RE_VIMEO;
     this.re.VIDEO = RE_VIDEO;
     this.__init__ = function() {
+      const self2 = this;
+      this.intersectionObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          const uid = entry.target.getAttribute("data-vbg-uid");
+          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
+            self2.index[uid].play();
+          } else {
+            self2.index[uid].pause();
+          }
+        });
+      });
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         const link = element.getAttribute("data-youtube") || element.getAttribute("data-vbg");
@@ -4075,8 +4089,8 @@
             this.index[uid] = vid;
             break;
         }
+        this.intersectionObserver.observe(this.index[uid].element);
       }
-      var self2 = this;
       this.initYTPlayers(
         /*function() {
           //TODO: FIX!

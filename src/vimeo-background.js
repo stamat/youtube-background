@@ -8,6 +8,7 @@ export function VimeoBackground(elem, params, id, uid) {
   this.element = elem;
   this.vid = id;
   this.uid = uid;
+  this.element.setAttribute('data-vbg-uid', uid);
   this.player = null;
   this.buttons = {};
 

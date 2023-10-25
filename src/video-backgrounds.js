@@ -18,6 +18,20 @@ export function VideoBackgrounds(selector, params) {
   this.re.VIDEO = RE_VIDEO;
 
   this.__init__ = function () {
+    const self = this;
+
+    this.intersectionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        const uid = entry.target.getAttribute('data-vbg-uid');
+
+        if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
+          self.index[uid].play();
+        } else {
+          self.index[uid].pause();
+        }
+      });
+    });
+
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
 
@@ -48,9 +62,9 @@ export function VideoBackgrounds(selector, params) {
           this.index[uid] = vid;
           break;
       }
-    }
 
-    var self = this;
+      this.intersectionObserver.observe(this.index[uid].element);
+    }
 
     this.initYTPlayers(/*function() {
       //TODO: FIX!
