@@ -46,6 +46,15 @@
   function isArray(o) {
     return Array.isArray(o);
   }
+  function randomIntInclusive(min, max) {
+    if (min > max)
+      [min, max] = [max, min];
+    if (min === max)
+      return min;
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
 
   // node_modules/book-of-spells/src/browser.mjs
   function isUserAgentMobile(str) {
@@ -72,11 +81,6 @@
   function removeClass(element, classNames) {
     const classes = classNames.split(" ");
     element.classList.remove(...classes);
-  }
-  function getRandomIntInclusive(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
   function parseResolutionString(res) {
     const pts = res.split(/\s?:\s?/i);
@@ -915,9 +919,9 @@
     return null;
   };
   VideoBackgrounds.prototype.generateUID = function(pref) {
-    let uid = pref + "-" + getRandomIntInclusive(0, 9999);
+    let uid = pref + "-" + randomIntInclusive(0, 9999);
     while (this.index.hasOwnProperty(uid)) {
-      uid = pref + "-" + getRandomIntInclusive(0, 9999);
+      uid = pref + "-" + randomIntInclusive(0, 9999);
     }
     return uid;
   };

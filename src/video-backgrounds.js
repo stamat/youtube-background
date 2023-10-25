@@ -2,7 +2,7 @@ import { YoutubeBackground } from './youtube-background.js';
 import { VimeoBackground } from './vimeo-background.js';
 import { VideoBackground } from './video-background.js';
 //import { ActivityMonitor } from './activity-monitor.js';
-import { getRandomIntInclusive } from './utils.js';
+import { randomIntInclusive } from 'book-of-spells';
 
 export function VideoBackgrounds(selector, params) {
   this.elements = selector;
@@ -96,9 +96,9 @@ VideoBackgrounds.prototype.getVidID = function (link) {
 
 VideoBackgrounds.prototype.generateUID = function (pref) {
   //index the instance
-  let uid = pref +'-'+ getRandomIntInclusive(0, 9999);
+  let uid = pref +'-'+ randomIntInclusive(0, 9999);
   while (this.index.hasOwnProperty(uid)) {
-    uid = pref +'-'+ getRandomIntInclusive(0, 9999);
+    uid = pref +'-'+ randomIntInclusive(0, 9999);
   }
 
   return uid;

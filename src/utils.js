@@ -18,12 +18,6 @@ export function toogleClass(element, className) {
   element.classList.toggle(className);
 }
 
-export function getRandomIntInclusive(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
-}
-
 export function parseResolutionString(res) {
   const pts = res.split(/\s?:\s?/i);
   const DEFAULT_RESOLUTION = 16/9;

@@ -33,6 +33,6 @@
     "build": "poops -b"
   },
   "dependencies": {
-    "book-of-spells": "^1.0.10"
+    "book-of-spells": "^1.0.11"
   }
 }
