@@ -24,7 +24,7 @@ export function VideoBackgrounds(selector, params) {
       entries.forEach(function (entry) {
         const uid = entry.target.getAttribute('data-vbg-uid');
 
-        if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
+        if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting && self.index[uid].player) {
           self.index[uid].play();
         } else {
           self.index[uid].pause();
@@ -63,25 +63,12 @@ export function VideoBackgrounds(selector, params) {
           break;
       }
 
-      this.intersectionObserver.observe(this.index[uid].element);
+      if (!this.index[uid].params['always-play']) {
+        this.intersectionObserver.observe(this.index[uid].element);
+      }
     }
 
-    this.initYTPlayers(/*function() {
-      //TODO: FIX!
-      if (params &&
-        (params.hasOwnProperty('activity_timeout')
-          || params.hasOwnProperty('inactivity_timeout'))) {
-        this.activity_monitor = new ActivityMonitor(function () {
-            self.playVideos();
-          }, function() {
-            self.pauseVideos();
-          },
-          params ? params.activity_timeout : null,
-          params ? params.inactivity_timeout : null,
-          ['mousemove', 'scroll']
-        );
-      }
-    }*/);
+    this.initYTPlayers();
   };
 
   this.__init__();

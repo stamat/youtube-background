@@ -38,7 +38,8 @@ export function YoutubeBackground(elem, params, id, uid) {
     'offset': 200,
     'start-at': 0,
     'end-at': 0,
-    'poster': null
+    'poster': null,
+    'always-play': false
   };
 
   this.__init__ = function () {
@@ -120,9 +121,11 @@ YoutubeBackground.prototype.seekTo = function (seconds) {
 }
 
 YoutubeBackground.prototype.onVideoPlayerReady = function (event) {
-  if (this.params.autoplay) {
-    this.seekTo(this.params['start-at']);
+  this.seekTo(this.params['start-at']);
+
+  if (this.params.autoplay && this.params['always-play']) {
     this.player.playVideo();
+    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
 
   this.iframe.style.opacity = 1;

@@ -193,7 +193,8 @@
       "offset": 200,
       "start-at": 0,
       "end-at": 0,
-      "poster": null
+      "poster": null,
+      "always-play": false
     };
     this.__init__ = function() {
       if (!this.ytid) {
@@ -261,9 +262,10 @@
     }
   };
   YoutubeBackground.prototype.onVideoPlayerReady = function(event) {
-    if (this.params.autoplay) {
-      this.seekTo(this.params["start-at"]);
+    this.seekTo(this.params["start-at"]);
+    if (this.params.autoplay && this.params["always-play"]) {
       this.player.playVideo();
+      this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
     this.iframe.style.opacity = 1;
   };
@@ -3568,7 +3570,8 @@
       "offset": 200,
       "start-at": 0,
       "end-at": 0,
-      "poster": null
+      "poster": null,
+      "always-play": false
     };
     this.__init__ = function() {
       if (!this.vid) {
@@ -3617,8 +3620,8 @@
     this.player.setCurrentTime(time);
   };
   VimeoBackground.prototype.onVideoPlayerReady = function(event) {
-    if (this.params.autoplay) {
-      this.seekTo(this.params["start-at"]);
+    this.seekTo(this.params["start-at"]);
+    if (this.params.autoplay && this.params["always-play"]) {
       this.player.play();
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
@@ -3845,7 +3848,8 @@
       "offset": 200,
       //    'start-at': 0,
       //    'end-at': 0,
-      "poster": null
+      "poster": null,
+      "always-play": false
     };
     this.__init__ = function() {
       if (!this.link || !this.ext) {
@@ -3898,7 +3902,7 @@
   VideoBackground.prototype.injectPlayer = function() {
     this.player = document.createElement("video");
     this.player.muted = this.params.muted;
-    this.player.autoplay = this.params.autoplay;
+    this.player.autoplay = this.params.autoplay && this.params["always-play"];
     this.player.loop = this.params.loop;
     this.player.playsinline = true;
     this.player.setAttribute("id", this.uid);
@@ -4057,7 +4061,7 @@
       this.intersectionObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           const uid = entry.target.getAttribute("data-vbg-uid");
-          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
+          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting && self2.index[uid].player) {
             self2.index[uid].play();
           } else {
             self2.index[uid].pause();
@@ -4089,26 +4093,11 @@
             this.index[uid] = vid;
             break;
         }
-        this.intersectionObserver.observe(this.index[uid].element);
+        if (!this.index[uid].params["always-play"]) {
+          this.intersectionObserver.observe(this.index[uid].element);
+        }
       }
-      this.initYTPlayers(
-        /*function() {
-          //TODO: FIX!
-          if (params &&
-            (params.hasOwnProperty('activity_timeout')
-              || params.hasOwnProperty('inactivity_timeout'))) {
-            this.activity_monitor = new ActivityMonitor(function () {
-                self.playVideos();
-              }, function() {
-                self.pauseVideos();
-              },
-              params ? params.activity_timeout : null,
-              params ? params.inactivity_timeout : null,
-              ['mousemove', 'scroll']
-            );
-          }
-        }*/
-      );
+      this.initYTPlayers();
     };
     this.__init__();
   }

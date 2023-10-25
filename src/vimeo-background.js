@@ -33,7 +33,8 @@ export function VimeoBackground(elem, params, id, uid) {
     'offset': 200,
     'start-at': 0,
     'end-at': 0,
-    'poster': null
+    'poster': null,
+    'always-play': false
   };
 
   this.__init__ = function () {
@@ -95,8 +96,8 @@ VimeoBackground.prototype.seekTo = function (time) {
 
 
 VimeoBackground.prototype.onVideoPlayerReady = function (event) {
-  if (this.params.autoplay) {
-    this.seekTo(this.params['start-at']);
+  this.seekTo(this.params['start-at']);
+  if (this.params.autoplay && this.params['always-play']) {
     this.player.play();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }

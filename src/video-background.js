@@ -41,7 +41,8 @@ export function VideoBackground(elem, params, vid_data, uid) {
     'offset': 200,
 //    'start-at': 0,
 //    'end-at': 0,
-    'poster': null
+    'poster': null,
+    'always-play': false
   };
 
   this.__init__ = function () {
@@ -104,7 +105,7 @@ VideoBackground.prototype.seekTo = function (seconds) {
 VideoBackground.prototype.injectPlayer = function () {
   this.player = document.createElement('video');
   this.player.muted = this.params.muted;
-  this.player.autoplay = this.params.autoplay;
+  this.player.autoplay = this.params.autoplay && this.params['always-play'];
   this.player.loop = this.params.loop;
   this.player.playsinline = true;
 

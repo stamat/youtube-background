@@ -12,9 +12,9 @@ Goodbye careless days... I'm getting old...
 
 ## Features
 
-* Fade in CSS animation *(Youtube and HTML5 videos only)*
-* Play/Pause button *(Youtube and HTML5 videos only)*
-* Mute/Unmute button *(Youtube and HTML5 videos only)*
+* Play/Pause button
+* Mute/Unmute button
+* Video will pause when not visible
 * No CSS required
 * No longer jQuery dependant
 
@@ -97,6 +97,7 @@ Property | Default | Accepts | Description
 **pause** | false | boolean | Adds a toggle pause button (deprecated)
 **start-at** | 0 | int | Video starts playing at desired time in seconds
 **end-at** | 0 | int | Video ends playing at desired time in seconds. 0 means it will play to the end.
+**always-play** | false | boolean | Video will stop playing unless always-play is set to true
 
 Noted properties can be added as html attributes as:
 
@@ -126,8 +127,12 @@ Available properties for Vimeo backgrounds:
 * inline-styles
 * fit-box
 * offset
-* start-at
+* play-button
+* mute-button
 * poster
+* start-at
+* end-at
+* always-play
 
 #### HTML5 Video support
 
@@ -144,6 +149,7 @@ Available properties for HTML5 Video backgrounds:
 * play-button
 * mute-button
 * poster
+* always-play
 
 #### Example - Properties as HTML attributes
 
