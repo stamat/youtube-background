@@ -77,7 +77,6 @@ VideoBackgrounds.prototype.getVidID = function (link) {
   if (link !== undefined && link !== null) {
     for (let k in this.re) {
       const pts = link.match(this.re[k]);
-      console.log(pts)
 
       if (pts && pts.length) {
         this.re[k].lastIndex = 0;

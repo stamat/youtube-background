@@ -33,6 +33,7 @@
     "build": "poops -b"
   },
   "dependencies": {
+    "@vimeo/player": "^2.20.1",
     "book-of-spells": "^1.0.11"
   }
 }

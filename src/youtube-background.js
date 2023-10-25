@@ -1,4 +1,4 @@
-import { addClass, hasClass, removeClass, parseProperties, parseResolutionString } from './utils.js';
+import { addClass, hasClass, removeClass, parseProperties, parseResolutionString, generateActionButton } from './utils.js';
 import { isMobile } from 'book-of-spells';
 
 const tag = document.createElement('script');
@@ -64,7 +64,7 @@ export function YoutubeBackground(elem, params, id, uid) {
 
 
     if (this.params['play-button']) {
-      this.generateActionButton({
+      generateActionButton(this, {
         name: 'play',
         className: 'play-toggle',
         innerHtml: '<i class="fa"></i>',
@@ -77,7 +77,7 @@ export function YoutubeBackground(elem, params, id, uid) {
     }
 
     if (this.params['mute-button']) {
-      this.generateActionButton({
+      generateActionButton(this, {
         name: 'mute',
         className: 'mute-toggle',
         innerHtml: '<i class="fa"></i>',
@@ -334,36 +334,3 @@ YoutubeBackground.prototype.mute = function () {
     this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
   }
 }
-
-//TODO: refactor states to be equal for all buttons
-YoutubeBackground.prototype.generateActionButton = function (obj) {
-  const btn = document.createElement('button');
-  btn.className = obj.className;
-  btn.innerHTML = obj.innerHtml;
-  addClass(btn.firstChild, obj.stateChildClassNames[0]);
-
-  //TODO: solve this with ARIA toggle states
-  if (this.params[obj.condition_parameter] === obj.initialState) {
-    addClass(btn, obj.stateClassName);
-    removeClass(btn.firstChild, obj.stateChildClassNames[0]);
-    addClass(btn.firstChild, obj.stateChildClassNames[1]);
-  }
-
-  const self = this;
-  btn.addEventListener('click', function(e) {
-    if (hasClass(this, obj.stateClassName)) {
-      self.state[obj.name] = false;
-      self[obj.actions[0]]();
-    } else {
-      self.state[obj.name] = true;
-      self[obj.actions[1]]();
-    }
-  });
-
-  this.buttons[obj.name] = {
-    element: btn,
-    button_properties: obj
-  };
-
-  this.controls_element.appendChild(btn);
-};

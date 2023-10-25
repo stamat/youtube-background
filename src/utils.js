@@ -73,3 +73,34 @@ export function parseProperties(params, defaults, element, attr_prefix) {
 
   return res_params;
 };
+
+export function generateActionButton(obj, props) {
+  const btn = document.createElement('button');
+  btn.className = props.className;
+  btn.innerHTML = props.innerHtml;
+  addClass(btn.firstChild, props.stateChildClassNames[0]);
+
+  //TODO: solve this with ARIA toggle states
+  if (obj.params[props.condition_parameter] === props.initialState) {
+    addClass(btn, props.stateClassName);
+    removeClass(btn.firstChild, props.stateChildClassNames[0]);
+    addClass(btn.firstChild, props.stateChildClassNames[1]);
+  }
+
+  btn.addEventListener('click', function(e) {
+    if (hasClass(this, props.stateClassName)) {
+      obj.state[props.name] = false;
+      obj[props.actions[0]]();
+    } else {
+      obj.state[props.name] = true;
+      obj[props.actions[1]]();
+    }
+  });
+
+  obj.buttons[props.name] = {
+    element: btn,
+    button_properties: props
+  };
+
+  obj.controls_element.appendChild(btn);
+};
