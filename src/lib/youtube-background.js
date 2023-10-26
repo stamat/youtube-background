@@ -1,11 +1,6 @@
 import { addClass, removeClass, parseProperties, parseResolutionString, generateActionButton } from './utils.js';
 import { isMobile } from 'book-of-spells';
 
-const tag = document.createElement('script');
-tag.src = "https://www.youtube.com/player_api";
-const firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
 export function YoutubeBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();
 
@@ -47,6 +42,8 @@ export function YoutubeBackground(elem, params, id, uid) {
   };
 
   this.__init__ = function () {
+    this.injectScript();
+    
     if (!this.ytid) {
       return;
     }
@@ -116,6 +113,14 @@ YoutubeBackground.prototype.initYTPlayer = function () {
       }
     });
   }
+};
+
+YoutubeBackground.prototype.injectScript = function () {
+  if (window.hasOwnProperty('YT') || document.querySelector('script[src="https://www.youtube.com/player_api"]')) return
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/player_api";
+  const firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 };
 
 YoutubeBackground.prototype.seekTo = function (seconds) {

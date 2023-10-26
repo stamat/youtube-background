@@ -159,10 +159,6 @@
   }
 
   // src/lib/youtube-background.js
-  var tag = document.createElement("script");
-  tag.src = "https://www.youtube.com/player_api";
-  var firstScriptTag = document.getElementsByTagName("script")[0];
-  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   function YoutubeBackground(elem, params, id, uid) {
     this.is_mobile = isMobile();
     this.element = elem;
@@ -201,6 +197,7 @@
       "no-cookie": true
     };
     this.__init__ = function() {
+      this.injectScript();
       if (!this.ytid) {
         return;
       }
@@ -259,6 +256,14 @@
         }
       });
     }
+  };
+  YoutubeBackground.prototype.injectScript = function() {
+    if (window.hasOwnProperty("YT") || document.querySelector('script[src="https://www.youtube.com/player_api"]'))
+      return;
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/player_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   };
   YoutubeBackground.prototype.seekTo = function(seconds) {
     if (seconds > 0) {
