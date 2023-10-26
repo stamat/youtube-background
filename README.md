@@ -97,8 +97,8 @@ Property | Default | Accepts | Description
 **pause** | false | boolean | Adds a toggle pause button (deprecated)
 **start-at** | 0 | int | Video starts playing at desired time in seconds
 **end-at** | 0 | int | Video ends playing at desired time in seconds. 0 means it will play to the end.
-**always-play** | false | boolean | Video will stop playing unless always-play is set to true
-**volume** | 1 | float | From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Sets initial volume.
+**always-play** | false | boolean | Video will stop playing unless always-play is set to true.
+**volume** | 1 | float | From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Sets initial volume. Setting volume doesn't work on mobile, so this setting won't have an effect on mobile.
 **no-cookie** | true | boolean | Disable cookies. This will prevent YouTube and Vimeo from storing information and tracking you across the web. It is set to true by default.
 
 Noted properties can be added as html attributes as:
