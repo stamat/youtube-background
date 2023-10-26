@@ -3944,10 +3944,10 @@
   };
   VideoBackground.prototype.injectPlayer = function() {
     this.player = document.createElement("video");
-    this.player.muted = this.params.muted;
-    this.player.autoplay = this.params.autoplay && (this.params["always-play"] || this.isIntersecting);
-    this.player.loop = this.params.loop;
-    this.player.playsinline = true;
+    this.player.toggleAttribute("playsinline", true);
+    this.player.toggleAttribute("loop", this.params.loop);
+    this.player.toggleAttribute("autoplay", this.params.autoplay && (this.params["always-play"] || this.isIntersecting));
+    this.player.toggleAttribute("muted", this.params.muted);
     if (this.params.volume !== 1 && !this.params.muted)
       this.setVolume(this.params.volume);
     this.player.setAttribute("id", this.uid);
