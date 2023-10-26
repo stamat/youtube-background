@@ -20,6 +20,7 @@ export function YoutubeBackground(elem, params, id, uid) {
   this.state = {};
   this.state.play = false;
   this.state.mute = false;
+  this.state.volume_once = false;
 
   this.params = {};
 
@@ -40,7 +41,8 @@ export function YoutubeBackground(elem, params, id, uid) {
     'start-at': 0,
     'end-at': 0,
     'poster': null,
-    'always-play': false
+    'always-play': false,
+    'volume': 1
   };
 
   this.__init__ = function () {
@@ -320,6 +322,10 @@ YoutubeBackground.prototype.unmute = function () {
   }
 
   if (this.player) {
+    if (!this.state.volume_once) {
+      this.state.volume_once = true;
+      this.setVolume(this.params.volume);
+    }
     this.player.unMute();
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
   }
@@ -339,3 +345,10 @@ YoutubeBackground.prototype.mute = function () {
     this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
   }
 }
+
+YoutubeBackground.prototype.setVolume = function (volume) {
+  if (this.player) {
+    this.player.setVolume(volume * 100);
+    this.element.dispatchEvent(new CustomEvent('video-background-volume-change', { bubbles: true, detail: this }));
+  }
+};

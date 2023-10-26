@@ -15,6 +15,7 @@ export function VideoBackground(elem, params, vid_data, uid) {
   this.state = {};
   this.state.play = false;
   this.state.mute = false;
+  this.state.volume_once = false;
 
   this.params = {};
 
@@ -42,7 +43,8 @@ export function VideoBackground(elem, params, vid_data, uid) {
 //    'start-at': 0,
 //    'end-at': 0,
     'poster': null,
-    'always-play': false
+    'always-play': false,
+    'volume': 1
   };
 
   this.__init__ = function () {
@@ -108,6 +110,7 @@ VideoBackground.prototype.injectPlayer = function () {
   this.player.autoplay = this.params.autoplay && (this.params['always-play'] || this.isIntersecting);
   this.player.loop = this.params.loop;
   this.player.playsinline = true;
+  if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
 
   this.player.setAttribute('id', this.uid)
 
@@ -281,6 +284,10 @@ VideoBackground.prototype.unmute = function () {
 
   if (this.player) {
     this.player.muted = false;
+    if (!this.state.volume_once) {
+      this.state.volume_once = true;
+      this.setVolume(this.params.volume);
+    }
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
   }
 }
@@ -299,3 +306,10 @@ VideoBackground.prototype.mute = function () {
     this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
   }
 }
+
+VideoBackground.prototype.setVolume = function(volume) {
+  if (this.player) {
+    this.player.volume = volume;
+    this.element.dispatchEvent(new CustomEvent('video-background-volume-change', { bubbles: true, detail: this }));
+  }
+};

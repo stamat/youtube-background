@@ -1,4 +1,4 @@
-/* youtube-background v1.0.17 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.15 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // node_modules/book-of-spells/src/helpers.mjs
   function stringToBoolean(str) {
@@ -175,6 +175,7 @@
     this.state = {};
     this.state.play = false;
     this.state.mute = false;
+    this.state.volume_once = false;
     this.params = {};
     const DEFAULTS = {
       "pause": false,
@@ -195,7 +196,8 @@
       "start-at": 0,
       "end-at": 0,
       "poster": null,
-      "always-play": false
+      "always-play": false,
+      "volume": 1
     };
     this.__init__ = function() {
       if (!this.ytid) {
@@ -423,6 +425,10 @@
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
     if (this.player) {
+      if (!this.state.volume_once) {
+        this.state.volume_once = true;
+        this.setVolume(this.params.volume);
+      }
       this.player.unMute();
       this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
     }
@@ -437,6 +443,12 @@
     if (this.player) {
       this.player.mute();
       this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
+    }
+  };
+  YoutubeBackground.prototype.setVolume = function(volume) {
+    if (this.player) {
+      this.player.setVolume(volume * 100);
+      this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
     }
   };
 
@@ -3554,6 +3566,7 @@
     this.state = {};
     this.state.play = false;
     this.state.mute = false;
+    this.state.volume_once = false;
     this.params = {};
     const DEFAULTS = {
       "pause": false,
@@ -3572,7 +3585,8 @@
       "start-at": 0,
       "end-at": 0,
       "poster": null,
-      "always-play": false
+      "always-play": false,
+      "volume": 1
     };
     this.__init__ = function() {
       if (!this.vid) {
@@ -3711,6 +3725,8 @@
     this.player.on("ended", this.onVideoEnded.bind(this));
     if (this.params["end-at"] > 0)
       this.player.on("progress", this.onVideoProgress.bind(this));
+    if (this.params.volume !== 1 && !this.params.muted)
+      this.setVolume(this.params.volume);
   };
   VimeoBackground.prototype.buildHTML = function() {
     const parent = this.element.parentNode;
@@ -3797,6 +3813,10 @@
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
     if (this.player) {
+      if (!this.state.volume_once) {
+        this.state.volume_once = true;
+        this.setVolume(this.params.volume);
+      }
       this.player.setMuted(false);
       this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
     }
@@ -3813,6 +3833,12 @@
       this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
     }
   };
+  VimeoBackground.prototype.setVolume = function(volume) {
+    if (this.player) {
+      this.player.setVolume(volume);
+      this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
+    }
+  };
 
   // src/lib/video-background.js
   function VideoBackground(elem, params, vid_data, uid) {
@@ -3827,6 +3853,7 @@
     this.state = {};
     this.state.play = false;
     this.state.mute = false;
+    this.state.volume_once = false;
     this.params = {};
     const MIME_MAP = {
       "ogv": "video/ogg",
@@ -3852,7 +3879,8 @@
       //    'start-at': 0,
       //    'end-at': 0,
       "poster": null,
-      "always-play": false
+      "always-play": false,
+      "volume": 1
     };
     this.__init__ = function() {
       if (!this.link || !this.ext) {
@@ -3908,6 +3936,8 @@
     this.player.autoplay = this.params.autoplay && (this.params["always-play"] || this.isIntersecting);
     this.player.loop = this.params.loop;
     this.player.playsinline = true;
+    if (this.params.volume !== 1 && !this.params.muted)
+      this.setVolume(this.params.volume);
     this.player.setAttribute("id", this.uid);
     if (this.params["inline-styles"]) {
       this.player.style.top = "50%";
@@ -4032,6 +4062,10 @@
     }
     if (this.player) {
       this.player.muted = false;
+      if (!this.state.volume_once) {
+        this.state.volume_once = true;
+        this.setVolume(this.params.volume);
+      }
       this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
     }
   };
@@ -4045,6 +4079,12 @@
     if (this.player) {
       this.player.muted = true;
       this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
+    }
+  };
+  VideoBackground.prototype.setVolume = function(volume) {
+    if (this.player) {
+      this.player.volume = volume;
+      this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
     }
   };
 
@@ -4167,7 +4207,11 @@
     (function($) {
       $.fn.youtube_background = function(params) {
         const $this = $(this);
-        new VideoBackgrounds(this, params);
+        if (window.hasOwnProperty("VIDEO_BACKGROUNDS")) {
+          window.VIDEO_BACKGROUNDS.add($this, params);
+          return $this;
+        }
+        window.VIDEO_BACKGROUNDS = new VideoBackgrounds(this, params);
         return $this;
       };
     })(jQuery);

@@ -15,6 +15,7 @@ export function VimeoBackground(elem, params, id, uid) {
   this.state = {};
   this.state.play = false;
   this.state.mute = false;
+  this.state.volume_once = false;
 
   this.params = {};
 
@@ -34,7 +35,8 @@ export function VimeoBackground(elem, params, id, uid) {
     'start-at': 0,
     'end-at': 0,
     'poster': null,
-    'always-play': false
+    'always-play': false,
+    'volume': 1
   };
 
   this.__init__ = function () {
@@ -204,6 +206,7 @@ VimeoBackground.prototype.injectPlayer = function () {
   this.player.on('ended', this.onVideoEnded.bind(this));
   
   if (this.params['end-at'] > 0) this.player.on('progress', this.onVideoProgress.bind(this));
+  if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
 };
 
 VimeoBackground.prototype.buildHTML = function () {
@@ -313,6 +316,10 @@ VimeoBackground.prototype.unmute = function () {
   }
 
   if (this.player) {
+    if (!this.state.volume_once) {
+      this.state.volume_once = true;
+      this.setVolume(this.params.volume);
+    }
     this.player.setMuted(false);
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
   }
@@ -330,5 +337,12 @@ VimeoBackground.prototype.mute = function () {
   if (this.player) {
     this.player.setMuted(true);
     this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
+  }
+};
+
+VimeoBackground.prototype.setVolume = function(volume) {
+  if (this.player) {
+    this.player.setVolume(volume);
+    this.element.dispatchEvent(new CustomEvent('video-background-volume-change', { bubbles: true, detail: this }));
   }
 };

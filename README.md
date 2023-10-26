@@ -98,6 +98,7 @@ Property | Default | Accepts | Description
 **start-at** | 0 | int | Video starts playing at desired time in seconds
 **end-at** | 0 | int | Video ends playing at desired time in seconds. 0 means it will play to the end.
 **always-play** | false | boolean | Video will stop playing unless always-play is set to true
+**volume** | 1 | float | From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Sets initial volume.
 
 Noted properties can be added as html attributes as:
 
@@ -115,6 +116,8 @@ Noted properties can be added as html attributes as:
 * **data-vbg-inline-styles**
 * **data-vbg-start-at**
 * **data-vbg-end-at**
+* **data-vbg-always-play**
+* **data-vbg-volume**
 
 #### Vimeo support
 
@@ -133,6 +136,7 @@ Available properties for Vimeo backgrounds:
 * start-at
 * end-at
 * always-play
+* volume
 
 #### HTML5 Video support
 
@@ -150,6 +154,7 @@ Available properties for HTML5 Video backgrounds:
 * mute-button
 * poster
 * always-play
+* volume
 
 #### Example - Properties as HTML attributes
 
