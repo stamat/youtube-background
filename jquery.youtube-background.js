@@ -3793,6 +3793,7 @@
       if (this.params["start-at"] || this.params["end-at"]) {
         const self2 = this;
         this.player.getCurrentTime().then(function(seconds) {
+          seconds = Math.round(seconds);
           if (seconds < self2.params["start-at"]) {
             self2.seekTo(self2.params["start-at"]);
           }

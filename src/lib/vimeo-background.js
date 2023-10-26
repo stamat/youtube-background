@@ -276,6 +276,7 @@ VimeoBackground.prototype.play = function () {
     if (this.params['start-at'] || this.params['end-at']) {
       const self = this;
       this.player.getCurrentTime().then(function(seconds) {
+        seconds = Math.round(seconds);
         if (seconds < self.params['start-at'] ) {
           self.seekTo(self.params['start-at']);
         }
