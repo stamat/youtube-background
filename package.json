@@ -1,6 +1,6 @@
 {
   "name": "youtube-background",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Simple JS plugin for embedding YouTube, Vimeo and HTML5 videos as a cover background",
   "main": "jquery.youtube-background.js",
   "homepage": "https://github.com/stamat/youtube-background",
