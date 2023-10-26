@@ -1032,12 +1032,18 @@
           const uid = entry.target.getAttribute("data-vbg-uid");
           if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
             self.index[uid].isIntersecting = true;
-            if (self.index[uid].player && self.index[uid].params.autoplay)
-              self.index[uid].play();
+            try {
+              if (self.index[uid].player && self.index[uid].params.autoplay)
+                self.index[uid].play();
+            } catch (e) {
+            }
           } else {
             self.index[uid].isIntersecting = false;
-            if (self.index[uid].player)
-              self.index[uid].pause();
+            try {
+              if (self.index[uid].player)
+                self.index[uid].pause();
+            } catch (e) {
+            }
           }
         });
       });
