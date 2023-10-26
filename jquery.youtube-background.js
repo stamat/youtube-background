@@ -182,7 +182,7 @@
       "muted": true,
       "loop": true,
       "mobile": true,
-      "load-background": true,
+      "load-background": false,
       "resolution": "16:9",
       "onStatusChange": function() {
       },
@@ -356,7 +356,7 @@
   YoutubeBackground.prototype.buildHTML = function() {
     const parent = this.element.parentNode;
     addClass(this.element, "youtube-background video-background");
-    const wrapper_styles2 = {
+    const wrapper_styles = {
       "height": "100%",
       "width": "100%",
       "z-index": "0",
@@ -369,20 +369,20 @@
       "right": 0
     };
     if (!this.params["mute-button"]) {
-      wrapper_styles2["pointer-events"] = "none";
+      wrapper_styles["pointer-events"] = "none";
     }
     if (this.params["load-background"] || this.params["poster"]) {
       if (this.params["load-background"])
-        wrapper_styles2["background-image"] = "url(https://img.youtube.com/vi/" + this.ytid + "/maxresdefault.jpg)";
+        wrapper_styles["background-image"] = "url(https://img.youtube.com/vi/" + this.ytid + "/maxresdefault.jpg)";
       if (this.params["poster"])
-        wrapper_styles2["background-image"] = this.params["poster"];
-      wrapper_styles2["background-size"] = "cover";
-      wrapper_styles2["background-repeat"] = "no-repeat";
-      wrapper_styles2["background-position"] = "center";
+        wrapper_styles["background-image"] = this.params["poster"];
+      wrapper_styles["background-size"] = "cover";
+      wrapper_styles["background-repeat"] = "no-repeat";
+      wrapper_styles["background-position"] = "center";
     }
     if (this.params["inline-styles"]) {
-      for (let property in wrapper_styles2) {
-        this.element.style[property] = wrapper_styles2[property];
+      for (let property in wrapper_styles) {
+        this.element.style[property] = wrapper_styles[property];
       }
       if (!["absolute", "fixed", "relative", "sticky"].indexOf(parent.style.position)) {
         parent.style.position = "relative";
@@ -3587,7 +3587,7 @@
       "muted": true,
       "loop": true,
       "mobile": true,
-      //    'load-background': true,
+      "load-background": false,
       "resolution": "16:9",
       "inline-styles": true,
       "fit-box": false,
@@ -3690,13 +3690,6 @@
     if (this.uid) {
       this.iframe.id = this.uid;
     }
-    if (this.params["load-background"] || this.params["poster"]) {
-      if (this.params["poster"])
-        wrapper_styles["background-image"] = this.params["poster"];
-      wrapper_styles["background-size"] = "cover";
-      wrapper_styles["background-repeat"] = "no-repeat";
-      wrapper_styles["background-position"] = "center";
-    }
     if (this.params["inline-styles"]) {
       this.iframe.style.top = "50%";
       this.iframe.style.left = "50%";
@@ -3745,7 +3738,7 @@
   VimeoBackground.prototype.buildHTML = function() {
     const parent = this.element.parentNode;
     addClass(this.element, "youtube-background");
-    const wrapper_styles2 = {
+    const wrapper_styles = {
       "height": "100%",
       "width": "100%",
       "z-index": "0",
@@ -3758,23 +3751,20 @@
       "right": 0
     };
     if (this.params["load-background"] || this.params["poster"]) {
+      if (this.params["load-background"])
+        wrapper_styles["background-image"] = "url(https://vumbnail.com/" + this.vid + ".jpg)";
       if (this.params["poster"])
-        wrapper_styles2["background-image"] = this.params["poster"];
-      wrapper_styles2["background-size"] = "cover";
-      wrapper_styles2["background-repeat"] = "no-repeat";
-      wrapper_styles2["background-position"] = "center";
+        wrapper_styles["background-image"] = `url(${this.params["poster"]})`;
+      wrapper_styles["background-size"] = "cover";
+      wrapper_styles["background-repeat"] = "no-repeat";
+      wrapper_styles["background-position"] = "center";
     }
     if (!this.params["mute-button"]) {
-      wrapper_styles2["pointer-events"] = "none";
-    }
-    if (this.params["load-background"]) {
-      wrapper_styles2["background-size"] = "cover";
-      wrapper_styles2["background-repeat"] = "no-repeat";
-      wrapper_styles2["background-position"] = "center";
+      wrapper_styles["pointer-events"] = "none";
     }
     if (this.params["inline-styles"]) {
-      for (let property in wrapper_styles2) {
-        this.element.style[property] = wrapper_styles2[property];
+      for (let property in wrapper_styles) {
+        this.element.style[property] = wrapper_styles[property];
       }
       if (!["absolute", "fixed", "relative", "sticky"].indexOf(parent.style.position)) {
         parent.style.position = "relative";
@@ -4001,7 +3991,7 @@
   VideoBackground.prototype.buildHTML = function() {
     const parent = this.element.parentNode;
     addClass(this.element, "video-background");
-    const wrapper_styles2 = {
+    const wrapper_styles = {
       "height": "100%",
       "width": "100%",
       "z-index": "0",
@@ -4014,18 +4004,18 @@
       "right": 0
     };
     if (!this.params["mute-button"]) {
-      wrapper_styles2["pointer-events"] = "none";
+      wrapper_styles["pointer-events"] = "none";
     }
-    if (this.params["load-background"] || this.params["poster"]) {
+    if (this.params["poster"]) {
       if (this.params["poster"])
-        wrapper_styles2["background-image"] = `url('${this.params["poster"]}')`;
-      wrapper_styles2["background-size"] = "cover";
-      wrapper_styles2["background-repeat"] = "no-repeat";
-      wrapper_styles2["background-position"] = "center";
+        wrapper_styles["background-image"] = `url('${this.params["poster"]}')`;
+      wrapper_styles["background-size"] = "cover";
+      wrapper_styles["background-repeat"] = "no-repeat";
+      wrapper_styles["background-position"] = "center";
     }
     if (this.params["inline-styles"]) {
-      for (let property in wrapper_styles2) {
-        this.element.style[property] = wrapper_styles2[property];
+      for (let property in wrapper_styles) {
+        this.element.style[property] = wrapper_styles[property];
       }
       if (!["absolute", "fixed", "relative", "sticky"].indexOf(parent.style.position)) {
         parent.style.position = "relative";

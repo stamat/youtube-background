@@ -27,7 +27,7 @@ export function VimeoBackground(elem, params, id, uid) {
     'muted': true,
     'loop': true,
     'mobile': true,
-//    'load-background': true,
+    'load-background': false,
     'resolution': '16:9',
     'inline-styles': true,
     'fit-box': false,
@@ -155,14 +155,6 @@ VimeoBackground.prototype.injectPlayer = function () {
     this.iframe.id = this.uid;
   }
 
-  if (this.params['load-background'] || this.params['poster']) {
-    //if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
-    if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
-    wrapper_styles['background-size'] = 'cover';
-    wrapper_styles['background-repeat'] = 'no-repeat';
-    wrapper_styles['background-position'] = 'center';
-  }
-
   if (this.params['inline-styles']) {
     this.iframe.style.top = '50%';
     this.iframe.style.left = '50%';
@@ -233,8 +225,8 @@ VimeoBackground.prototype.buildHTML = function () {
   };
 
   if (this.params['load-background'] || this.params['poster']) {
-    //if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
-    if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
+    if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://vumbnail.com/'+this.vid+'.jpg)';
+    if (this.params['poster']) wrapper_styles['background-image'] = `url(${this.params['poster']})`;
     wrapper_styles['background-size'] = 'cover';
     wrapper_styles['background-repeat'] = 'no-repeat';
     wrapper_styles['background-position'] = 'center';
@@ -242,13 +234,6 @@ VimeoBackground.prototype.buildHTML = function () {
 
   if (!this.params['mute-button']) {
     wrapper_styles["pointer-events"] = "none"; // avoid right mouse click popup menu
-  }
-
-  if (this.params['load-background']) {
-    //TODO: wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.vid+'/maxresdefault.jpg)';
-    wrapper_styles['background-size'] = 'cover';
-    wrapper_styles['background-repeat'] = 'no-repeat';
-    wrapper_styles['background-position'] = 'center';
   }
 
   if (this.params['inline-styles']) {

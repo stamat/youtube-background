@@ -206,7 +206,7 @@ VideoBackground.prototype.buildHTML = function () {
     wrapper_styles["pointer-events"] = "none" // avoid right mouse click popup menu
   }
 
-  if (this.params['load-background'] || this.params['poster']) {
+  if (this.params['poster']) {
     if (this.params['poster']) wrapper_styles['background-image'] = `url('${this.params['poster']}')`;
     wrapper_styles['background-size'] = 'cover';
     wrapper_styles['background-repeat'] = 'no-repeat';

@@ -27,7 +27,7 @@ export function YoutubeBackground(elem, params, id, uid) {
     'muted': true,
     'loop': true,
     'mobile': true,
-    'load-background': true,
+    'load-background': false,
     'resolution': '16:9',
     'onStatusChange': function() {},
     'inline-styles': true,
@@ -43,7 +43,7 @@ export function YoutubeBackground(elem, params, id, uid) {
 
   this.__init__ = function () {
     this.injectScript();
-    
+
     if (!this.ytid) {
       return;
     }
