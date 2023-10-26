@@ -39,7 +39,7 @@ export function VideoBackgrounds(selector, params) {
       this.add(element, params);
     }
 
-    this.initYTPlayers();
+    this.initPlayers();
   };
 
   this.__init__();
@@ -122,7 +122,7 @@ VideoBackgrounds.prototype.playVideos = function () {
   }
 };
 
-VideoBackgrounds.prototype.initYTPlayers = function (callback) {
+VideoBackgrounds.prototype.initPlayers = function (callback) {
   const self = this;
 
   window.onYouTubeIframeAPIReady = function () {
@@ -139,5 +139,21 @@ VideoBackgrounds.prototype.initYTPlayers = function (callback) {
 
   if (window.hasOwnProperty('YT') && window.YT.loaded) {
     window.onYouTubeIframeAPIReady();
+  }
+
+  window.onVimeoIframeAPIReady = function () {
+    for (let k in self.index) {
+      if (self.index[k] instanceof VimeoBackground) {
+        self.index[k].initVimeoPlayer();
+      }
+    }
+
+    if (callback) {
+      setTimeout(callback, 100);
+    }
+  }
+
+  if (window.hasOwnProperty('Vimeo') && window.Vimeo.hasOwnProperty('Player')) {
+    window.onVimeoIframeAPIReady();
   }
 };

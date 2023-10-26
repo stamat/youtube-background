@@ -1,6 +1,6 @@
 import { addClass, removeClass, parseResolutionString, parseProperties, generateActionButton } from './utils.js';
 import { isMobile } from 'book-of-spells';
-import Player from '@vimeo/player';
+//import Player from '@vimeo/player';
 
 export function VimeoBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();
@@ -41,6 +41,8 @@ export function VimeoBackground(elem, params, id, uid) {
   };
 
   this.__init__ = function () {
+    this.injectScript();
+
     if (!this.vid) {
       return;
     }
@@ -93,6 +95,27 @@ export function VimeoBackground(elem, params, id, uid) {
   this.__init__();
 }
 
+VimeoBackground.prototype.injectScript = function () {
+  if (window.hasOwnProperty('Vimeo') || document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')) return;
+  const tag = document.createElement('script');
+  if (window.hasOwnProperty('onVimeoIframeAPIReady' && typeof window.onVimeoIframeAPIReady === 'function')) tag.addEventListener('load', window.onVimeoIframeAPIReady);
+  tag.src = 'https://player.vimeo.com/api/player.js';
+  const firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+};
+
+VimeoBackground.prototype.initVimeoPlayer = function () {
+  if (window.hasOwnProperty('Vimeo') && this.player === null) {
+    this.player = new Vimeo.Player(this.iframe);
+
+    this.player.on('loaded', this.onVideoPlayerReady.bind(this));
+    this.player.on('ended', this.onVideoEnded.bind(this));
+    
+    if (this.params['end-at'] > 0) this.player.on('progress', this.onVideoProgress.bind(this));
+    if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
+  }
+};
+
 VimeoBackground.prototype.seekTo = function (time) {
   this.player.setCurrentTime(time);
 };
@@ -116,7 +139,7 @@ VimeoBackground.prototype.onVideoEnded = function (event) {
 };
 
 VimeoBackground.prototype.onVideoProgress = function (event) {
-  if (event.seconds >= this.params['end-at']) {
+  if (Math.round(event.seconds) >= this.params['end-at']) {
     this.seekTo(this.params['start-at']);
     if (!this.params.loop) this.pause(); //TODO: this is not working as intended, we need centralized states
   }
@@ -198,12 +221,8 @@ VimeoBackground.prototype.injectPlayer = function () {
     onResize();
   }
 
-  this.player = new Player(this.iframe);
-  this.player.on('loaded', this.onVideoPlayerReady.bind(this));
-  this.player.on('ended', this.onVideoEnded.bind(this));
+  //this.player = new Player(this.iframe);
   
-  if (this.params['end-at'] > 0) this.player.on('progress', this.onVideoProgress.bind(this));
-  if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
 };
 
 VimeoBackground.prototype.buildHTML = function () {
