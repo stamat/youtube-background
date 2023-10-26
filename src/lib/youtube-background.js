@@ -255,7 +255,7 @@ YoutubeBackground.prototype.buildHTML = function () {
   }
 
   if (this.params['load-background'] || this.params['poster']) {
-    if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/maxresdefault.jpg)';
+    if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/hqdefault.jpg)';
     if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
     wrapper_styles['background-size'] = 'cover';
     wrapper_styles['background-repeat'] = 'no-repeat';

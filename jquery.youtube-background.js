@@ -1,4 +1,4 @@
-/* youtube-background v1.0.18 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.15 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // node_modules/book-of-spells/src/helpers.mjs
   function stringToBoolean(str) {
@@ -373,7 +373,7 @@
     }
     if (this.params["load-background"] || this.params["poster"]) {
       if (this.params["load-background"])
-        wrapper_styles["background-image"] = "url(https://img.youtube.com/vi/" + this.ytid + "/maxresdefault.jpg)";
+        wrapper_styles["background-image"] = "url(https://img.youtube.com/vi/" + this.ytid + "/hqdefault.jpg)";
       if (this.params["poster"])
         wrapper_styles["background-image"] = this.params["poster"];
       wrapper_styles["background-size"] = "cover";
