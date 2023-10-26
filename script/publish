@@ -82,7 +82,7 @@ async function publish(version) {
   await run('git push')
   await run('git push --tags')
 
-  const publish = await question('Do you want to publish the package? (y/n): ')
+  const publish = await question('Do you want to create a GitHub release? (y/n): ')
   if (publish === 'y') {
     let notesArg = ''
     const notes = await question('Enter notes for the release (optional): ')
