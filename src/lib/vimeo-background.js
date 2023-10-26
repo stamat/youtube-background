@@ -36,7 +36,8 @@ export function VimeoBackground(elem, params, id, uid) {
     'end-at': 0,
     'poster': null,
     'always-play': false,
-    'volume': 1
+    'volume': 1,
+    'no-cookie': true,
   };
 
   this.__init__ = function () {
@@ -137,6 +138,10 @@ VimeoBackground.prototype.injectPlayer = function () {
 
   if (this.params.loop) {
     src += '&loop=1&autopause=0';
+  }
+
+  if (this.params['no-cookie']) {
+    src += '&dnt=1';
   }
 
   //WARN❗️ this is a hash not a query param

@@ -197,7 +197,8 @@
       "end-at": 0,
       "poster": null,
       "always-play": false,
-      "volume": 1
+      "volume": 1,
+      "no-cookie": true
     };
     this.__init__ = function() {
       if (!this.ytid) {
@@ -288,7 +289,11 @@
     this.iframe = document.createElement("iframe");
     this.iframe.setAttribute("frameborder", 0);
     this.iframe.setAttribute("allow", "autoplay; mute");
-    let src = `https://www.youtube.com/embed/${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
+    let site = "https://www.youtube.com/embed/";
+    if (this.params["no-cookie"]) {
+      site = "https://www.youtube-nocookie.com/embed/";
+    }
+    let src = `${site}${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
     if (this.params.muted) {
       src += "&mute=1";
     }
@@ -3586,7 +3591,8 @@
       "end-at": 0,
       "poster": null,
       "always-play": false,
-      "volume": 1
+      "volume": 1,
+      "no-cookie": true
     };
     this.__init__ = function() {
       if (!this.vid) {
@@ -3668,6 +3674,9 @@
     }
     if (this.params.loop) {
       src += "&loop=1&autopause=0";
+    }
+    if (this.params["no-cookie"]) {
+      src += "&dnt=1";
     }
     if (this.params["start-at"]) {
       src += "#t=" + this.params["start-at"] + "s";
