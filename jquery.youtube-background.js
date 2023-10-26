@@ -3790,8 +3790,16 @@
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
     if (this.player) {
-      if (this.params["start-at"] && this.player.getCurrentTime() < this.params["start-at"]) {
-        this.seekTo(this.params["start-at"]);
+      if (this.params["start-at"] || this.params["end-at"]) {
+        const self2 = this;
+        this.player.getCurrentTime().then(function(seconds) {
+          if (seconds < self2.params["start-at"]) {
+            self2.seekTo(self2.params["start-at"]);
+          }
+          if (seconds > self2.params["end-at"]) {
+            self2.seekTo(self2.params["start-at"]);
+          }
+        });
       }
       this.player.play();
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
@@ -4110,7 +4118,7 @@
           const uid = entry.target.getAttribute("data-vbg-uid");
           if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
             self2.index[uid].isIntersecting = true;
-            if (self2.index[uid].player)
+            if (self2.index[uid].player && self2.index[uid].params.autoplay)
               self2.index[uid].play();
           } else {
             self2.index[uid].isIntersecting = false;

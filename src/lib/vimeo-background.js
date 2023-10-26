@@ -273,9 +273,19 @@ VimeoBackground.prototype.play = function () {
   }
 
   if (this.player) {
-    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
-      this.seekTo(this.params['start-at']);
+    if (this.params['start-at'] || this.params['end-at']) {
+      const self = this;
+      this.player.getCurrentTime().then(function(seconds) {
+        if (seconds < self.params['start-at'] ) {
+          self.seekTo(self.params['start-at']);
+        }
+
+        if (seconds > self.params['end-at']) {
+          self.seekTo(self.params['start-at']);
+        }
+      });
     }
+    
     this.player.play();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
