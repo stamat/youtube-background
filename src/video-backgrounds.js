@@ -41,13 +41,13 @@ export function VideoBackgrounds(selector, params) {
         }
       });
     });       
+    
+    this.initPlayers();
 
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
       this.add(element, params);
     }
-
-    this.initPlayers();
   };
 
   this.__init__();

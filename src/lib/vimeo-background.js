@@ -98,7 +98,9 @@ export function VimeoBackground(elem, params, id, uid) {
 VimeoBackground.prototype.injectScript = function () {
   if (window.hasOwnProperty('Vimeo') || document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')) return;
   const tag = document.createElement('script');
-  if (window.hasOwnProperty('onVimeoIframeAPIReady' && typeof window.onVimeoIframeAPIReady === 'function')) tag.addEventListener('load', window.onVimeoIframeAPIReady);
+  if (window.hasOwnProperty('onVimeoIframeAPIReady') && typeof window.onVimeoIframeAPIReady === 'function') tag.addEventListener('load', () => {
+    window.onVimeoIframeAPIReady();
+  });
   tag.src = 'https://player.vimeo.com/api/player.js';
   const firstScriptTag = document.getElementsByTagName('script')[0];
   firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
