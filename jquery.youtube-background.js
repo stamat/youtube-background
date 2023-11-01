@@ -559,7 +559,7 @@
       this.player.on("loaded", this.onVideoPlayerReady.bind(this));
       this.player.on("ended", this.onVideoEnded.bind(this));
       if (this.params["end-at"] > 0)
-        this.player.on("progress", this.onVideoProgress.bind(this));
+        this.player.on("timeupdate", this.onVideoProgress.bind(this));
       if (this.params.volume !== 1 && !this.params.muted)
         this.setVolume(this.params.volume);
     }
@@ -576,7 +576,7 @@
     this.iframe.style.opacity = 1;
   };
   VimeoBackground.prototype.onVideoEnded = function(event) {
-    if (this.params.loop) {
+    if (this.params["start-at"] && this.params.loop) {
       this.seekTo(this.params["start-at"]);
       this.player.play();
     }
@@ -710,10 +710,10 @@
         this.player.getCurrentTime().then(function(seconds) {
           seconds = Math.round(seconds);
           if (seconds < self.params["start-at"]) {
-            self.seekTo(self.params["start-at"]);
+            self.this.seekTo(self.params["start-at"]);
           }
           if (seconds > self.params["end-at"]) {
-            self.seekTo(self.params["start-at"]);
+            self.this.seekTo(self.params["start-at"]);
           }
         });
       }

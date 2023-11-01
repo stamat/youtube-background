@@ -113,7 +113,7 @@ VimeoBackground.prototype.initVimeoPlayer = function () {
     this.player.on('loaded', this.onVideoPlayerReady.bind(this));
     this.player.on('ended', this.onVideoEnded.bind(this));
     
-    if (this.params['end-at'] > 0) this.player.on('progress', this.onVideoProgress.bind(this));
+    if (this.params['end-at'] > 0) this.player.on('timeupdate', this.onVideoProgress.bind(this));
     if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
   }
 };
@@ -134,7 +134,7 @@ VimeoBackground.prototype.onVideoPlayerReady = function (event) {
 };
 
 VimeoBackground.prototype.onVideoEnded = function (event) {
-  if (this.params.loop) {
+  if (this.params['start-at'] && this.params.loop) {
     this.seekTo(this.params['start-at']);
     this.player.play();
   }
@@ -143,7 +143,7 @@ VimeoBackground.prototype.onVideoEnded = function (event) {
 VimeoBackground.prototype.onVideoProgress = function (event) {
   if (Math.round(event.seconds) >= this.params['end-at']) {
     this.seekTo(this.params['start-at']);
-    if (!this.params.loop) this.pause(); //TODO: this is not working as intended, we need centralized states
+    if (!this.params.loop) this.pause();
   }
 };
 
@@ -298,12 +298,12 @@ VimeoBackground.prototype.play = function () {
       const self = this;
       this.player.getCurrentTime().then(function(seconds) {
         seconds = Math.round(seconds);
-        if (seconds < self.params['start-at'] ) {
-          self.seekTo(self.params['start-at']);
+        if (seconds < self.params['start-at']) {
+          self.this.seekTo(self.params['start-at']);
         }
 
         if (seconds > self.params['end-at']) {
-          self.seekTo(self.params['start-at']);
+          self.this.seekTo(self.params['start-at']);
         }
       });
     }
