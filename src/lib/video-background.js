@@ -19,6 +19,8 @@ export function VideoBackground(elem, params, vid_data, uid) {
 
   this.params = {};
 
+  this.ready = false;
+
   const MIME_MAP = {
     'ogv' : 'video/ogg',
     'ogm' : 'video/ogg',
@@ -40,8 +42,8 @@ export function VideoBackground(elem, params, vid_data, uid) {
     'inline-styles': true,
     'fit-box': false,
     'offset': 200,
-//    'start-at': 0,
-//    'end-at': 0,
+    'start-at': 0,
+    'end-at': 0,
     'poster': null,
     'always-play': false,
     'volume': 1
@@ -128,23 +130,20 @@ VideoBackground.prototype.injectPlayer = function () {
   }
 
   const self = this;
-  /*
-  this.player.addEventListener('canplay', (e) => {
-    if (self.params['start-at'] && self.params.autoplay) {
-      self.seekTo(self.params['start-at']);
-    }
-  });
 
-  this.player.addEventListener('canplaythrough', (e) => {
-    if (self.params['end-at'] > 0) {
-    self.player.addEventListener('timeupdate', (e) => {
-      if (self.params['end-at'] >= self.player.currentTime) {
-        self.seekTo(self.params['start-at']);
+  if (this.params['start-at'] && this.params.autoplay) {
+    this.player.addEventListener('canplay', (e) => {
+      self.player.fastSeek(this.params['start-at']);
+    }, { once: true });
+  }
+
+  if (this.params['end-at']) {
+    this.player.addEventListener('timeupdate', (e) => {
+      if (self.player.currentTime >= self.params['end-at']) {
+        self.player.fastSeek(this.params['start-at']);
       }
     });
   }
-  });
-  */
 
   const source = document.createElement('source');
   source.setAttribute('src', this.link);
@@ -251,9 +250,17 @@ VideoBackground.prototype.play = function () {
   }
 
   if (this.player) {
-    /* if (this.params['start-at'] && this.player.currentTime < this.params['start-at'] ) {
-      this.seekTo(this.params['start-at']);
-    } */
+    if (this.params['start-at'] || this.params['end-at']) {
+      const seconds = this.player.currentTime;
+      if (this.params['start-at'] && seconds < this.params['start-at']) {
+        this.player.fastSeek(self.params['start-at']);
+      }
+
+      if (this.params['end-at'] && seconds > this.params['end-at']) {
+        this.player.fastSeek(self.params['start-at']);
+      }
+    }
+
     this.player.play();
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }

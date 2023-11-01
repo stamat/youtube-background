@@ -1,6 +1,5 @@
 import { addClass, removeClass, parseResolutionString, parseProperties, generateActionButton } from './utils.js';
 import { isMobile } from 'book-of-spells';
-//import Player from '@vimeo/player';
 
 export function VimeoBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();
@@ -141,7 +140,7 @@ VimeoBackground.prototype.onVideoEnded = function (event) {
 };
 
 VimeoBackground.prototype.onVideoProgress = function (event) {
-  if (Math.round(event.seconds) >= this.params['end-at']) {
+  if (event.seconds >= this.params['end-at']) {
     this.seekTo(this.params['start-at']);
     if (!this.params.loop) this.pause();
   }
@@ -297,12 +296,11 @@ VimeoBackground.prototype.play = function () {
     if (this.params['start-at'] || this.params['end-at']) {
       const self = this;
       this.player.getCurrentTime().then(function(seconds) {
-        seconds = Math.round(seconds);
-        if (seconds < self.params['start-at']) {
+        if (self.params['start-at'] && seconds < self.params['start-at']) {
           self.this.seekTo(self.params['start-at']);
         }
 
-        if (seconds > self.params['end-at']) {
+        if (self.params['end-at'] && seconds > self.params['end-at']) {
           self.this.seekTo(self.params['start-at']);
         }
       });

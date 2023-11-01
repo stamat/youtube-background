@@ -241,15 +241,15 @@
     this.__init__();
   }
   YoutubeBackground.prototype.initYTPlayer = function() {
-    const self = this;
+    const self2 = this;
     if (window.hasOwnProperty("YT") && this.player === null) {
       this.player = new YT.Player(this.uid, {
         events: {
           "onReady": function(event) {
-            self.onVideoPlayerReady(event);
+            self2.onVideoPlayerReady(event);
           },
           "onStateChange": function(event) {
-            self.onVideoStateChange(event);
+            self2.onVideoStateChange(event);
           },
           "onError": function(event) {
           }
@@ -328,18 +328,18 @@
       this.iframe.style.height = "100%";
     } else {
       let onResize = function() {
-        const h = self.iframe.parentNode.offsetHeight + self.params.offset;
-        const w = self.iframe.parentNode.offsetWidth + self.params.offset;
-        const res = self.params.resolution_mod;
+        const h = self2.iframe.parentNode.offsetHeight + self2.params.offset;
+        const w = self2.iframe.parentNode.offsetWidth + self2.params.offset;
+        const res = self2.params.resolution_mod;
         if (res > w / h) {
-          self.iframe.style.width = h * res + "px";
-          self.iframe.style.height = h + "px";
+          self2.iframe.style.width = h * res + "px";
+          self2.iframe.style.height = h + "px";
         } else {
-          self.iframe.style.width = w + "px";
-          self.iframe.style.height = w / res + "px";
+          self2.iframe.style.width = w + "px";
+          self2.iframe.style.height = w / res + "px";
         }
       };
-      const self = this;
+      const self2 = this;
       if (window.hasOwnProperty("ResizeObserver")) {
         const resize_observer = new ResizeObserver(() => {
           window.requestAnimationFrame(onResize);
@@ -582,7 +582,7 @@
     }
   };
   VimeoBackground.prototype.onVideoProgress = function(event) {
-    if (Math.round(event.seconds) >= this.params["end-at"]) {
+    if (event.seconds >= this.params["end-at"]) {
       this.seekTo(this.params["start-at"]);
       if (!this.params.loop)
         this.pause();
@@ -624,17 +624,17 @@
       this.iframe.style.width = "100%";
       this.iframe.style.height = "100%";
     } else {
-      const self = this;
+      const self2 = this;
       const onResize = function() {
-        const h = self.iframe.parentNode.offsetHeight + self.params.offset;
-        const w = self.iframe.parentNode.offsetWidth + self.params.offset;
-        const res = self.params.resolution_mod;
+        const h = self2.iframe.parentNode.offsetHeight + self2.params.offset;
+        const w = self2.iframe.parentNode.offsetWidth + self2.params.offset;
+        const res = self2.params.resolution_mod;
         if (res > w / h) {
-          self.iframe.style.width = h * res + "px";
-          self.iframe.style.height = h + "px";
+          self2.iframe.style.width = h * res + "px";
+          self2.iframe.style.height = h + "px";
         } else {
-          self.iframe.style.width = w + "px";
-          self.iframe.style.height = w / res + "px";
+          self2.iframe.style.width = w + "px";
+          self2.iframe.style.height = w / res + "px";
         }
       };
       if (window.hasOwnProperty("ResizeObserver")) {
@@ -706,14 +706,13 @@
     }
     if (this.player) {
       if (this.params["start-at"] || this.params["end-at"]) {
-        const self = this;
+        const self2 = this;
         this.player.getCurrentTime().then(function(seconds) {
-          seconds = Math.round(seconds);
-          if (seconds < self.params["start-at"]) {
-            self.this.seekTo(self.params["start-at"]);
+          if (self2.params["start-at"] && seconds < self2.params["start-at"]) {
+            self2.this.seekTo(self2.params["start-at"]);
           }
-          if (seconds > self.params["end-at"]) {
-            self.this.seekTo(self.params["start-at"]);
+          if (self2.params["end-at"] && seconds > self2.params["end-at"]) {
+            self2.this.seekTo(self2.params["start-at"]);
           }
         });
       }
@@ -783,6 +782,7 @@
     this.state.mute = false;
     this.state.volume_once = false;
     this.params = {};
+    this.ready = false;
     const MIME_MAP = {
       "ogv": "video/ogg",
       "ogm": "video/ogg",
@@ -804,8 +804,8 @@
       "inline-styles": true,
       "fit-box": false,
       "offset": 200,
-      //    'start-at': 0,
-      //    'end-at': 0,
+      "start-at": 0,
+      "end-at": 0,
       "poster": null,
       "always-play": false,
       "volume": 1
@@ -877,7 +877,19 @@
         e.target.style.opacity = 1;
       });
     }
-    const self = this;
+    const self2 = this;
+    if (this.params["start-at"] && this.params.autoplay) {
+      this.player.addEventListener("canplay", (e) => {
+        self2.player.fastSeek(this.params["start-at"]);
+      }, { once: true });
+    }
+    if (this.params["end-at"]) {
+      this.player.addEventListener("timeupdate", (e) => {
+        if (self2.player.currentTime >= self2.params["end-at"]) {
+          self2.player.fastSeek(this.params["start-at"]);
+        }
+      });
+    }
     const source = document.createElement("source");
     source.setAttribute("src", this.link);
     source.setAttribute("type", this.mime);
@@ -888,15 +900,15 @@
       this.player.style.height = "100%";
     } else {
       let onResize = function() {
-        const h = self.player.parentNode.offsetHeight + self.params.offset;
-        const w = self.player.parentNode.offsetWidth + self.params.offset;
-        const res = self.params.resolution_mod;
+        const h = self2.player.parentNode.offsetHeight + self2.params.offset;
+        const w = self2.player.parentNode.offsetWidth + self2.params.offset;
+        const res = self2.params.resolution_mod;
         if (res > w / h) {
-          self.player.style.width = h * res + "px";
-          self.player.style.height = h + "px";
+          self2.player.style.width = h * res + "px";
+          self2.player.style.height = h + "px";
         } else {
-          self.player.style.width = w + "px";
-          self.player.style.height = w / res + "px";
+          self2.player.style.width = w + "px";
+          self2.player.style.height = w / res + "px";
         }
       };
       if (window.hasOwnProperty("ResizeObserver")) {
@@ -965,6 +977,15 @@
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
     if (this.player) {
+      if (this.params["start-at"] || this.params["end-at"]) {
+        const seconds = this.player.currentTime;
+        if (this.params["start-at"] && seconds < this.params["start-at"]) {
+          this.player.fastSeek(self.params["start-at"]);
+        }
+        if (this.params["end-at"] && seconds > this.params["end-at"]) {
+          this.player.fastSeek(self.params["start-at"]);
+        }
+      }
       this.player.play();
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
@@ -1028,22 +1049,22 @@
     this.re.VIMEO = RE_VIMEO;
     this.re.VIDEO = RE_VIDEO;
     this.__init__ = function() {
-      const self = this;
+      const self2 = this;
       this.intersectionObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           const uid = entry.target.getAttribute("data-vbg-uid");
-          if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
-            self.index[uid].isIntersecting = true;
+          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
+            self2.index[uid].isIntersecting = true;
             try {
-              if (self.index[uid].player && self.index[uid].params.autoplay)
-                self.index[uid].play();
+              if (self2.index[uid].player && self2.index[uid].params.autoplay)
+                self2.index[uid].play();
             } catch (e) {
             }
           } else {
-            self.index[uid].isIntersecting = false;
+            self2.index[uid].isIntersecting = false;
             try {
-              if (self.index[uid].player)
-                self.index[uid].pause();
+              if (self2.index[uid].player)
+                self2.index[uid].pause();
             } catch (e) {
             }
           }
@@ -1120,11 +1141,11 @@
     }
   };
   VideoBackgrounds.prototype.initPlayers = function(callback) {
-    const self = this;
+    const self2 = this;
     window.onYouTubeIframeAPIReady = function() {
-      for (let k in self.index) {
-        if (self.index[k] instanceof YoutubeBackground) {
-          self.index[k].initYTPlayer();
+      for (let k in self2.index) {
+        if (self2.index[k] instanceof YoutubeBackground) {
+          self2.index[k].initYTPlayer();
         }
       }
       if (callback) {
@@ -1135,9 +1156,9 @@
       window.onYouTubeIframeAPIReady();
     }
     window.onVimeoIframeAPIReady = function() {
-      for (let k in self.index) {
-        if (self.index[k] instanceof VimeoBackground) {
-          self.index[k].initVimeoPlayer();
+      for (let k in self2.index) {
+        if (self2.index[k] instanceof VimeoBackground) {
+          self2.index[k].initVimeoPlayer();
         }
       }
       if (callback) {

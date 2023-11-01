@@ -156,6 +156,8 @@ Available properties for HTML5 Video backgrounds:
 * play-button
 * mute-button
 * poster
+* start-at
+* end-at
 * always-play
 * volume
 
