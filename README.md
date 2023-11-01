@@ -90,7 +90,7 @@ Property | Default | Accepts | Description
 **mobile** | false | boolean | Keep the youtube embed on mobile
 **fit-box** | false | boolean | Set iframe to fit the container, meaning `width: 100%; height: 100%`
 **inline-styles** | true | boolean | Enable/disable inline styles from the iframe and wrapper. The default wrapper styles are: `background-size: cover;`, `background-repeat: no-repeat;` and `background-position: center;`; the default iframe styles are `top: 50%;`, `left: 50%;`, `transform: translateX(-50%) translateY(-50%);`, `position: absolute;`, and `opacity: 0;`
-**load-background** | false | boolean | Fetch background from youtube or vimeo **THIS DEFAULTS TO FALSE** since v1.0.18. It is recommended that you provide and host your own background photo preferably as an image element with `srcset` and `loading="lazy"` for performance reasons.
+**load-background** | false | boolean | Fetch background from youtube or vimeo **THIS DEFAULTS TO FALSE** since v1.0.18. It is recommended that you provide and host your own background photo preferably as an image element with `srcset` and `loading="lazy"` for performance reasons. Works only with **YouTube** and **Vimeo**.
 **poster** | null | string | Provide your own background
 **offset** | 200 | int | showinfo:0 id deprecated since September 25, 2018. - this setting makes the video a bit larger than it's viewport to hide the info elements
 **resolution** | 16:9 | string | declare video resolution (work in progress)
@@ -99,7 +99,7 @@ Property | Default | Accepts | Description
 **end-at** | 0 | int | Video ends playing at desired time in seconds. 0 means it will play to the end.
 **always-play** | false | boolean | Video will stop playing unless always-play is set to true.
 **volume** | 1 | float | From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Sets initial volume. Setting volume doesn't work on mobile, so this setting won't have an effect on mobile.
-**no-cookie** | true | boolean | Disable cookies. This will prevent YouTube and Vimeo from storing information and tracking you across the web. It is set to true by default.
+**no-cookie** | true | boolean | Disable cookies. This will prevent **YouTube** and **Vimeo** from storing information and tracking you across the web. It is set to true by default.
 
 Noted properties can be added as html attributes as:
 
@@ -120,46 +120,6 @@ Noted properties can be added as html attributes as:
 * **data-vbg-always-play**
 * **data-vbg-volume**
 * **data-vbg-no-cookie**
-
-#### Vimeo support
-
-Available properties for Vimeo backgrounds:
-
-* muted
-* loop
-* mobile
-* resolution
-* inline-styles
-* fit-box
-* offset
-* play-button
-* mute-button
-* poster
-* start-at
-* end-at
-* always-play
-* volume
-* no-cookie
-
-#### HTML5 Video support
-
-Available properties for HTML5 Video backgrounds:
-
-* autoplay
-* muted
-* loop
-* mobile
-* resolution
-* inline-styles
-* fit-box
-* offset
-* play-button
-* mute-button
-* poster
-* start-at
-* end-at
-* always-play
-* volume
 
 #### Example - Properties as HTML attributes
 
