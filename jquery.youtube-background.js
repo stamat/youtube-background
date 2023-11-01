@@ -1,4 +1,4 @@
-/* youtube-background v1.0.19 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.20 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // node_modules/book-of-spells/src/helpers.mjs
   function stringToBoolean(str) {
