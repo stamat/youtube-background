@@ -92,7 +92,7 @@ Property | Default | Accepts | Description
 **inline-styles** | true | boolean | Enable/disable inline styles from the iframe and wrapper. The default wrapper styles are: `background-size: cover;`, `background-repeat: no-repeat;` and `background-position: center;`; the default iframe styles are `top: 50%;`, `left: 50%;`, `transform: translateX(-50%) translateY(-50%);`, `position: absolute;`, and `opacity: 0;`
 **load-background** | false | boolean | Fetch background from youtube or vimeo **THIS DEFAULTS TO FALSE** since v1.0.18. It is recommended that you provide and host your own background photo preferably as an image element with `srcset` and `loading="lazy"` for performance reasons. Works only with **YouTube** and **Vimeo**.
 **poster** | null | string | Provide your own background
-**offset** | 200 | int | showinfo:0 id deprecated since September 25, 2018. - this setting makes the video a bit larger than it's viewport to hide the info elements
+**offset** | 100 | int | showinfo:0 id deprecated since September 25, 2018. - this setting makes the video a bit larger than it's viewport to hide the info elements. This setting defaults to 100 only for **YouTube** videos.
 **resolution** | 16:9 | string | declare video resolution (work in progress)
 **pause** | false | boolean | Adds a toggle pause button (deprecated)
 **start-at** | 0 | int | Video starts playing at desired time in seconds

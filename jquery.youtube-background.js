@@ -46,6 +46,9 @@
   function isArray(o) {
     return Array.isArray(o);
   }
+  function isString(o) {
+    return typeof o === "string";
+  }
   function randomIntInclusive(min, max) {
     if (min > max)
       [min, max] = [max, min];
@@ -69,6 +72,42 @@
     if (isNaN(w) || isNaN(h))
       return DEFAULT_RESOLUTION;
     return w / h;
+  }
+
+  // node_modules/book-of-spells/src/dom.mjs
+  function query(selector, from = document) {
+    if (selector instanceof Array || selector instanceof NodeList)
+      return selector;
+    if (selector instanceof Element)
+      return [selector];
+    if (from instanceof Element || from instanceof Document)
+      return from.querySelectorAll(selector);
+    if (isString(from))
+      from = query(from);
+    if (!from instanceof Array && !from instanceof NodeList)
+      return [];
+    const res = [];
+    for (const element of from) {
+      res.push(...element.querySelectorAll(selector));
+    }
+    return res;
+  }
+  function proportionalParentCoverResize(elements, ratio = 1, offset = 0) {
+    if (elements instanceof Element)
+      elements = [elements];
+    if (typeof elements === "string")
+      elements = query(elements);
+    for (const element of elements) {
+      const h = element.parentNode.offsetHeight + offset;
+      const w = element.parentNode.offsetWidth + offset;
+      if (ratio > w / h) {
+        element.style.width = h * ratio + "px";
+        element.style.height = h + "px";
+      } else {
+        element.style.width = w + "px";
+        element.style.height = w / ratio + "px";
+      }
+    }
   }
 
   // node_modules/book-of-spells/src/regex.mjs
@@ -190,7 +229,8 @@
       },
       "inline-styles": true,
       "fit-box": false,
-      "offset": 200,
+      "offset": 100,
+      // since showinfo is deprecated and ignored after September 25, 2018. we add +100 to hide it in the overflow
       "start-at": 0,
       "end-at": 0,
       "poster": null,
@@ -327,30 +367,17 @@
       this.iframe.style.width = "100%";
       this.iframe.style.height = "100%";
     } else {
-      let onResize = function() {
-        const h = self2.iframe.parentNode.offsetHeight + self2.params.offset;
-        const w = self2.iframe.parentNode.offsetWidth + self2.params.offset;
-        const res = self2.params.resolution_mod;
-        if (res > w / h) {
-          self2.iframe.style.width = h * res + "px";
-          self2.iframe.style.height = h + "px";
-        } else {
-          self2.iframe.style.width = w + "px";
-          self2.iframe.style.height = w / res + "px";
-        }
-      };
-      const self2 = this;
       if (window.hasOwnProperty("ResizeObserver")) {
         const resize_observer = new ResizeObserver(() => {
-          window.requestAnimationFrame(onResize);
+          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
         });
         resize_observer.observe(this.element);
       } else {
         window.addEventListener("resize", () => {
-          window.requestAnimationFrame(onResize);
+          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
         });
       }
-      onResize();
+      proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
     }
   };
   YoutubeBackground.prototype.buildHTML = function() {
@@ -505,7 +532,7 @@
       "resolution": "16:9",
       "inline-styles": true,
       "fit-box": false,
-      "offset": 200,
+      "offset": 2,
       "start-at": 0,
       "end-at": 0,
       "poster": null,
@@ -640,30 +667,17 @@
       this.iframe.style.width = "100%";
       this.iframe.style.height = "100%";
     } else {
-      const self2 = this;
-      const onResize = function() {
-        const h = self2.iframe.parentNode.offsetHeight + self2.params.offset;
-        const w = self2.iframe.parentNode.offsetWidth + self2.params.offset;
-        const res = self2.params.resolution_mod;
-        if (res > w / h) {
-          self2.iframe.style.width = h * res + "px";
-          self2.iframe.style.height = h + "px";
-        } else {
-          self2.iframe.style.width = w + "px";
-          self2.iframe.style.height = w / res + "px";
-        }
-      };
       if (window.hasOwnProperty("ResizeObserver")) {
         const resize_observer = new ResizeObserver(() => {
-          window.requestAnimationFrame(onResize);
+          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
         });
         resize_observer.observe(this.element);
       } else {
         window.addEventListener("resize", () => {
-          window.requestAnimationFrame(onResize);
+          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
         });
       }
-      onResize();
+      proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
     }
   };
   VimeoBackground.prototype.buildHTML = function() {
@@ -835,7 +849,7 @@
       "resolution": "16:9",
       "inline-styles": true,
       "fit-box": false,
-      "offset": 200,
+      "offset": 2,
       "start-at": 0,
       "end-at": 0,
       "poster": null,
@@ -931,29 +945,17 @@
       this.player.style.width = "100%";
       this.player.style.height = "100%";
     } else {
-      let onResize = function() {
-        const h = self2.player.parentNode.offsetHeight + self2.params.offset;
-        const w = self2.player.parentNode.offsetWidth + self2.params.offset;
-        const res = self2.params.resolution_mod;
-        if (res > w / h) {
-          self2.player.style.width = h * res + "px";
-          self2.player.style.height = h + "px";
-        } else {
-          self2.player.style.width = w + "px";
-          self2.player.style.height = w / res + "px";
-        }
-      };
       if (window.hasOwnProperty("ResizeObserver")) {
         const resize_observer = new ResizeObserver(() => {
-          window.requestAnimationFrame(onResize);
+          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
         });
         resize_observer.observe(this.element);
       } else {
         window.addEventListener("resize", () => {
-          window.requestAnimationFrame(onResize);
+          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
         });
       }
-      onResize();
+      proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
     }
   };
   VideoBackground.prototype.buildHTML = function() {

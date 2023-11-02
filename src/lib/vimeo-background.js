@@ -1,5 +1,5 @@
 import { addClass, removeClass, parseProperties, generateActionButton } from './utils.js';
-import { isMobile, parseResolutionString } from 'book-of-spells';
+import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
 
 export function VimeoBackground(elem, params, id, uid) {
   this.is_mobile = isMobile();
@@ -30,7 +30,7 @@ export function VimeoBackground(elem, params, id, uid) {
     'resolution': '16:9',
     'inline-styles': true,
     'fit-box': false,
-    'offset': 200,
+    'offset': 2,
     'start-at': 0,
     'end-at': 0,
     'poster': null,
@@ -193,35 +193,18 @@ VimeoBackground.prototype.injectPlayer = function () {
     this.iframe.style.width = '100%';
     this.iframe.style.height = '100%';
   } else {
-    const self = this;
-
-    const onResize = function() {
-      const h = self.iframe.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
-      const w = self.iframe.parentNode.offsetWidth + self.params.offset;
-      const res = self.params.resolution_mod;
-
-      if (res > w/h) {
-        self.iframe.style.width = h*res + 'px';
-        self.iframe.style.height = h + 'px';
-      } else {
-        self.iframe.style.width = w + 'px';
-        self.iframe.style.height = w/res + 'px';
-      }
-    };
-
     if (window.hasOwnProperty('ResizeObserver')) {
       const resize_observer = new ResizeObserver(() => {
-        window.requestAnimationFrame(onResize);
+        window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
       });
       resize_observer.observe(this.element);
     } else {
       window.addEventListener('resize', () => {
-        window.requestAnimationFrame(onResize);
+        window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
       });
     }
-    onResize();
+    proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
   }
-  
 };
 
 VimeoBackground.prototype.buildHTML = function () {

@@ -1,5 +1,5 @@
 import { addClass, removeClass, parseProperties, generateActionButton } from './utils.js';
-import { isMobile, parseResolutionString } from 'book-of-spells';
+import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
 
 export function VideoBackground(elem, params, vid_data, uid) {
   this.is_mobile = isMobile();
@@ -41,7 +41,7 @@ export function VideoBackground(elem, params, vid_data, uid) {
     'resolution': '16:9',
     'inline-styles': true,
     'fit-box': false,
-    'offset': 200,
+    'offset': 2,
     'start-at': 0,
     'end-at': 0,
     'poster': null,
@@ -155,32 +155,17 @@ VideoBackground.prototype.injectPlayer = function () {
     this.player.style.width = '100%';
     this.player.style.height = '100%';
   } else {
-    //TODO❗️: maybe a spacer or at least add requestAnimationFrame
-    function onResize() {
-      const h = self.player.parentNode.offsetHeight + self.params.offset; // since showinfo is deprecated and ignored after September 25, 2018. we add +200 to hide it in the overflow
-      const w = self.player.parentNode.offsetWidth + self.params.offset;
-      const res = self.params.resolution_mod;
-
-      if (res > w/h) {
-        self.player.style.width = h*res + 'px';
-        self.player.style.height = h + 'px';
-      } else {
-        self.player.style.width = w + 'px';
-        self.player.style.height = w/res + 'px';
-      }
-    }
-
     if (window.hasOwnProperty('ResizeObserver')) {
       const resize_observer = new ResizeObserver(() => {
-        window.requestAnimationFrame(onResize);
+        window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
       });
       resize_observer.observe(this.element);
     } else {
       window.addEventListener('resize', () => {
-        window.requestAnimationFrame(onResize);
+        window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
       });
     }
-    onResize();
+    proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
   }
 };
 
