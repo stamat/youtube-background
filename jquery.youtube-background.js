@@ -367,18 +367,13 @@
         this.iframe.style.width = "100%";
         this.iframe.style.height = "100%";
       } else {
-        if (window.hasOwnProperty("ResizeObserver")) {
-          const resize_observer = new ResizeObserver(() => {
-            window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
-          });
-          resize_observer.observe(this.element);
-        } else {
-          window.addEventListener("resize", () => {
-            window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
-          });
-        }
-        proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
+        this.resize();
       }
+    }
+    resize() {
+      if (this.params["fit-box"])
+        return;
+      proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
     }
     buildHTML() {
       const parent = this.element.parentNode;
@@ -606,6 +601,11 @@
           this.setVolume(this.params.volume);
       }
     }
+    resize() {
+      if (this.params["fit-box"])
+        return;
+      proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
+    }
     seekTo(time) {
       this.player.setCurrentTime(time);
     }
@@ -666,17 +666,7 @@
         this.iframe.style.width = "100%";
         this.iframe.style.height = "100%";
       } else {
-        if (window.hasOwnProperty("ResizeObserver")) {
-          const resize_observer = new ResizeObserver(() => {
-            window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
-          });
-          resize_observer.observe(this.element);
-        } else {
-          window.addEventListener("resize", () => {
-            window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
-          });
-        }
-        proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
+        this.resize();
       }
     }
     buildHTML() {
@@ -942,17 +932,7 @@
         this.player.style.width = "100%";
         this.player.style.height = "100%";
       } else {
-        if (window.hasOwnProperty("ResizeObserver")) {
-          const resize_observer = new ResizeObserver(() => {
-            window.requestAnimationFrame(() => proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset));
-          });
-          resize_observer.observe(this.element);
-        } else {
-          window.addEventListener("resize", () => {
-            window.requestAnimationFrame(() => proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset));
-          });
-        }
-        proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
+        this.resize();
       }
     }
     buildHTML() {
@@ -999,6 +979,11 @@
         parent.appendChild(controls);
       }
       return this.element;
+    }
+    resize() {
+      if (this.params["fit-box"])
+        return;
+      proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
     }
     softPause() {
       if (!this.state.playing || !this.player)
@@ -1125,6 +1110,23 @@
           }
         });
       });
+      this.resizeObserver = null;
+      if ("ResizeObserver" in window) {
+        this.resizeObserver = new ResizeObserver(function(entries) {
+          entries.forEach(function(entry) {
+            const uid = entry.target.getAttribute("data-vbg-uid");
+            if (uid && self2.index.hasOwnProperty(uid)) {
+              window.requestAnimationFrame(() => self2.index[uid].resize());
+            }
+          });
+        });
+      } else {
+        window.addEventListener("resize", function() {
+          for (let k in self2.index) {
+            window.requestAnimationFrame(() => self2.index[k].resize());
+          }
+        });
+      }
       this.initPlayers();
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
@@ -1155,8 +1157,11 @@
           this.index[uid] = vid;
           break;
       }
+      if (this.resizeObserver) {
+        this.resizeObserver.observe(element);
+      }
       if (!this.index[uid].params["always-play"]) {
-        this.intersectionObserver.observe(this.index[uid].element);
+        this.intersectionObserver.observe(element);
       }
     }
     getVidID(link) {

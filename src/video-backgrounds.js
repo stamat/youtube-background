@@ -40,7 +40,27 @@ export class VideoBackgrounds {
           }
         }
       });
-    });       
+    });
+
+    this.resizeObserver = null;
+
+    if ('ResizeObserver' in window) {
+      this.resizeObserver = new ResizeObserver(function (entries) {
+        entries.forEach(function (entry) {
+          const uid = entry.target.getAttribute('data-vbg-uid');
+
+          if (uid && self.index.hasOwnProperty(uid)) {
+            window.requestAnimationFrame(() => self.index[uid].resize());
+          }
+        });
+      });
+    } else {
+      window.addEventListener('resize', function () {
+        for (let k in self.index) {
+          window.requestAnimationFrame(() => self.index[k].resize());
+        }
+      });
+    }
     
     this.initPlayers();
 
@@ -78,9 +98,13 @@ export class VideoBackgrounds {
         this.index[uid] = vid;
         break;
     }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.observe(element);
+    }
   
     if (!this.index[uid].params['always-play']) {
-      this.intersectionObserver.observe(this.index[uid].element);
+      this.intersectionObserver.observe(element);
     }
   }
 

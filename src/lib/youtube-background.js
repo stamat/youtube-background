@@ -63,7 +63,6 @@ export class YoutubeBackground {
 
     this.injectPlayer();
 
-
     if (this.params['play-button']) {
       generateActionButton(this, {
         name: 'play',
@@ -190,18 +189,13 @@ export class YoutubeBackground {
       this.iframe.style.width = '100%';
       this.iframe.style.height = '100%';
     } else {
-      if (window.hasOwnProperty('ResizeObserver')) {
-        const resize_observer = new ResizeObserver(() => {
-          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
-        });
-        resize_observer.observe(this.element);
-      } else {
-        window.addEventListener('resize', () => {
-          window.requestAnimationFrame(() => proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset));
-        });
-      }
-      proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
+      this.resize();
     }
+  }
+
+  resize() {
+    if (this.params['fit-box']) return;
+    proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
   }
 
   buildHTML() {

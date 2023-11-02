@@ -150,17 +150,7 @@ export class VideoBackground {
       this.player.style.width = '100%';
       this.player.style.height = '100%';
     } else {
-      if (window.hasOwnProperty('ResizeObserver')) {
-        const resize_observer = new ResizeObserver(() => {
-          window.requestAnimationFrame(() => proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset));
-        });
-        resize_observer.observe(this.element);
-      } else {
-        window.addEventListener('resize', () => {
-          window.requestAnimationFrame(() => proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset));
-        });
-      }
-      proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
+      this.resize();
     }
   }
 
@@ -218,6 +208,11 @@ export class VideoBackground {
     }
   
     return this.element;
+  }
+
+  resize() {
+    if (this.params['fit-box']) return;
+    proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
   }
 
   softPause() {
