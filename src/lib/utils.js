@@ -18,23 +18,6 @@ export function toogleClass(element, className) {
   element.classList.toggle(className);
 }
 
-export function parseResolutionString(res) {
-  const pts = res.split(/\s?:\s?/i);
-  const DEFAULT_RESOLUTION = 16/9;
-  if (pts.length < 2) {
-    return DEFAULT_RESOLUTION;
-  }
-
-  const w = parseInt(pts[0], 10);
-  const h = parseInt(pts[1], 10);
-
-  if (isNaN(w) || isNaN(h)) {
-    return DEFAULT_RESOLUTION;
-  }
-
-  return w/h;
-}
-
 export function parseProperties(params, defaults, element, attr_prefix) {
   let res_params = {};
 

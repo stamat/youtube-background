@@ -1,5 +1,5 @@
-import { addClass, removeClass, parseResolutionString, parseProperties, generateActionButton } from './utils.js';
-import { isMobile } from 'book-of-spells';
+import { addClass, removeClass, parseProperties, generateActionButton } from './utils.js';
+import { isMobile, parseResolutionString } from 'book-of-spells';
 
 export function VideoBackground(elem, params, vid_data, uid) {
   this.is_mobile = isMobile();

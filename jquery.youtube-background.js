@@ -55,6 +55,21 @@
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+  function parseResolutionString(res) {
+    const DEFAULT_RESOLUTION = 1.7777777778;
+    if (!res || !res.length || /16[\:x\-\/]{1}9/i.test(res))
+      return DEFAULT_RESOLUTION;
+    const pts = res.split(/\s?[\:x\-\/]{1}\s?/i);
+    if (pts.length < 2)
+      return DEFAULT_RESOLUTION;
+    const w = parseInt(pts[0]);
+    const h = parseInt(pts[1]);
+    if (w === 0 || h === 0)
+      return DEFAULT_RESOLUTION;
+    if (isNaN(w) || isNaN(h))
+      return DEFAULT_RESOLUTION;
+    return w / h;
+  }
 
   // node_modules/book-of-spells/src/regex.mjs
   var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
@@ -86,19 +101,6 @@
   function removeClass(element, classNames) {
     const classes = classNames.split(" ");
     element.classList.remove(...classes);
-  }
-  function parseResolutionString(res) {
-    const pts = res.split(/\s?:\s?/i);
-    const DEFAULT_RESOLUTION = 16 / 9;
-    if (pts.length < 2) {
-      return DEFAULT_RESOLUTION;
-    }
-    const w = parseInt(pts[0], 10);
-    const h = parseInt(pts[1], 10);
-    if (isNaN(w) || isNaN(h)) {
-      return DEFAULT_RESOLUTION;
-    }
-    return w / h;
   }
   function parseProperties(params, defaults, element, attr_prefix) {
     let res_params = {};
