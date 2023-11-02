@@ -1,8 +1,10 @@
-import { addClass, removeClass, parseProperties, generateActionButton } from './utils.js';
+import { addClass, removeClass, parseProperties, generateActionButton, buildWrapperHTML } from './utils.js';
 import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
 
 export class YoutubeBackground {
   constructor(elem, params, id, uid) {
+    this.type = 'youtube';
+
     this.is_mobile = isMobile();
 
     this.element = elem;
@@ -55,7 +57,7 @@ export class YoutubeBackground {
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
 
-    this.buildHTML();
+    buildWrapperHTML.bind(this)();
 
     if (this.is_mobile && !this.params.mobile) {
       return;
@@ -196,63 +198,6 @@ export class YoutubeBackground {
   resize() {
     if (this.params['fit-box']) return;
     proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
-  }
-
-  buildHTML() {
-    const parent = this.element.parentNode;
-    // wrap
-    addClass(this.element, 'youtube-background video-background');
-  
-    //set css rules
-    const wrapper_styles = {
-      "height" : "100%",
-      "width" : "100%",
-      "z-index": "0",
-      "position": "absolute",
-      "overflow": "hidden",
-      "top": 0, // added by @insad
-      "left": 0,
-      "bottom": 0,
-      "right": 0
-    };
-  
-    if (!this.params['mute-button']) {
-      wrapper_styles["pointer-events"] = "none" // avoid right mouse click popup menu
-    }
-  
-    if (this.params['load-background'] || this.params['poster']) {
-      if (this.params['load-background']) wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/hqdefault.jpg)';
-      if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
-      wrapper_styles['background-size'] = 'cover';
-      wrapper_styles['background-repeat'] = 'no-repeat';
-      wrapper_styles['background-position'] = 'center';
-    }
-  
-    if (this.params['inline-styles']) {
-      for (let property in wrapper_styles) {
-        this.element.style[property] = wrapper_styles[property];
-      }
-  
-      if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
-        parent.style.position = 'relative';
-      }
-    }
-  
-    // set play/mute controls wrap
-    if (this.params['play-button'] || this.params['mute-button']) {
-      const controls = document.createElement('div');
-      controls.className = 'video-background-controls';
-  
-      controls.style.position = 'absolute';
-      controls.style.top = '10px';
-      controls.style.right = '10px';
-      controls.style['z-index'] = 2;
-  
-      this.controls_element = controls;
-      parent.appendChild(controls);
-    }
-  
-    return this.element;
   }
 
   softPause() {
