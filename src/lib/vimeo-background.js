@@ -1,8 +1,12 @@
-import { addClass, removeClass, parseProperties, generateActionButton, buildWrapperHTML } from './utils.js';
+import { addClass, removeClass, parseProperties, generateActionButton } from './utils.js';
 import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
 
-export class VimeoBackground {
+import { SuperVideoBackground } from './super-video-background.js';
+
+export class VimeoBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid) {
+    super(elem, params, id, uid);
+
     this.type = 'vimeo';
 
     this.is_mobile = isMobile();
@@ -58,7 +62,7 @@ export class VimeoBackground {
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
 
-    buildWrapperHTML.bind(this)();
+    this.buildWrapperHTML();
 
     if (this.is_mobile && !this.params.mobile) {
       return;

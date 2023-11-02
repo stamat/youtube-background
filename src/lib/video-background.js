@@ -1,8 +1,11 @@
-import { addClass, removeClass, parseProperties, generateActionButton, buildWrapperHTML } from './utils.js';
+import { addClass, removeClass, parseProperties, generateActionButton } from './utils.js';
 import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
 
-export class VideoBackground {
+import { SuperVideoBackground } from './super-video-background.js';
+
+export class VideoBackground extends SuperVideoBackground {
   constructor(elem, params, vid_data, uid) {
+    super(elem, params, vid_data, uid);
     this.type = 'video';
 
     this.is_mobile = isMobile();
@@ -64,7 +67,7 @@ export class VideoBackground {
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
 
-    buildWrapperHTML.bind(this)();
+    this.buildWrapperHTML();
 
     if (this.is_mobile && !this.params.mobile) {
       return;
