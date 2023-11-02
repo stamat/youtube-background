@@ -297,11 +297,11 @@ VimeoBackground.prototype.play = function () {
       const self = this;
       this.player.getCurrentTime().then(function(seconds) {
         if (self.params['start-at'] && seconds < self.params['start-at']) {
-          self.this.seekTo(self.params['start-at']);
+          self.seekTo(self.params['start-at']);
         }
 
         if (self.params['end-at'] && seconds > self.params['end-at']) {
-          self.this.seekTo(self.params['start-at']);
+          self.seekTo(self.params['start-at']);
         }
       });
     }

@@ -133,14 +133,14 @@ VideoBackground.prototype.injectPlayer = function () {
 
   if (this.params['start-at'] && this.params.autoplay) {
     this.player.addEventListener('canplay', (e) => {
-      self.player.fastSeek(this.params['start-at']);
+      self.seekTo(this.params['start-at']);
     }, { once: true });
   }
 
   if (this.params['end-at']) {
     this.player.addEventListener('timeupdate', (e) => {
       if (self.player.currentTime >= self.params['end-at']) {
-        self.player.fastSeek(this.params['start-at']);
+        self.seekTo(this.params['start-at']);
       }
     });
   }
@@ -253,11 +253,11 @@ VideoBackground.prototype.play = function () {
     if (this.params['start-at'] || this.params['end-at']) {
       const seconds = this.player.currentTime;
       if (this.params['start-at'] && seconds < this.params['start-at']) {
-        this.player.fastSeek(self.params['start-at']);
+        this.seekTo(self.params['start-at']);
       }
 
       if (this.params['end-at'] && seconds > this.params['end-at']) {
-        this.player.fastSeek(self.params['start-at']);
+        this.seekTo(self.params['start-at']);
       }
     }
 

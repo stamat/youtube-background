@@ -709,10 +709,10 @@
         const self2 = this;
         this.player.getCurrentTime().then(function(seconds) {
           if (self2.params["start-at"] && seconds < self2.params["start-at"]) {
-            self2.this.seekTo(self2.params["start-at"]);
+            self2.seekTo(self2.params["start-at"]);
           }
           if (self2.params["end-at"] && seconds > self2.params["end-at"]) {
-            self2.this.seekTo(self2.params["start-at"]);
+            self2.seekTo(self2.params["start-at"]);
           }
         });
       }
@@ -880,13 +880,13 @@
     const self2 = this;
     if (this.params["start-at"] && this.params.autoplay) {
       this.player.addEventListener("canplay", (e) => {
-        self2.player.fastSeek(this.params["start-at"]);
+        self2.seekTo(this.params["start-at"]);
       }, { once: true });
     }
     if (this.params["end-at"]) {
       this.player.addEventListener("timeupdate", (e) => {
         if (self2.player.currentTime >= self2.params["end-at"]) {
-          self2.player.fastSeek(this.params["start-at"]);
+          self2.seekTo(this.params["start-at"]);
         }
       });
     }
@@ -980,10 +980,10 @@
       if (this.params["start-at"] || this.params["end-at"]) {
         const seconds = this.player.currentTime;
         if (this.params["start-at"] && seconds < this.params["start-at"]) {
-          this.player.fastSeek(self.params["start-at"]);
+          this.seekTo(self.params["start-at"]);
         }
         if (this.params["end-at"] && seconds > this.params["end-at"]) {
-          this.player.fastSeek(self.params["start-at"]);
+          this.seekTo(self.params["start-at"]);
         }
       }
       this.player.play();
