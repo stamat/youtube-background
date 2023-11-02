@@ -27,14 +27,14 @@ export function VideoBackgrounds(selector, params) {
         if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
           self.index[uid].isIntersecting = true;
           try {
-            if (self.index[uid].player && self.index[uid].params.autoplay) self.index[uid].play();
+            if (self.index[uid].player && self.index[uid].params.autoplay) self.index[uid].softPlay();
           } catch (e) {
             // console.log(e);
           }
         } else {
           self.index[uid].isIntersecting = false;
           try {
-            if (self.index[uid].player) self.index[uid].pause();
+            if (self.index[uid].player) self.index[uid].softPause();
           } catch (e) {
             // console.log(e);
           }

@@ -169,8 +169,8 @@
     this.buttons = {};
     this.isIntersecting = false;
     this.state = {};
-    this.state.play = false;
-    this.state.mute = false;
+    this.state.playing = false;
+    this.state.muted = false;
     this.state.volume_once = false;
     this.params = {};
     const DEFAULTS = {
@@ -265,10 +265,8 @@
     const firstScriptTag = document.getElementsByTagName("script")[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   };
-  YoutubeBackground.prototype.seekTo = function(seconds) {
-    if (seconds > 0) {
-      this.player.seekTo(seconds, true);
-    }
+  YoutubeBackground.prototype.seekTo = function(seconds, allowSeekAhead = true) {
+    this.player.seekTo(seconds, allowSeekAhead);
   };
   YoutubeBackground.prototype.onVideoPlayerReady = function(event) {
     this.seekTo(this.params["start-at"]);
@@ -400,66 +398,82 @@
     }
     return this.element;
   };
+  YoutubeBackground.prototype.softPause = function() {
+    if (!this.state.playing || !this.player)
+      return;
+    this.player.pauseVideo();
+    this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
+  };
+  YoutubeBackground.prototype.softPlay = function() {
+    if (!this.state.playing || !this.player)
+      return;
+    this.player.playVideo();
+    this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
+  };
   YoutubeBackground.prototype.play = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("play")) {
       const btn_obj = this.buttons.play;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      if (this.params["start-at"] && this.player.getCurrentTime() < this.params["start-at"]) {
-        this.seekTo(this.params["start-at"]);
-      }
-      this.player.playVideo();
-      this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
+    this.state.playing = true;
+    if (this.params["start-at"] && this.player.getCurrentTime() < this.params["start-at"]) {
+      this.seekTo(this.params["start-at"]);
     }
+    this.player.playVideo();
+    this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
   };
   YoutubeBackground.prototype.pause = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("play")) {
       const btn_obj = this.buttons.play;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      this.player.pauseVideo();
-      this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
-    }
+    this.state.playing = false;
+    this.player.pauseVideo();
+    this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
   };
   YoutubeBackground.prototype.unmute = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("mute")) {
       const btn_obj = this.buttons.mute;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      if (!this.state.volume_once) {
-        this.state.volume_once = true;
-        this.setVolume(this.params.volume);
-      }
-      this.player.unMute();
-      this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
+    this.state.muted = false;
+    if (!this.state.volume_once) {
+      this.state.volume_once = true;
+      this.setVolume(this.params.volume);
     }
+    this.player.unMute();
+    this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
   };
   YoutubeBackground.prototype.mute = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("mute")) {
       const btn_obj = this.buttons.mute;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      this.player.mute();
-      this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
-    }
+    this.state.muted = true;
+    this.player.mute();
+    this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
   };
   YoutubeBackground.prototype.setVolume = function(volume) {
-    if (this.player) {
-      this.player.setVolume(volume * 100);
-      this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
-    }
+    if (!this.player)
+      return;
+    this.player.setVolume(volume * 100);
+    this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
   };
 
   // src/lib/vimeo-background.js
@@ -472,8 +486,8 @@
     this.player = null;
     this.buttons = {};
     this.state = {};
-    this.state.play = false;
-    this.state.mute = false;
+    this.state.playing = false;
+    this.state.muted = false;
     this.state.volume_once = false;
     this.params = {};
     const DEFAULTS = {
@@ -697,74 +711,90 @@
     }
     return this.element;
   };
+  VimeoBackground.prototype.softPause = function() {
+    if (!this.state.playing || !this.player)
+      return;
+    this.player.pause();
+    this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
+  };
+  VimeoBackground.prototype.softPlay = function() {
+    if (!this.state.playing || !this.player)
+      return;
+    this.player.play();
+    this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
+  };
   VimeoBackground.prototype.play = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("play")) {
       const btn_obj = this.buttons.play;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      if (this.params["start-at"] || this.params["end-at"]) {
-        const self2 = this;
-        this.player.getCurrentTime().then(function(seconds) {
-          if (self2.params["start-at"] && seconds < self2.params["start-at"]) {
-            self2.seekTo(self2.params["start-at"]);
-          }
-          if (self2.params["end-at"] && seconds > self2.params["end-at"]) {
-            self2.seekTo(self2.params["start-at"]);
-          }
-        });
-      }
-      this.player.play();
-      this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
+    if (this.params["start-at"] || this.params["end-at"]) {
+      const self2 = this;
+      this.player.getCurrentTime().then(function(seconds) {
+        if (self2.params["start-at"] && seconds < self2.params["start-at"]) {
+          self2.seekTo(self2.params["start-at"]);
+        }
+        if (self2.params["end-at"] && seconds > self2.params["end-at"]) {
+          self2.seekTo(self2.params["start-at"]);
+        }
+      });
     }
+    this.state.playing = true;
+    this.player.play();
+    this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
   };
   VimeoBackground.prototype.pause = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("play")) {
       const btn_obj = this.buttons.play;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      this.player.pause();
-      this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
-    }
+    this.state.playing = false;
+    this.player.pause();
+    this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
   };
   VimeoBackground.prototype.unmute = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("mute")) {
       const btn_obj = this.buttons.mute;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      if (!this.state.volume_once) {
-        this.state.volume_once = true;
-        this.setVolume(this.params.volume);
-      }
-      this.player.setMuted(false);
-      this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
+    this.state.muted = false;
+    if (!this.state.volume_once) {
+      this.state.volume_once = true;
+      this.setVolume(this.params.volume);
     }
+    this.player.setMuted(false);
+    this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
   };
   VimeoBackground.prototype.mute = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("mute")) {
       const btn_obj = this.buttons.mute;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      this.player.setMuted(true);
-      this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
-    }
+    this.state.muted = true;
+    this.player.setMuted(true);
+    this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
   };
   VimeoBackground.prototype.setVolume = function(volume) {
-    if (this.player) {
-      this.player.setVolume(volume);
-      this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
-    }
+    if (!this.player)
+      return;
+    this.player.setVolume(volume);
+    this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
   };
 
   // src/lib/video-background.js
@@ -778,8 +808,8 @@
     this.player = null;
     this.buttons = {};
     this.state = {};
-    this.state.play = false;
-    this.state.mute = false;
+    this.state.playing = false;
+    this.state.muted = false;
     this.state.volume_once = false;
     this.params = {};
     this.ready = false;
@@ -969,72 +999,88 @@
     }
     return this.element;
   };
+  VideoBackground.prototype.softPause = function() {
+    if (!this.state.playing || !this.player)
+      return;
+    this.player.pause();
+    this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
+  };
+  VideoBackground.prototype.softPlay = function() {
+    if (!this.state.playing || !this.player)
+      return;
+    this.player.play();
+    this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
+  };
   VideoBackground.prototype.play = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("play")) {
       const btn_obj = this.buttons.play;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      if (this.params["start-at"] || this.params["end-at"]) {
-        const seconds = this.player.currentTime;
-        if (this.params["start-at"] && seconds < this.params["start-at"]) {
-          this.seekTo(self.params["start-at"]);
-        }
-        if (this.params["end-at"] && seconds > this.params["end-at"]) {
-          this.seekTo(self.params["start-at"]);
-        }
+    if (this.params["start-at"] || this.params["end-at"]) {
+      const seconds = this.player.currentTime;
+      if (this.params["start-at"] && seconds < this.params["start-at"]) {
+        this.seekTo(self.params["start-at"]);
       }
-      this.player.play();
-      this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
+      if (this.params["end-at"] && seconds > this.params["end-at"]) {
+        this.seekTo(self.params["start-at"]);
+      }
     }
+    this.state.playing = true;
+    this.player.play();
+    this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
   };
   VideoBackground.prototype.pause = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("play")) {
       const btn_obj = this.buttons.play;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      this.player.pause();
-      this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
-    }
+    this.state.playing = false;
+    this.player.pause();
+    this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
   };
   VideoBackground.prototype.unmute = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("mute")) {
       const btn_obj = this.buttons.mute;
       removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      this.player.muted = false;
-      if (!this.state.volume_once) {
-        this.state.volume_once = true;
-        this.setVolume(this.params.volume);
-      }
-      this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
+    this.state.muted = false;
+    this.player.muted = false;
+    if (!this.state.volume_once) {
+      this.state.volume_once = true;
+      this.setVolume(this.params.volume);
     }
+    this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
   };
   VideoBackground.prototype.mute = function() {
+    if (!this.player)
+      return;
     if (this.buttons.hasOwnProperty("mute")) {
       const btn_obj = this.buttons.mute;
       addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
       removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
       addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
     }
-    if (this.player) {
-      this.player.muted = true;
-      this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
-    }
+    this.state.muted = true;
+    this.player.muted = true;
+    this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
   };
   VideoBackground.prototype.setVolume = function(volume) {
-    if (this.player) {
-      this.player.volume = volume;
-      this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
-    }
+    if (!this.player)
+      return;
+    this.player.volume = volume;
+    this.element.dispatchEvent(new CustomEvent("video-background-volume-change", { bubbles: true, detail: this }));
   };
 
   // src/video-backgrounds.js
@@ -1057,14 +1103,14 @@
             self2.index[uid].isIntersecting = true;
             try {
               if (self2.index[uid].player && self2.index[uid].params.autoplay)
-                self2.index[uid].play();
+                self2.index[uid].softPlay();
             } catch (e) {
             }
           } else {
             self2.index[uid].isIntersecting = false;
             try {
               if (self2.index[uid].player)
-                self2.index[uid].pause();
+                self2.index[uid].softPause();
             } catch (e) {
             }
           }

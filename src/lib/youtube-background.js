@@ -13,8 +13,8 @@ export function YoutubeBackground(elem, params, id, uid) {
   this.isIntersecting = false;
 
   this.state = {};
-  this.state.play = false;
-  this.state.mute = false;
+  this.state.playing = false;
+  this.state.muted = false;
   this.state.volume_once = false;
 
   this.params = {};
@@ -123,10 +123,8 @@ YoutubeBackground.prototype.injectScript = function () {
   firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 };
 
-YoutubeBackground.prototype.seekTo = function (seconds) {
-  if (seconds > 0) {
-    this.player.seekTo(seconds, true);
-  }
+YoutubeBackground.prototype.seekTo = function (seconds, allowSeekAhead = true) {
+  this.player.seekTo(seconds, allowSeekAhead);
 }
 
 YoutubeBackground.prototype.onVideoPlayerReady = function (event) {
@@ -289,7 +287,20 @@ YoutubeBackground.prototype.buildHTML = function () {
   return this.element;
 };
 
+YoutubeBackground.prototype.softPause = function () {
+  if (!this.state.playing || !this.player) return;
+  this.player.pauseVideo();
+  this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
+};
+
+YoutubeBackground.prototype.softPlay = function () {
+  if (!this.state.playing || !this.player) return;
+  this.player.playVideo();
+  this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
+};
+
 YoutubeBackground.prototype.play = function () {
+  if (!this.player) return;
   //TODO: solve this with ARIA toggle states. P.S. warning repetitive code!!!
   if (this.buttons.hasOwnProperty('play')) {
     const btn_obj = this.buttons.play;
@@ -298,16 +309,17 @@ YoutubeBackground.prototype.play = function () {
     removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
   }
 
-  if (this.player) {
-    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
-      this.seekTo(this.params['start-at']);
-    }
-    this.player.playVideo();
-    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
+  this.state.playing = true;
+
+  if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
+    this.seekTo(this.params['start-at']);
   }
+  this.player.playVideo();
+  this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
 }
 
 YoutubeBackground.prototype.pause = function () {
+  if (!this.player) return;
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('play')) {
     const btn_obj = this.buttons.play;
@@ -316,13 +328,15 @@ YoutubeBackground.prototype.pause = function () {
     addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
   }
 
-  if (this.player) {
-    this.player.pauseVideo();
-    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
-  }
+  this.state.playing = false;
+
+  this.player.pauseVideo();
+  this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
 }
 
 YoutubeBackground.prototype.unmute = function () {
+  if (!this.player) return;
+
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('mute')) {
     const btn_obj = this.buttons.mute;
@@ -331,17 +345,19 @@ YoutubeBackground.prototype.unmute = function () {
     removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
   }
 
-  if (this.player) {
-    if (!this.state.volume_once) {
-      this.state.volume_once = true;
-      this.setVolume(this.params.volume);
-    }
-    this.player.unMute();
-    this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
+  this.state.muted = false;
+
+  if (!this.state.volume_once) {
+    this.state.volume_once = true;
+    this.setVolume(this.params.volume);
   }
+  this.player.unMute();
+  this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
 }
 
 YoutubeBackground.prototype.mute = function () {
+  if (!this.player) return;
+
   //TODO: solve this with ARIA toggle states
   if (this.buttons.hasOwnProperty('mute')) {
     const btn_obj = this.buttons.mute;
@@ -350,15 +366,15 @@ YoutubeBackground.prototype.mute = function () {
     addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
   }
 
-  if (this.player) {
-    this.player.mute();
-    this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
-  }
+  this.state.muted = true;
+
+  this.player.mute();
+  this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
 }
 
 YoutubeBackground.prototype.setVolume = function (volume) {
-  if (this.player) {
-    this.player.setVolume(volume * 100);
-    this.element.dispatchEvent(new CustomEvent('video-background-volume-change', { bubbles: true, detail: this }));
-  }
+  if (!this.player) return;
+  
+  this.player.setVolume(volume * 100);
+  this.element.dispatchEvent(new CustomEvent('video-background-volume-change', { bubbles: true, detail: this }));
 };
