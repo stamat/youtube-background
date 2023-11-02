@@ -221,8 +221,6 @@ VimeoBackground.prototype.injectPlayer = function () {
     }
     onResize();
   }
-
-  //this.player = new Player(this.iframe);
   
 };
 
