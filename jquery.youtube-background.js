@@ -1,4 +1,4 @@
-/* youtube-background v1.0.20 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.21 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   var __defProp = Object.defineProperty;
   var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
