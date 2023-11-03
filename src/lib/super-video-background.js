@@ -1,8 +1,99 @@
+import { parseProperties, generateActionButton } from './utils.js';
+import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
+
 export class SuperVideoBackground {
+  constructor(elem, params, id, uid, type) {
+    if (!id) return;
+    this.is_mobile = isMobile();
+    this.type = type;
+    this.id = id;
+
+    this.element = elem;
+    this.uid = uid;
+    this.element.setAttribute('data-vbg-uid', uid);
+
+    this.buttons = {};
+    this.isIntersecting = false;
+
+    this.state = {};
+    this.state.playing = false;
+    this.state.muted = false;
+    this.state.volume_once = false;
+
+    this.params = {};
+
+    const DEFAULTS = {
+      'pause': false, //deprecated
+      'play-button': false,
+      'mute-button': false,
+      'autoplay': true,
+      'muted': true,
+      'loop': true,
+      'mobile': true,
+      'load-background': false,
+      'resolution': '16:9',
+      'onStatusChange': function() {},
+      'inline-styles': true,
+      'fit-box': false,
+      'offset': 100, // since showinfo is deprecated and ignored after September 25, 2018. we add +100 to hide it in the overflow
+      'start-at': 0,
+      'end-at': 0,
+      'poster': null,
+      'always-play': false,
+      'volume': 1,
+      'no-cookie': true
+    };
+
+    this.params = parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
+
+    //pause deprecated
+    if (this.params.pause) {
+      this.params['play-button'] = this.params.pause;
+    }
+
+    this.params.resolution_mod = parseResolutionString(this.params.resolution);
+    this.state.playing = this.params.autoplay;
+    this.state.muted = this.params.muted;
+
+
+    this.buildWrapperHTML();
+
+    if (this.is_mobile && !this.params.mobile) {
+      return;
+    }
+
+    if (this.params['play-button']) {
+      generateActionButton(this, {
+        name: 'playing',
+        className: 'play-toggle',
+        innerHtml: '<i class="fa"></i>',
+        initialState: !this.state.playing,
+        stateClassName: 'paused',
+        condition_parameter: 'autoplay',
+        stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
+        actions: ['play', 'pause']
+      });
+    }
+
+    if (this.params['mute-button']) {
+      generateActionButton(this, {
+        name: 'muted',
+        className: 'mute-toggle',
+        innerHtml: '<i class="fa"></i>',
+        initialState: this.state.muted,
+        stateClassName: 'muted',
+        condition_parameter: 'muted',
+        stateChildClassNames: ['fa-volume-up', 'fa-volume-mute'],
+        actions: ['unmute', 'mute']
+      });
+    }
+
+  }
+
   buildWrapperHTML() {
     const parent = this.element.parentNode;
     // wrap
-    this.element.classList.add('video-background video-background'.split(' '));
+    this.element.classList.add('youtube-background', 'video-background');
   
     //set css rules
     const wrapper_styles = {
@@ -23,8 +114,8 @@ export class SuperVideoBackground {
   
     if (this.params['load-background'] || this.params['poster']) {
       if (this.params['load-background']) {
-        if (this.type === 'youtube') wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.ytid+'/hqdefault.jpg)';
-        if (this.type === 'vimeo') wrapper_styles['background-image'] = 'url(https://vumbnail.com/'+this.vid+'.jpg)';
+        if (this.type === 'youtube') wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.id+'/hqdefault.jpg)';
+        if (this.type === 'vimeo') wrapper_styles['background-image'] = 'url(https://vumbnail.com/'+this.id+'.jpg)';
       }
       if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
       wrapper_styles['background-size'] = 'cover';
@@ -57,5 +148,20 @@ export class SuperVideoBackground {
     }
   
     return this.element;
+  }
+
+  buttonOn(buttonObj) {
+    if (!buttonObj) return;
+    console.log(buttonObj);
+    buttonObj.element.classList.add(buttonObj.button_properties.stateClassName);
+    buttonObj.element.classList.remove(buttonObj.button_properties.stateChildClassNames[0]);
+    buttonObj.element.firstChild.classList.add(buttonObj.button_properties.stateChildClassNames[1]);
+  }
+
+  buttonOff(buttonObj) {
+    if (!buttonObj) return;
+    buttonObj.element.classList.remove(buttonObj.button_properties.stateClassName);
+    buttonObj.element.classList.add(buttonObj.button_properties.stateChildClassNames[0]);
+    buttonObj.element.firstChild.classList.remove(buttonObj.button_properties.stateChildClassNames[1]);
   }
 }

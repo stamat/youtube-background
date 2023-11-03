@@ -1,110 +1,26 @@
-import { addClass, removeClass, parseProperties, generateActionButton } from './utils.js';
-import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
+import { proportionalParentCoverResize } from 'book-of-spells';
 
 import { SuperVideoBackground } from './super-video-background.js';
 
 export class YoutubeBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid) {
-    super(elem, params, id, uid);
-    this.type = 'youtube';
+    super(elem, params, id, uid, 'youtube');
 
-    this.is_mobile = isMobile();
-
-    this.element = elem;
-    this.ytid = id;
-    this.uid = uid;
-    this.element.setAttribute('data-vbg-uid', uid);
-    this.player = null;
-    this.buttons = {};
-    this.isIntersecting = false;
-
-    this.state = {};
-    this.state.playing = false;
-    this.state.muted = false;
-    this.state.volume_once = false;
-
-    this.params = {};
-
-    const DEFAULTS = {
-      'pause': false, //deprecated
-      'play-button': false,
-      'mute-button': false,
-      'autoplay': true,
-      'muted': true,
-      'loop': true,
-      'mobile': true,
-      'load-background': false,
-      'resolution': '16:9',
-      'onStatusChange': function() {},
-      'inline-styles': true,
-      'fit-box': false,
-      'offset': 100, // since showinfo is deprecated and ignored after September 25, 2018. we add +100 to hide it in the overflow
-      'start-at': 0,
-      'end-at': 0,
-      'poster': null,
-      'always-play': false,
-      'volume': 1,
-      'no-cookie': true
-    };
-
-    if (!this.ytid) return;
-
+    if (!id) return;
     this.injectScript();
 
-    this.params = parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
-    //pause deprecated
-    if (this.params.pause) {
-      this.params['play-button'] = this.params.pause;
-    }
-    this.params.resolution_mod = parseResolutionString(this.params.resolution);
-    this.state.playing = this.params.autoplay;
-    this.state.muted = this.params.muted;
-
-    this.buildWrapperHTML();
-
-    if (this.is_mobile && !this.params.mobile) {
-      return;
-    }
+    this.ytid = id;
+    this.player = null;
 
     this.injectPlayer();
-
-    if (this.params['play-button']) {
-      generateActionButton(this, {
-        name: 'play',
-        className: 'play-toggle',
-        innerHtml: '<i class="fa"></i>',
-        initialState: false,
-        stateClassName: 'paused',
-        condition_parameter: 'autoplay',
-        stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
-        actions: ['play', 'pause']
-      });
-    }
-
-    if (this.params['mute-button']) {
-      generateActionButton(this, {
-        name: 'mute',
-        className: 'mute-toggle',
-        innerHtml: '<i class="fa"></i>',
-        initialState: true,
-        stateClassName: 'muted',
-        condition_parameter: 'muted',
-        stateChildClassNames: ['fa-volume-up', 'fa-volume-mute'],
-        actions: ['unmute', 'mute']
-      });
-    }
   }
 
   initYTPlayer() {
-    const self = this;
     if (window.hasOwnProperty('YT') && this.player === null) {
       this.player = new YT.Player(this.uid, {
         events: {
           'onReady': this.onVideoPlayerReady.bind(this),
-          'onStateChange': this.onVideoStateChange.bind(this),
-          'onError' : function(event) {
-            //console.error('player_api', event);
-          }
+          'onStateChange': this.onVideoStateChange.bind(this)
         }
       });
     }
@@ -217,14 +133,6 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   play() {
     if (!this.player) return;
-    //TODO: solve this with ARIA toggle states. P.S. warning repetitive code!!!
-    if (this.buttons.hasOwnProperty('play')) {
-      const btn_obj = this.buttons.play;
-      removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-      addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-      removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-    }
-  
     this.state.playing = true;
   
     if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
@@ -235,15 +143,6 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   pause() {
-    if (!this.player) return;
-    //TODO: solve this with ARIA toggle states
-    if (this.buttons.hasOwnProperty('play')) {
-      const btn_obj = this.buttons.play;
-      addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-      removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-      addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-    }
-  
     this.state.playing = false;
   
     this.player.pauseVideo();
@@ -252,15 +151,6 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   unmute() {
     if (!this.player) return;
-  
-    //TODO: solve this with ARIA toggle states
-    if (this.buttons.hasOwnProperty('mute')) {
-      const btn_obj = this.buttons.mute;
-      removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-      addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-      removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-    }
-  
     this.state.muted = false;
   
     if (!this.state.volume_once) {
@@ -273,15 +163,6 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   mute() {
     if (!this.player) return;
-  
-    //TODO: solve this with ARIA toggle states
-    if (this.buttons.hasOwnProperty('mute')) {
-      const btn_obj = this.buttons.mute;
-      addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-      removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0])
-      addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-    }
-  
     this.state.muted = true;
   
     this.player.mute();

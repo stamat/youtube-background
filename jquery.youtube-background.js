@@ -1,4 +1,4 @@
-/* youtube-background v1.0.21 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.20 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   var __defProp = Object.defineProperty;
   var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -137,17 +137,6 @@
   }
 
   // src/lib/utils.js
-  function hasClass(element, className) {
-    return element.classList.contains(className);
-  }
-  function addClass(element, classNames) {
-    const classes = classNames.split(" ");
-    element.classList.add(...classes);
-  }
-  function removeClass(element, classNames) {
-    const classes = classNames.split(" ");
-    element.classList.remove(...classes);
-  }
   function parseProperties(params, defaults, element, attr_prefix) {
     let res_params = {};
     if (!params) {
@@ -180,22 +169,36 @@
     }
     return res_params;
   }
+  function buttonOn(buttonObj) {
+    if (!buttonObj)
+      return;
+    console.log(buttonObj);
+    buttonObj.element.classList.add(buttonObj.stateClassName);
+    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
+    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
+  }
+  function buttonOff(buttonObj) {
+    if (!buttonObj)
+      return;
+    buttonObj.element.classList.remove(buttonObj.stateClassName);
+    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[0]);
+    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[1]);
+  }
   function generateActionButton(obj, props) {
     const btn = document.createElement("button");
     btn.className = props.className;
     btn.innerHTML = props.innerHtml;
-    addClass(btn.firstChild, props.stateChildClassNames[0]);
+    btn.firstChild.classList.add(props.stateChildClassNames[0]);
+    props.element = btn;
     if (obj.params[props.condition_parameter] === props.initialState) {
-      addClass(btn, props.stateClassName);
-      removeClass(btn.firstChild, props.stateChildClassNames[0]);
-      addClass(btn.firstChild, props.stateChildClassNames[1]);
+      buttonOn(props);
     }
     btn.addEventListener("click", function(e) {
-      if (hasClass(this, props.stateClassName)) {
-        obj.state[props.name] = false;
+      if (this.classList.contains(props.stateClassName)) {
+        buttonOff(props);
         obj[props.actions[0]]();
       } else {
-        obj.state[props.name] = true;
+        buttonOn(props);
         obj[props.actions[1]]();
       }
     });
@@ -208,70 +211,15 @@
 
   // src/lib/super-video-background.js
   var SuperVideoBackground = class {
-    buildWrapperHTML() {
-      const parent = this.element.parentNode;
-      this.element.classList.add("video-background video-background".split(" "));
-      const wrapper_styles = {
-        "height": "100%",
-        "width": "100%",
-        "z-index": "0",
-        "position": "absolute",
-        "overflow": "hidden",
-        "top": 0,
-        // added by @insad
-        "left": 0,
-        "bottom": 0,
-        "right": 0
-      };
-      if (!this.params["mute-button"]) {
-        wrapper_styles["pointer-events"] = "none";
-      }
-      if (this.params["load-background"] || this.params["poster"]) {
-        if (this.params["load-background"]) {
-          if (this.type === "youtube")
-            wrapper_styles["background-image"] = "url(https://img.youtube.com/vi/" + this.ytid + "/hqdefault.jpg)";
-          if (this.type === "vimeo")
-            wrapper_styles["background-image"] = "url(https://vumbnail.com/" + this.vid + ".jpg)";
-        }
-        if (this.params["poster"])
-          wrapper_styles["background-image"] = this.params["poster"];
-        wrapper_styles["background-size"] = "cover";
-        wrapper_styles["background-repeat"] = "no-repeat";
-        wrapper_styles["background-position"] = "center";
-      }
-      if (this.params["inline-styles"]) {
-        for (let property in wrapper_styles) {
-          this.element.style[property] = wrapper_styles[property];
-        }
-        if (!["absolute", "fixed", "relative", "sticky"].indexOf(parent.style.position)) {
-          parent.style.position = "relative";
-        }
-      }
-      if (this.params["play-button"] || this.params["mute-button"]) {
-        const controls = document.createElement("div");
-        controls.className = "video-background-controls";
-        controls.style.position = "absolute";
-        controls.style.top = "10px";
-        controls.style.right = "10px";
-        controls.style["z-index"] = 2;
-        this.controls_element = controls;
-        parent.appendChild(controls);
-      }
-      return this.element;
-    }
-  };
-
-  // src/lib/youtube-background.js
-  var YoutubeBackground = class extends SuperVideoBackground {
-    constructor(elem, params, id, uid) {
-      super(elem, params, id, uid);
-      this.type = "youtube";
+    constructor(elem, params, id, uid, type) {
+      if (!id)
+        return;
       this.is_mobile = isMobile();
+      this.type = type;
+      this.id = id;
       this.element = elem;
-      this.ytid = id;
       this.uid = uid;
       this.element.setAttribute("data-vbg-uid", uid);
-      this.player = null;
       this.buttons = {};
       this.isIntersecting = false;
       this.state = {};
@@ -303,9 +251,6 @@
         "volume": 1,
         "no-cookie": true
       };
-      if (!this.ytid)
-        return;
-      this.injectScript();
       this.params = parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
       if (this.params.pause) {
         this.params["play-button"] = this.params.pause;
@@ -317,13 +262,12 @@
       if (this.is_mobile && !this.params.mobile) {
         return;
       }
-      this.injectPlayer();
       if (this.params["play-button"]) {
         generateActionButton(this, {
-          name: "play",
+          name: "playing",
           className: "play-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: false,
+          initialState: !this.state.playing,
           stateClassName: "paused",
           condition_parameter: "autoplay",
           stateChildClassNames: ["fa-pause-circle", "fa-play-circle"],
@@ -332,10 +276,10 @@
       }
       if (this.params["mute-button"]) {
         generateActionButton(this, {
-          name: "mute",
+          name: "muted",
           className: "mute-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: true,
+          initialState: this.state.muted,
           stateClassName: "muted",
           condition_parameter: "muted",
           stateChildClassNames: ["fa-volume-up", "fa-volume-mute"],
@@ -343,15 +287,91 @@
         });
       }
     }
+    buildWrapperHTML() {
+      const parent = this.element.parentNode;
+      this.element.classList.add("youtube-background", "video-background");
+      const wrapper_styles = {
+        "height": "100%",
+        "width": "100%",
+        "z-index": "0",
+        "position": "absolute",
+        "overflow": "hidden",
+        "top": 0,
+        // added by @insad
+        "left": 0,
+        "bottom": 0,
+        "right": 0
+      };
+      if (!this.params["mute-button"]) {
+        wrapper_styles["pointer-events"] = "none";
+      }
+      if (this.params["load-background"] || this.params["poster"]) {
+        if (this.params["load-background"]) {
+          if (this.type === "youtube")
+            wrapper_styles["background-image"] = "url(https://img.youtube.com/vi/" + this.id + "/hqdefault.jpg)";
+          if (this.type === "vimeo")
+            wrapper_styles["background-image"] = "url(https://vumbnail.com/" + this.id + ".jpg)";
+        }
+        if (this.params["poster"])
+          wrapper_styles["background-image"] = this.params["poster"];
+        wrapper_styles["background-size"] = "cover";
+        wrapper_styles["background-repeat"] = "no-repeat";
+        wrapper_styles["background-position"] = "center";
+      }
+      if (this.params["inline-styles"]) {
+        for (let property in wrapper_styles) {
+          this.element.style[property] = wrapper_styles[property];
+        }
+        if (!["absolute", "fixed", "relative", "sticky"].indexOf(parent.style.position)) {
+          parent.style.position = "relative";
+        }
+      }
+      if (this.params["play-button"] || this.params["mute-button"]) {
+        const controls = document.createElement("div");
+        controls.className = "video-background-controls";
+        controls.style.position = "absolute";
+        controls.style.top = "10px";
+        controls.style.right = "10px";
+        controls.style["z-index"] = 2;
+        this.controls_element = controls;
+        parent.appendChild(controls);
+      }
+      return this.element;
+    }
+    buttonOn(buttonObj) {
+      if (!buttonObj)
+        return;
+      console.log(buttonObj);
+      buttonObj.element.classList.add(buttonObj.button_properties.stateClassName);
+      buttonObj.element.classList.remove(buttonObj.button_properties.stateChildClassNames[0]);
+      buttonObj.element.firstChild.classList.add(buttonObj.button_properties.stateChildClassNames[1]);
+    }
+    buttonOff(buttonObj) {
+      if (!buttonObj)
+        return;
+      buttonObj.element.classList.remove(buttonObj.button_properties.stateClassName);
+      buttonObj.element.classList.add(buttonObj.button_properties.stateChildClassNames[0]);
+      buttonObj.element.firstChild.classList.remove(buttonObj.button_properties.stateChildClassNames[1]);
+    }
+  };
+
+  // src/lib/youtube-background.js
+  var YoutubeBackground = class extends SuperVideoBackground {
+    constructor(elem, params, id, uid) {
+      super(elem, params, id, uid, "youtube");
+      if (!id)
+        return;
+      this.injectScript();
+      this.ytid = id;
+      this.player = null;
+      this.injectPlayer();
+    }
     initYTPlayer() {
-      const self2 = this;
       if (window.hasOwnProperty("YT") && this.player === null) {
         this.player = new YT.Player(this.uid, {
           events: {
             "onReady": this.onVideoPlayerReady.bind(this),
-            "onStateChange": this.onVideoStateChange.bind(this),
-            "onError": function(event) {
-            }
+            "onStateChange": this.onVideoStateChange.bind(this)
           }
         });
       }
@@ -447,12 +467,6 @@
     play() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("play")) {
-        const btn_obj = this.buttons.play;
-        removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.playing = true;
       if (this.params["start-at"] && this.player.getCurrentTime() < this.params["start-at"]) {
         this.seekTo(this.params["start-at"]);
@@ -461,14 +475,6 @@
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
     pause() {
-      if (!this.player)
-        return;
-      if (this.buttons.hasOwnProperty("play")) {
-        const btn_obj = this.buttons.play;
-        addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.playing = false;
       this.player.pauseVideo();
       this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
@@ -476,12 +482,6 @@
     unmute() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("mute")) {
-        const btn_obj = this.buttons.mute;
-        removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.muted = false;
       if (!this.state.volume_once) {
         this.state.volume_once = true;
@@ -493,12 +493,6 @@
     mute() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("mute")) {
-        const btn_obj = this.buttons.mute;
-        addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.muted = true;
       this.player.mute();
       this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
@@ -514,81 +508,13 @@
   // src/lib/vimeo-background.js
   var VimeoBackground = class extends SuperVideoBackground {
     constructor(elem, params, id, uid) {
-      super(elem, params, id, uid);
-      this.type = "vimeo";
-      this.is_mobile = isMobile();
-      this.element = elem;
-      this.vid = id;
-      this.uid = uid;
-      this.element.setAttribute("data-vbg-uid", uid);
-      this.player = null;
-      this.buttons = {};
-      this.state = {};
-      this.state.playing = false;
-      this.state.muted = false;
-      this.state.volume_once = false;
-      this.params = {};
-      const DEFAULTS = {
-        "pause": false,
-        //deprecated
-        "play-button": false,
-        "mute-button": false,
-        "autoplay": true,
-        "muted": true,
-        "loop": true,
-        "mobile": true,
-        "load-background": false,
-        "resolution": "16:9",
-        "inline-styles": true,
-        "fit-box": false,
-        "offset": 2,
-        "start-at": 0,
-        "end-at": 0,
-        "poster": null,
-        "always-play": false,
-        "volume": 1,
-        "no-cookie": true
-      };
+      super(elem, params, id, uid, "vimeo");
+      if (!id)
+        return;
       this.injectScript();
-      if (!this.vid) {
-        return;
-      }
-      this.params = parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
-      if (this.params.pause) {
-        this.params["play-button"] = this.params.pause;
-      }
-      this.params.resolution_mod = parseResolutionString(this.params.resolution);
-      this.state.playing = this.params.autoplay;
-      this.state.muted = this.params.muted;
-      this.buildWrapperHTML();
-      if (this.is_mobile && !this.params.mobile) {
-        return;
-      }
+      this.vid = id;
+      this.player = null;
       this.injectPlayer();
-      if (this.params["play-button"]) {
-        generateActionButton(this, {
-          name: "play",
-          className: "play-toggle",
-          innerHtml: '<i class="fa"></i>',
-          initialState: false,
-          stateClassName: "paused",
-          condition_parameter: "autoplay",
-          stateChildClassNames: ["fa-pause-circle", "fa-play-circle"],
-          actions: ["play", "pause"]
-        });
-      }
-      if (this.params["mute-button"]) {
-        generateActionButton(this, {
-          name: "mute",
-          className: "mute-toggle",
-          innerHtml: '<i class="fa"></i>',
-          initialState: true,
-          stateClassName: "muted",
-          condition_parameter: "muted",
-          stateChildClassNames: ["fa-volume-up", "fa-volume-mute"],
-          actions: ["unmute", "mute"]
-        });
-      }
     }
     injectScript() {
       if (window.hasOwnProperty("Vimeo") || document.querySelector('script[src="https://player.vimeo.com/api/player.js"]'))
@@ -696,12 +622,6 @@
     play() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("play")) {
-        const btn_obj = this.buttons.play;
-        removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       if (this.params["start-at"] || this.params["end-at"]) {
         const self2 = this;
         this.player.getCurrentTime().then(function(seconds) {
@@ -720,12 +640,6 @@
     pause() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("play")) {
-        const btn_obj = this.buttons.play;
-        addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.playing = false;
       this.player.pause();
       this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
@@ -733,12 +647,6 @@
     unmute() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("mute")) {
-        const btn_obj = this.buttons.mute;
-        removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.muted = false;
       if (!this.state.volume_once) {
         this.state.volume_once = true;
@@ -750,12 +658,6 @@
     mute() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("mute")) {
-        const btn_obj = this.buttons.mute;
-        addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.muted = true;
       this.player.setMuted(true);
       this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
@@ -771,22 +673,13 @@
   // src/lib/video-background.js
   var VideoBackground = class extends SuperVideoBackground {
     constructor(elem, params, vid_data, uid) {
-      super(elem, params, vid_data, uid);
-      this.type = "video";
-      this.is_mobile = isMobile();
-      this.element = elem;
+      super(elem, params, vid_data.link, uid, "video");
       this.link = vid_data.link;
       this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
       this.uid = uid;
       this.element.setAttribute("data-vbg-uid", uid);
       this.player = null;
       this.buttons = {};
-      this.state = {};
-      this.state.playing = false;
-      this.state.muted = false;
-      this.state.volume_once = false;
-      this.params = {};
-      this.ready = false;
       const MIME_MAP = {
         "ogv": "video/ogg",
         "ogm": "video/ogg",
@@ -795,64 +688,8 @@
         "mp4": "video/mp4",
         "webm": "video/webm"
       };
-      const DEFAULTS = {
-        "pause": false,
-        //deprecated
-        "play-button": false,
-        "mute-button": false,
-        "autoplay": true,
-        "muted": true,
-        "loop": true,
-        "mobile": true,
-        "resolution": "16:9",
-        "inline-styles": true,
-        "fit-box": false,
-        "offset": 2,
-        "start-at": 0,
-        "end-at": 0,
-        "poster": null,
-        "always-play": false,
-        "volume": 1
-      };
-      if (!this.link || !this.ext)
-        return;
       this.mime = MIME_MAP[this.ext.toLowerCase()];
-      this.params = parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
-      if (this.params.pause) {
-        this.params["play-button"] = this.params.pause;
-      }
-      this.params.resolution_mod = parseResolutionString(this.params.resolution);
-      this.state.playing = this.params.autoplay;
-      this.state.muted = this.params.muted;
-      this.buildWrapperHTML();
-      if (this.is_mobile && !this.params.mobile) {
-        return;
-      }
       this.injectPlayer();
-      if (this.params["play-button"]) {
-        generateActionButton(this, {
-          name: "play",
-          className: "play-toggle",
-          innerHtml: '<i class="fa"></i>',
-          initialState: false,
-          stateClassName: "paused",
-          condition_parameter: "autoplay",
-          stateChildClassNames: ["fa-pause-circle", "fa-play-circle"],
-          actions: ["play", "pause"]
-        });
-      }
-      if (this.params["mute-button"]) {
-        generateActionButton(this, {
-          name: "mute",
-          className: "mute-toggle",
-          innerHtml: '<i class="fa"></i>',
-          initialState: true,
-          stateClassName: "muted",
-          condition_parameter: "muted",
-          stateChildClassNames: ["fa-volume-up", "fa-volume-mute"],
-          actions: ["unmute", "mute"]
-        });
-      }
     }
     seekTo(seconds) {
       if (this.player.hasOwnProperty("fastSeek")) {
@@ -925,12 +762,6 @@
     play() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("play")) {
-        const btn_obj = this.buttons.play;
-        removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       if (this.params["start-at"] || this.params["end-at"]) {
         const seconds = this.player.currentTime;
         if (this.params["start-at"] && seconds < this.params["start-at"]) {
@@ -947,12 +778,6 @@
     pause() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("play")) {
-        const btn_obj = this.buttons.play;
-        addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.playing = false;
       this.player.pause();
       this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
@@ -960,12 +785,6 @@
     unmute() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("mute")) {
-        const btn_obj = this.buttons.mute;
-        removeClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.muted = false;
       this.player.muted = false;
       if (!this.state.volume_once) {
@@ -977,12 +796,6 @@
     mute() {
       if (!this.player)
         return;
-      if (this.buttons.hasOwnProperty("mute")) {
-        const btn_obj = this.buttons.mute;
-        addClass(btn_obj.element, btn_obj.button_properties.stateClassName);
-        removeClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[0]);
-        addClass(btn_obj.element.firstChild, btn_obj.button_properties.stateChildClassNames[1]);
-      }
       this.state.muted = true;
       this.player.muted = true;
       this.element.dispatchEvent(new CustomEvent("video-background-mute", { bubbles: true, detail: this }));
