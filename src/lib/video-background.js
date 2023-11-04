@@ -1,12 +1,10 @@
-import { proportionalParentCoverResize } from 'book-of-spells';
-
 import { SuperVideoBackground } from './super-video-background.js';
 
 export class VideoBackground extends SuperVideoBackground {
   constructor(elem, params, vid_data, uid) {
     super(elem, params, vid_data.link, uid, 'video');
 
-    this.link = vid_data.link;
+    this.src = vid_data.link;
     this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
     this.uid = uid;
     this.element.setAttribute('data-vbg-uid', uid);
@@ -27,39 +25,39 @@ export class VideoBackground extends SuperVideoBackground {
     this.injectPlayer();
   }
 
-  seekTo(seconds) {
-    if (this.player.hasOwnProperty('fastSeek')) {
-      this.player.fastSeek(seconds);
-      return;
-    }
-    this.player.currentTime = seconds;
+  generatePlayerElement() {
+    const playerElement = document.createElement('video');
+    playerElement.toggleAttribute('playsinline', true);
+    playerElement.toggleAttribute('loop', this.params.loop);
+    playerElement.toggleAttribute('autoplay', this.params.autoplay && (this.params['always-play'] || this.isIntersecting));
+    playerElement.toggleAttribute('muted', this.params.muted);
+
+    return playerElement;
   }
 
   injectPlayer() {
-    this.player = document.createElement('video');
-    this.player.toggleAttribute('playsinline', true);
-    this.player.toggleAttribute('loop', this.params.loop);
-    this.player.toggleAttribute('autoplay', this.params.autoplay && (this.params['always-play'] || this.isIntersecting));
-    this.player.toggleAttribute('muted', this.params.muted);
+    this.player = this.generatePlayerElement();
+    this.playerElement = this.player;
   
     if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
   
-    this.player.setAttribute('id', this.uid)
+    this.playerElement.setAttribute('id', this.uid)
+
+    const source = document.createElement('source');
+    source.setAttribute('src', this.src);
+    source.setAttribute('type', this.mime);
+    this.playerElement.appendChild(source);
+    
   
-    if (this.params['inline-styles']) {
-      this.player.style.top = '50%';
-      this.player.style.left = '50%';
-      this.player.style.transform = 'translateX(-50%) translateY(-50%)';
-      this.player.style.position = 'absolute';
-      this.player.style.opacity = 0;
-  
-      this.player.addEventListener('canplay', (e) => {
-        e.target.style.opacity = 1;
-      });
-    }
+    this.stylePlayerElement(this.playerElement);
+    this.element.appendChild(this.playerElement);
+    this.resize(this.playerElement);
+
+    this.player.addEventListener('canplay', (e) => {
+      e.target.style.opacity = 1;
+    }, { once: true });
   
     const self = this;
-  
     if (this.params['start-at'] && this.params.autoplay) {
       this.player.addEventListener('canplay', (e) => {
         self.seekTo(this.params['start-at']);
@@ -73,24 +71,16 @@ export class VideoBackground extends SuperVideoBackground {
         }
       });
     }
-  
-    const source = document.createElement('source');
-    source.setAttribute('src', this.link);
-    source.setAttribute('type', this.mime);
-    this.player.appendChild(source);
-    this.element.appendChild(this.player);
-  
-    if (this.params['fit-box']) {
-      this.player.style.width = '100%';
-      this.player.style.height = '100%';
-    } else {
-      this.resize();
-    }
   }
 
-  resize() {
-    if (this.params['fit-box']) return;
-    proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
+  /* ===== API ===== */
+
+  seekTo(seconds) {
+    if (this.player.hasOwnProperty('fastSeek')) {
+      this.player.fastSeek(seconds);
+      return;
+    }
+    this.player.currentTime = seconds;
   }
 
   softPause() {

@@ -20,7 +20,7 @@ export function parseProperties(params, defaults, element, attr_prefix) {
     let data;
 
     if (isArray(attr_prefix)) {
-      for (var i = 0; i < attr_prefix.length; i++) {
+      for (let i = 0; i < attr_prefix.length; i++) {
         const temp_data = element.getAttribute(attr_prefix[i]+k);
         if (temp_data) {
           data = temp_data;
@@ -41,7 +41,6 @@ export function parseProperties(params, defaults, element, attr_prefix) {
 
 function buttonOn(buttonObj) {
   if (!buttonObj) return;
-  console.log(buttonObj);
   buttonObj.element.classList.add(buttonObj.stateClassName);
   buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
   buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);

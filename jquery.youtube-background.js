@@ -153,7 +153,7 @@
     for (let k in res_params) {
       let data;
       if (isArray(attr_prefix)) {
-        for (var i = 0; i < attr_prefix.length; i++) {
+        for (let i = 0; i < attr_prefix.length; i++) {
           const temp_data = element.getAttribute(attr_prefix[i] + k);
           if (temp_data) {
             data = temp_data;
@@ -172,7 +172,6 @@
   function buttonOn(buttonObj) {
     if (!buttonObj)
       return;
-    console.log(buttonObj);
     buttonObj.element.classList.add(buttonObj.stateClassName);
     buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
     buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
@@ -218,6 +217,7 @@
       this.type = type;
       this.id = id;
       this.element = elem;
+      this.playerElement = null;
       this.uid = uid;
       this.element.setAttribute("data-vbg-uid", uid);
       this.buttons = {};
@@ -259,9 +259,8 @@
       this.state.playing = this.params.autoplay;
       this.state.muted = this.params.muted;
       this.buildWrapperHTML();
-      if (this.is_mobile && !this.params.mobile) {
+      if (this.is_mobile && !this.params.mobile)
         return;
-      }
       if (this.params["play-button"]) {
         generateActionButton(this, {
           name: "playing",
@@ -285,6 +284,26 @@
           stateChildClassNames: ["fa-volume-up", "fa-volume-mute"],
           actions: ["unmute", "mute"]
         });
+      }
+    }
+    resize(element) {
+      if (this.params["fit-box"])
+        return;
+      proportionalParentCoverResize(element || this.playerElement, this.params.resolution_mod, this.params.offset);
+    }
+    stylePlayerElement(element) {
+      if (!element)
+        return;
+      if (this.params["inline-styles"]) {
+        element.style.top = "50%";
+        element.style.left = "50%";
+        element.style.transform = "translateX(-50%) translateY(-50%)";
+        element.style.position = "absolute";
+        element.style.opacity = 0;
+      }
+      if (this.params["fit-box"]) {
+        element.style.width = "100%";
+        element.style.height = "100%";
       }
     }
     buildWrapperHTML() {
@@ -338,21 +357,6 @@
       }
       return this.element;
     }
-    buttonOn(buttonObj) {
-      if (!buttonObj)
-        return;
-      console.log(buttonObj);
-      buttonObj.element.classList.add(buttonObj.button_properties.stateClassName);
-      buttonObj.element.classList.remove(buttonObj.button_properties.stateChildClassNames[0]);
-      buttonObj.element.firstChild.classList.add(buttonObj.button_properties.stateChildClassNames[1]);
-    }
-    buttonOff(buttonObj) {
-      if (!buttonObj)
-        return;
-      buttonObj.element.classList.remove(buttonObj.button_properties.stateClassName);
-      buttonObj.element.classList.add(buttonObj.button_properties.stateChildClassNames[0]);
-      buttonObj.element.firstChild.classList.remove(buttonObj.button_properties.stateChildClassNames[1]);
-    }
   };
 
   // src/lib/youtube-background.js
@@ -384,16 +388,13 @@
       const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
-    seekTo(seconds, allowSeekAhead = true) {
-      this.player.seekTo(seconds, allowSeekAhead);
-    }
     onVideoPlayerReady(event) {
       this.seekTo(this.params["start-at"]);
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         this.player.playVideo();
         this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
       }
-      this.iframe.style.opacity = 1;
+      this.playerElement.style.opacity = 1;
     }
     onVideoStateChange(event) {
       if (event.data === 0 && this.params.loop) {
@@ -407,10 +408,13 @@
       }
       this.params["onStatusChange"](event);
     }
-    injectPlayer() {
-      this.iframe = document.createElement("iframe");
-      this.iframe.setAttribute("frameborder", 0);
-      this.iframe.setAttribute("allow", "autoplay; mute");
+    generatePlayerElement() {
+      const playerElement = document.createElement("iframe");
+      playerElement.setAttribute("frameborder", 0);
+      playerElement.setAttribute("allow", "autoplay; mute");
+      return playerElement;
+    }
+    generateSrcURL() {
       let site = "https://www.youtube.com/embed/";
       if (this.params["no-cookie"]) {
         site = "https://www.youtube-nocookie.com/embed/";
@@ -428,29 +432,20 @@
       if (this.params["end-at"] > 0) {
         src += `&end=${this.params["end-at"]}`;
       }
-      this.iframe.src = src;
-      if (this.uid) {
-        this.iframe.id = this.uid;
-      }
-      if (this.params["inline-styles"]) {
-        this.iframe.style.top = "50%";
-        this.iframe.style.left = "50%";
-        this.iframe.style.transform = "translateX(-50%) translateY(-50%)";
-        this.iframe.style.position = "absolute";
-        this.iframe.style.opacity = 0;
-      }
-      this.element.appendChild(this.iframe);
-      if (this.params["fit-box"]) {
-        this.iframe.style.width = "100%";
-        this.iframe.style.height = "100%";
-      } else {
-        this.resize();
-      }
+      return src;
     }
-    resize() {
-      if (this.params["fit-box"])
-        return;
-      proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
+    injectPlayer() {
+      this.playerElement = this.generatePlayerElement();
+      this.src = this.generateSrcURL();
+      this.playerElement.src = this.src;
+      this.playerElement.id = this.uid;
+      this.stylePlayerElement(this.playerElement);
+      this.element.appendChild(this.playerElement);
+      this.resize(this.playerElement);
+    }
+    /* ===== API ===== */
+    seekTo(seconds, allowSeekAhead = true) {
+      this.player.seekTo(seconds, allowSeekAhead);
     }
     softPause() {
       if (!this.state.playing || !this.player)
@@ -530,7 +525,7 @@
     }
     initVimeoPlayer() {
       if (window.hasOwnProperty("Vimeo") && this.player === null) {
-        this.player = new Vimeo.Player(this.iframe);
+        this.player = new Vimeo.Player(this.playerElement);
         this.player.on("loaded", this.onVideoPlayerReady.bind(this));
         this.player.on("ended", this.onVideoEnded.bind(this));
         if (this.params["end-at"] > 0)
@@ -539,21 +534,13 @@
           this.setVolume(this.params.volume);
       }
     }
-    resize() {
-      if (this.params["fit-box"])
-        return;
-      proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
-    }
-    seekTo(time) {
-      this.player.setCurrentTime(time);
-    }
     onVideoPlayerReady() {
       this.seekTo(this.params["start-at"]);
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         this.player.play();
         this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
       }
-      this.iframe.style.opacity = 1;
+      this.playerElement.style.opacity = 1;
     }
     onVideoEnded() {
       if (this.params["start-at"] && this.params.loop) {
@@ -568,10 +555,13 @@
           this.pause();
       }
     }
-    injectPlayer() {
-      this.iframe = document.createElement("iframe");
-      this.iframe.setAttribute("frameborder", 0);
-      this.iframe.setAttribute("allow", ["autoplay; mute"]);
+    generatePlayerElement() {
+      const playerElement = document.createElement("iframe");
+      playerElement.setAttribute("frameborder", 0);
+      playerElement.setAttribute("allow", "autoplay; mute");
+      return playerElement;
+    }
+    generateSrcURL() {
       let src = "https://player.vimeo.com/video/" + this.vid + "?background=1&controls=0";
       if (this.params.muted) {
         src += "&muted=1";
@@ -588,24 +578,20 @@
       if (this.params["start-at"]) {
         src += "#t=" + this.params["start-at"] + "s";
       }
-      this.iframe.src = src;
-      if (this.uid) {
-        this.iframe.id = this.uid;
-      }
-      if (this.params["inline-styles"]) {
-        this.iframe.style.top = "50%";
-        this.iframe.style.left = "50%";
-        this.iframe.style.transform = "translateX(-50%) translateY(-50%)";
-        this.iframe.style.position = "absolute";
-        this.iframe.style.opacity = 1;
-      }
-      this.element.appendChild(this.iframe);
-      if (this.params["fit-box"]) {
-        this.iframe.style.width = "100%";
-        this.iframe.style.height = "100%";
-      } else {
-        this.resize();
-      }
+      return src;
+    }
+    injectPlayer() {
+      this.playerElement = this.generatePlayerElement();
+      this.src = this.generateSrcURL();
+      this.playerElement.src = this.src;
+      this.playerElement.id = this.uid;
+      this.stylePlayerElement(this.playerElement);
+      this.element.appendChild(this.playerElement);
+      this.resize(this.playerElement);
+    }
+    /* ===== API ===== */
+    seekTo(time) {
+      this.player.setCurrentTime(time);
     }
     softPause() {
       if (!this.state.playing || !this.player)
@@ -674,7 +660,7 @@
   var VideoBackground = class extends SuperVideoBackground {
     constructor(elem, params, vid_data, uid) {
       super(elem, params, vid_data.link, uid, "video");
-      this.link = vid_data.link;
+      this.src = vid_data.link;
       this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
       this.uid = uid;
       this.element.setAttribute("data-vbg-uid", uid);
@@ -691,32 +677,30 @@
       this.mime = MIME_MAP[this.ext.toLowerCase()];
       this.injectPlayer();
     }
-    seekTo(seconds) {
-      if (this.player.hasOwnProperty("fastSeek")) {
-        this.player.fastSeek(seconds);
-        return;
-      }
-      this.player.currentTime = seconds;
+    generatePlayerElement() {
+      const playerElement = document.createElement("video");
+      playerElement.toggleAttribute("playsinline", true);
+      playerElement.toggleAttribute("loop", this.params.loop);
+      playerElement.toggleAttribute("autoplay", this.params.autoplay && (this.params["always-play"] || this.isIntersecting));
+      playerElement.toggleAttribute("muted", this.params.muted);
+      return playerElement;
     }
     injectPlayer() {
-      this.player = document.createElement("video");
-      this.player.toggleAttribute("playsinline", true);
-      this.player.toggleAttribute("loop", this.params.loop);
-      this.player.toggleAttribute("autoplay", this.params.autoplay && (this.params["always-play"] || this.isIntersecting));
-      this.player.toggleAttribute("muted", this.params.muted);
+      this.player = this.generatePlayerElement();
+      this.playerElement = this.player;
       if (this.params.volume !== 1 && !this.params.muted)
         this.setVolume(this.params.volume);
-      this.player.setAttribute("id", this.uid);
-      if (this.params["inline-styles"]) {
-        this.player.style.top = "50%";
-        this.player.style.left = "50%";
-        this.player.style.transform = "translateX(-50%) translateY(-50%)";
-        this.player.style.position = "absolute";
-        this.player.style.opacity = 0;
-        this.player.addEventListener("canplay", (e) => {
-          e.target.style.opacity = 1;
-        });
-      }
+      this.playerElement.setAttribute("id", this.uid);
+      const source = document.createElement("source");
+      source.setAttribute("src", this.src);
+      source.setAttribute("type", this.mime);
+      this.playerElement.appendChild(source);
+      this.stylePlayerElement(this.playerElement);
+      this.element.appendChild(this.playerElement);
+      this.resize(this.playerElement);
+      this.player.addEventListener("canplay", (e) => {
+        e.target.style.opacity = 1;
+      }, { once: true });
       const self2 = this;
       if (this.params["start-at"] && this.params.autoplay) {
         this.player.addEventListener("canplay", (e) => {
@@ -730,22 +714,14 @@
           }
         });
       }
-      const source = document.createElement("source");
-      source.setAttribute("src", this.link);
-      source.setAttribute("type", this.mime);
-      this.player.appendChild(source);
-      this.element.appendChild(this.player);
-      if (this.params["fit-box"]) {
-        this.player.style.width = "100%";
-        this.player.style.height = "100%";
-      } else {
-        this.resize();
-      }
     }
-    resize() {
-      if (this.params["fit-box"])
+    /* ===== API ===== */
+    seekTo(seconds) {
+      if (this.player.hasOwnProperty("fastSeek")) {
+        this.player.fastSeek(seconds);
         return;
-      proportionalParentCoverResize(this.player, this.params.resolution_mod, this.params.offset);
+      }
+      this.player.currentTime = seconds;
     }
     softPause() {
       if (!this.state.playing || !this.player)
@@ -861,7 +837,7 @@
       } else {
         window.addEventListener("resize", function() {
           for (let k in self2.index) {
-            window.requestAnimationFrame(() => self2.index[k].resize());
+            window.requestAnimationFrame(() => self2.index[k].resize(self2.index[k].playerElement));
           }
         });
       }

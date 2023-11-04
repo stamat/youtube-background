@@ -27,7 +27,7 @@ export class VimeoBackground extends SuperVideoBackground {
 
   initVimeoPlayer() {
     if (window.hasOwnProperty('Vimeo') && this.player === null) {
-      this.player = new Vimeo.Player(this.iframe);
+      this.player = new Vimeo.Player(this.playerElement);
   
       this.player.on('loaded', this.onVideoPlayerReady.bind(this));
       this.player.on('ended', this.onVideoEnded.bind(this));
@@ -37,15 +37,6 @@ export class VimeoBackground extends SuperVideoBackground {
     }
   }
 
-  resize() {
-    if (this.params['fit-box']) return;
-    proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
-  }
-
-  seekTo(time) {
-    this.player.setCurrentTime(time);
-  }
-
   onVideoPlayerReady() {
     this.seekTo(this.params['start-at']);
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
@@ -53,7 +44,7 @@ export class VimeoBackground extends SuperVideoBackground {
       this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
     }
   
-    this.iframe.style.opacity = 1;
+    this.playerElement.style.opacity = 1;
   }
 
   onVideoEnded() {
@@ -70,10 +61,15 @@ export class VimeoBackground extends SuperVideoBackground {
     }
   }
 
-  injectPlayer() {
-    this.iframe = document.createElement('iframe');
-    this.iframe.setAttribute('frameborder', 0);
-    this.iframe.setAttribute('allow', ['autoplay; mute']);
+  generatePlayerElement() {
+    const playerElement = document.createElement('iframe');
+    playerElement.setAttribute('frameborder', 0);
+    playerElement.setAttribute('allow', 'autoplay; mute');
+
+    return playerElement;
+  }
+
+  generateSrcURL() {
     let src = 'https://player.vimeo.com/video/'+this.vid+'?background=1&controls=0';
   
     if (this.params.muted) {
@@ -92,33 +88,29 @@ export class VimeoBackground extends SuperVideoBackground {
       src += '&dnt=1';
     }
   
-    //WARN❗️ this is a hash not a query param
+    //WARN❗️: this is a hash not a query param
     if (this.params['start-at']) {
       src += '#t=' + this.params['start-at'] + 's';
     }
-  
-    this.iframe.src = src;
-  
-    if (this.uid) {
-      this.iframe.id = this.uid;
-    }
-  
-    if (this.params['inline-styles']) {
-      this.iframe.style.top = '50%';
-      this.iframe.style.left = '50%';
-      this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
-      this.iframe.style.position = 'absolute';
-      this.iframe.style.opacity = 1;
-    }
-  
-    this.element.appendChild(this.iframe);
-  
-    if (this.params['fit-box']) {
-      this.iframe.style.width = '100%';
-      this.iframe.style.height = '100%';
-    } else {
-      this.resize();
-    }
+
+    return src;
+  }
+
+  injectPlayer() {
+    this.playerElement = this.generatePlayerElement();
+    this.src = this.generateSrcURL();
+    this.playerElement.src = this.src;
+    this.playerElement.id = this.uid;
+    
+    this.stylePlayerElement(this.playerElement);
+    this.element.appendChild(this.playerElement);
+    this.resize(this.playerElement);
+  }
+
+  /* ===== API ===== */
+
+  seekTo(time) {
+    this.player.setCurrentTime(time);
   }
 
   softPause() {

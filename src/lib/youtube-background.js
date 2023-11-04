@@ -1,5 +1,3 @@
-import { proportionalParentCoverResize } from 'book-of-spells';
-
 import { SuperVideoBackground } from './super-video-background.js';
 
 export class YoutubeBackground extends SuperVideoBackground {
@@ -34,10 +32,6 @@ export class YoutubeBackground extends SuperVideoBackground {
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   }
 
-  seekTo(seconds, allowSeekAhead = true) {
-    this.player.seekTo(seconds, allowSeekAhead);
-  }
-
   onVideoPlayerReady(event) {
     this.seekTo(this.params['start-at']);
   
@@ -46,7 +40,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
     }
   
-    this.iframe.style.opacity = 1;
+    this.playerElement.style.opacity = 1;
   }
 
   onVideoStateChange(event) {
@@ -64,16 +58,21 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.params["onStatusChange"](event);
   }
 
-  injectPlayer() {
-    this.iframe = document.createElement('iframe');
-    this.iframe.setAttribute('frameborder', 0);
-    this.iframe.setAttribute('allow', 'autoplay; mute');
+  generatePlayerElement() {
+    const playerElement = document.createElement('iframe');
+    playerElement.setAttribute('frameborder', 0);
+    playerElement.setAttribute('allow', 'autoplay; mute');
+
+    return playerElement;
+  }
+
+  generateSrcURL() {
     let site = 'https://www.youtube.com/embed/';
     if (this.params['no-cookie']) {
       site = 'https://www.youtube-nocookie.com/embed/';
     }
     let src = `${site}${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
-  
+
     if (this.params.muted) {
       src += '&mute=1';
     }
@@ -89,34 +88,25 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (this.params['end-at'] > 0) {
       src += `&end=${this.params['end-at']}`;
     }
-  
-    this.iframe.src = src;
-  
-    if (this.uid) {
-      this.iframe.id = this.uid;
-    }
-  
-    if (this.params['inline-styles']) {
-      this.iframe.style.top = '50%';
-      this.iframe.style.left = '50%';
-      this.iframe.style.transform = 'translateX(-50%) translateY(-50%)';
-      this.iframe.style.position = 'absolute';
-      this.iframe.style.opacity = 0;
-    }
-  
-    this.element.appendChild(this.iframe);
-  
-    if (this.params['fit-box']) {
-      this.iframe.style.width = '100%';
-      this.iframe.style.height = '100%';
-    } else {
-      this.resize();
-    }
+
+    return src;
   }
 
-  resize() {
-    if (this.params['fit-box']) return;
-    proportionalParentCoverResize(this.iframe, this.params.resolution_mod, this.params.offset);
+  injectPlayer() {
+    this.playerElement = this.generatePlayerElement();
+    this.src = this.generateSrcURL();
+    this.playerElement.src = this.src;
+    this.playerElement.id = this.uid;
+
+    this.stylePlayerElement(this.playerElement);
+    this.element.appendChild(this.playerElement);
+    this.resize(this.playerElement);
+  }
+
+  /* ===== API ===== */
+
+  seekTo(seconds, allowSeekAhead = true) {
+    this.player.seekTo(seconds, allowSeekAhead);
   }
 
   softPause() {

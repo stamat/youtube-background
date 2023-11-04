@@ -57,7 +57,7 @@ export class VideoBackgrounds {
     } else {
       window.addEventListener('resize', function () {
         for (let k in self.index) {
-          window.requestAnimationFrame(() => self.index[k].resize());
+          window.requestAnimationFrame(() => self.index[k].resize(self.index[k].playerElement));
         }
       });
     }

@@ -9,6 +9,7 @@ export class SuperVideoBackground {
     this.id = id;
 
     this.element = elem;
+    this.playerElement = null;
     this.uid = uid;
     this.element.setAttribute('data-vbg-uid', uid);
 
@@ -58,9 +59,7 @@ export class SuperVideoBackground {
 
     this.buildWrapperHTML();
 
-    if (this.is_mobile && !this.params.mobile) {
-      return;
-    }
+    if (this.is_mobile && !this.params.mobile) return;
 
     if (this.params['play-button']) {
       generateActionButton(this, {
@@ -87,7 +86,28 @@ export class SuperVideoBackground {
         actions: ['unmute', 'mute']
       });
     }
+  }
 
+  resize(element) {
+    if (this.params['fit-box']) return;
+    proportionalParentCoverResize(element || this.playerElement, this.params.resolution_mod, this.params.offset);
+  }
+
+  stylePlayerElement(element) {
+    if (!element) return;
+
+    if (this.params['inline-styles']) {
+      element.style.top = '50%';
+      element.style.left = '50%';
+      element.style.transform = 'translateX(-50%) translateY(-50%)';
+      element.style.position = 'absolute';
+      element.style.opacity = 0;
+    }
+
+    if (this.params['fit-box']) {
+      element.style.width = '100%';
+      element.style.height = '100%';
+    }
   }
 
   buildWrapperHTML() {
@@ -148,20 +168,5 @@ export class SuperVideoBackground {
     }
   
     return this.element;
-  }
-
-  buttonOn(buttonObj) {
-    if (!buttonObj) return;
-    console.log(buttonObj);
-    buttonObj.element.classList.add(buttonObj.button_properties.stateClassName);
-    buttonObj.element.classList.remove(buttonObj.button_properties.stateChildClassNames[0]);
-    buttonObj.element.firstChild.classList.add(buttonObj.button_properties.stateChildClassNames[1]);
-  }
-
-  buttonOff(buttonObj) {
-    if (!buttonObj) return;
-    buttonObj.element.classList.remove(buttonObj.button_properties.stateClassName);
-    buttonObj.element.classList.add(buttonObj.button_properties.stateChildClassNames[0]);
-    buttonObj.element.firstChild.classList.remove(buttonObj.button_properties.stateChildClassNames[1]);
   }
 }
