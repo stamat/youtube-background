@@ -799,7 +799,6 @@
       this.stylePlayerElement(this.playerElement);
       this.element.appendChild(this.playerElement);
       this.resize(this.playerElement);
-      const self2 = this;
       this.player.addEventListener("loadedmetadata", this.onVideoLoadedMetadata.bind(this), { once: true });
       this.player.addEventListener("durationchange", this.onVideoLoadedMetadata.bind(this), { once: true });
       this.player.addEventListener("canplay", this.onVideoCanPlay.bind(this), { once: true });
