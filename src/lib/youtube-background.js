@@ -23,6 +23,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.currentState = 'notstarted';
     this.timeUpdateTimer = null;
     this.currentTime = 0 || this.params['start-at'];
+    this.duration = 0 || this.params['end-at'];
   }
 
   startTimeUpdateTimer() {
@@ -114,6 +115,10 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       if (this.params['start-at']) this.seekTo(this.params['start-at']);
       this.player.playVideo();
+    }
+
+    if (!this.params['end-at']) {
+      this.duration = this.player.getDuration();
     }
   
     this.playerElement.style.opacity = 1;
