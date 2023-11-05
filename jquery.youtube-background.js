@@ -843,7 +843,6 @@
       if (!vid_data)
         return;
       const uid = this.generateUID(vid_data.id);
-      console.log(uid);
       if (!uid)
         return;
       switch (vid_data.type) {

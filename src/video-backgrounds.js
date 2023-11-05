@@ -2,7 +2,7 @@ import { YoutubeBackground } from './lib/youtube-background.js';
 import { VimeoBackground } from './lib/vimeo-background.js';
 import { VideoBackground } from './lib/video-background.js';
 
-import { randomIntInclusive, RE_VIDEO, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
+import { randomIntInclusive, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
 
 export class VideoBackgrounds {
   constructor(selector, params) {
@@ -16,7 +16,7 @@ export class VideoBackgrounds {
     this.re = {};
     this.re.YOUTUBE = RE_YOUTUBE;
     this.re.VIMEO = RE_VIMEO;
-    this.re.VIDEO = RE_VIDEO;
+    this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
 
     const self = this;
 
@@ -74,15 +74,11 @@ export class VideoBackgrounds {
     const link = element.getAttribute('data-youtube') || element.getAttribute('data-vbg');
     const vid_data = this.getVidID(link);
   
-    if (!vid_data) {
-      return;
-    }
-  
+    if (!vid_data) return;
+    
     const uid = this.generateUID(vid_data.id);
   
-    if (!uid) {
-      return;
-    }
+    if (!uid) return;
   
     switch (vid_data.type) {
       case 'YOUTUBE':
@@ -109,27 +105,32 @@ export class VideoBackgrounds {
   }
 
   getVidID(link) {
-    if (link !== undefined && link !== null) {
-      for (let k in this.re) {
-        const pts = link.match(this.re[k]);
-  
-        if (pts && pts.length) {
-          this.re[k].lastIndex = 0;
-          return {
-            id: pts[1],
-            type: k,
-            regex_pts: pts,
-            link: link
-          };
-        }
+    if (link === undefined && link === null) return;
+    
+    for (let k in this.re) {
+      const pts = link.match(this.re[k]);
+
+      if (pts && pts.length) {
+        this.re[k].lastIndex = 0;
+        return {
+          id: pts[1],
+          type: k,
+          regex_pts: pts,
+          link: link
+        };
       }
     }
   
-    return null;
+    return;
   }
 
-  generateUID = function (pref) {
+  generateUID(pref) {
     //index the instance
+    pref = pref.replace(/[^a-zA-Z0-9\-_]/g, '-'); //sanitize id
+    pref = pref.replace(/-{2,}/g, '-'); //remove double dashes
+    pref = pref.replace(/^-+/, '').replace(/-+$/, ''); //trim dashes
+    pref = 'vbg-'+ pref; //prefix id with 'vbg-
+
     let uid = pref +'-'+ randomIntInclusive(0, 9999);
     while (this.index.hasOwnProperty(uid)) {
       uid = pref +'-'+ randomIntInclusive(0, 9999);
