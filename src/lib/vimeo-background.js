@@ -6,6 +6,7 @@ export class VimeoBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid) {
     super(elem, params, id, uid, 'vimeo');
     if (!id) return;
+    if (this.is_mobile && !this.params.mobile) return;
     this.injectScript();
 
     this.vid = id;

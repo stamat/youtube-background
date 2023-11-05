@@ -365,6 +365,8 @@
       super(elem, params, id, uid, "youtube");
       if (!id)
         return;
+      if (this.is_mobile && !this.params.mobile)
+        return;
       this.injectScript();
       this.ytid = id;
       this.player = null;
@@ -389,8 +391,9 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
     onVideoPlayerReady(event) {
-      this.seekTo(this.params["start-at"]);
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
+        if (this.params["start-at"])
+          this.seekTo(this.params["start-at"]);
         this.player.playVideo();
         this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
       }
@@ -480,7 +483,6 @@
       this.state.muted = false;
       if (!this.state.volume_once) {
         this.state.volume_once = true;
-        this.setVolume(this.params.volume);
       }
       this.player.unMute();
       this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
@@ -505,6 +507,8 @@
     constructor(elem, params, id, uid) {
       super(elem, params, id, uid, "vimeo");
       if (!id)
+        return;
+      if (this.is_mobile && !this.params.mobile)
         return;
       this.injectScript();
       this.vid = id;
@@ -609,13 +613,13 @@
       if (!this.player)
         return;
       if (this.params["start-at"] || this.params["end-at"]) {
-        const self2 = this;
+        const self = this;
         this.player.getCurrentTime().then(function(seconds) {
-          if (self2.params["start-at"] && seconds < self2.params["start-at"]) {
-            self2.seekTo(self2.params["start-at"]);
+          if (self.params["start-at"] && seconds < self.params["start-at"]) {
+            self.seekTo(self.params["start-at"]);
           }
-          if (self2.params["end-at"] && seconds > self2.params["end-at"]) {
-            self2.seekTo(self2.params["start-at"]);
+          if (self.params["end-at"] && seconds > self.params["end-at"]) {
+            self.seekTo(self.params["start-at"]);
           }
         });
       }
@@ -660,6 +664,10 @@
   var VideoBackground = class extends SuperVideoBackground {
     constructor(elem, params, vid_data, uid) {
       super(elem, params, vid_data.link, uid, "video");
+      if (!vid_data || !vid_data.link)
+        return;
+      if (this.is_mobile && !this.params.mobile)
+        return;
       this.src = vid_data.link;
       this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
       this.uid = uid;
@@ -701,16 +709,16 @@
       this.player.addEventListener("canplay", (e) => {
         e.target.style.opacity = 1;
       }, { once: true });
-      const self2 = this;
+      const self = this;
       if (this.params["start-at"] && this.params.autoplay) {
         this.player.addEventListener("canplay", (e) => {
-          self2.seekTo(this.params["start-at"]);
+          self.seekTo(this.params["start-at"]);
         }, { once: true });
       }
       if (this.params["end-at"]) {
         this.player.addEventListener("timeupdate", (e) => {
-          if (self2.player.currentTime >= self2.params["end-at"]) {
-            self2.seekTo(this.params["start-at"]);
+          if (self.player.currentTime >= self.params["end-at"]) {
+            self.seekTo(this.params["start-at"]);
           }
         });
       }
@@ -741,10 +749,10 @@
       if (this.params["start-at"] || this.params["end-at"]) {
         const seconds = this.player.currentTime;
         if (this.params["start-at"] && seconds < this.params["start-at"]) {
-          this.seekTo(self.params["start-at"]);
+          this.seekTo(this.params["start-at"]);
         }
         if (this.params["end-at"] && seconds > this.params["end-at"]) {
-          this.seekTo(self.params["start-at"]);
+          this.seekTo(this.params["start-at"]);
         }
       }
       this.state.playing = true;
@@ -803,22 +811,22 @@
       this.re.YOUTUBE = RE_YOUTUBE;
       this.re.VIMEO = RE_VIMEO;
       this.re.VIDEO = RE_VIDEO;
-      const self2 = this;
+      const self = this;
       this.intersectionObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           const uid = entry.target.getAttribute("data-vbg-uid");
-          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
-            self2.index[uid].isIntersecting = true;
+          if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
+            self.index[uid].isIntersecting = true;
             try {
-              if (self2.index[uid].player && self2.index[uid].params.autoplay)
-                self2.index[uid].softPlay();
+              if (self.index[uid].player && self.index[uid].params.autoplay)
+                self.index[uid].softPlay();
             } catch (e) {
             }
           } else {
-            self2.index[uid].isIntersecting = false;
+            self.index[uid].isIntersecting = false;
             try {
-              if (self2.index[uid].player)
-                self2.index[uid].softPause();
+              if (self.index[uid].player)
+                self.index[uid].softPause();
             } catch (e) {
             }
           }
@@ -829,15 +837,15 @@
         this.resizeObserver = new ResizeObserver(function(entries) {
           entries.forEach(function(entry) {
             const uid = entry.target.getAttribute("data-vbg-uid");
-            if (uid && self2.index.hasOwnProperty(uid)) {
-              window.requestAnimationFrame(() => self2.index[uid].resize());
+            if (uid && self.index.hasOwnProperty(uid)) {
+              window.requestAnimationFrame(() => self.index[uid].resize());
             }
           });
         });
       } else {
         window.addEventListener("resize", function() {
-          for (let k in self2.index) {
-            window.requestAnimationFrame(() => self2.index[k].resize(self2.index[k].playerElement));
+          for (let k in self.index) {
+            window.requestAnimationFrame(() => self.index[k].resize(self.index[k].playerElement));
           }
         });
       }
@@ -906,11 +914,11 @@
       }
     }
     initPlayers(callback) {
-      const self2 = this;
+      const self = this;
       window.onYouTubeIframeAPIReady = function() {
-        for (let k in self2.index) {
-          if (self2.index[k] instanceof YoutubeBackground) {
-            self2.index[k].initYTPlayer();
+        for (let k in self.index) {
+          if (self.index[k] instanceof YoutubeBackground) {
+            self.index[k].initYTPlayer();
           }
         }
         if (callback) {
@@ -921,9 +929,9 @@
         window.onYouTubeIframeAPIReady();
       }
       window.onVimeoIframeAPIReady = function() {
-        for (let k in self2.index) {
-          if (self2.index[k] instanceof VimeoBackground) {
-            self2.index[k].initVimeoPlayer();
+        for (let k in self.index) {
+          if (self.index[k] instanceof VimeoBackground) {
+            self.index[k].initVimeoPlayer();
           }
         }
         if (callback) {

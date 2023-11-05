@@ -5,6 +5,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     super(elem, params, id, uid, 'youtube');
 
     if (!id) return;
+    if (this.is_mobile && !this.params.mobile) return;
     this.injectScript();
 
     this.ytid = id;
@@ -33,9 +34,8 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   onVideoPlayerReady(event) {
-    this.seekTo(this.params['start-at']);
-  
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
+      if (this.params['start-at']) this.seekTo(this.params['start-at']);
       this.player.playVideo();
       this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
     }
@@ -145,7 +145,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   
     if (!this.state.volume_once) {
       this.state.volume_once = true;
-      this.setVolume(this.params.volume);
+      //this.setVolume(this.params.volume);
     }
     this.player.unMute();
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));

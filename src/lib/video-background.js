@@ -3,6 +3,8 @@ import { SuperVideoBackground } from './super-video-background.js';
 export class VideoBackground extends SuperVideoBackground {
   constructor(elem, params, vid_data, uid) {
     super(elem, params, vid_data.link, uid, 'video');
+    if (!vid_data || !vid_data.link) return;
+    if (this.is_mobile && !this.params.mobile) return;
 
     this.src = vid_data.link;
     this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
@@ -101,11 +103,11 @@ export class VideoBackground extends SuperVideoBackground {
     if (this.params['start-at'] || this.params['end-at']) {
       const seconds = this.player.currentTime;
       if (this.params['start-at'] && seconds < this.params['start-at']) {
-        this.seekTo(self.params['start-at']);
+        this.seekTo(this.params['start-at']);
       }
   
       if (this.params['end-at'] && seconds > this.params['end-at']) {
-        this.seekTo(self.params['start-at']);
+        this.seekTo(this.params['start-at']);
       }
     }
   
