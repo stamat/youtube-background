@@ -12,6 +12,10 @@ export class VimeoBackground extends SuperVideoBackground {
     this.player = null;
 
     this.injectPlayer();
+
+    this.currentState = 'notstarted';
+    this.currentTime = 0 || this.params['start-at'];
+    this.duration = 0 || this.params['end-at'];
   }
 
   injectScript() {
@@ -31,33 +35,12 @@ export class VimeoBackground extends SuperVideoBackground {
   
       this.player.on('loaded', this.onVideoPlayerReady.bind(this));
       this.player.on('ended', this.onVideoEnded.bind(this));
-      
-      if (this.params['end-at'] > 0) this.player.on('timeupdate', this.onVideoTimeUpdate.bind(this));
+      this.player.on('play', this.onVideoPlay.bind(this));
+      this.player.on('pause', this.onVideoPause.bind(this));
+      this.player.on('bufferstart', this.onVideoBuffering.bind(this));
+      this.player.on('timeupdate', this.onVideoTimeUpdate.bind(this));
+
       if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
-    }
-  }
-
-  onVideoPlayerReady() {
-    this.seekTo(this.params['start-at']);
-    if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
-      this.player.play();
-      this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
-    }
-  
-    this.playerElement.style.opacity = 1;
-  }
-
-  onVideoEnded() {
-    if (this.params['start-at'] && this.params.loop) {
-      this.seekTo(this.params['start-at']);
-      this.player.play();
-    }
-  }
-
-  onVideoTimeUpdate(event) {
-    if (event.seconds >= this.params['end-at']) {
-      this.seekTo(this.params['start-at']);
-      if (!this.params.loop) this.pause();
     }
   }
 
@@ -107,7 +90,63 @@ export class VimeoBackground extends SuperVideoBackground {
     this.resize(this.playerElement);
   }
 
+  updateState(state) {
+    this.currentState = state;
+    this.element.dispatchEvent(new CustomEvent('video-background-state-change', { bubbles: true, detail: this }));
+  }
+
   /* ===== API ===== */
+
+  onVideoPlayerReady() {
+    this.seekTo(this.params['start-at']);
+    if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
+      this.player.play();
+    }
+
+    if (!this.params['end-at']) {
+      this.player.getDuration().then((duration) => {
+        this.duration = duration;
+      });
+    }
+  
+    this.playerElement.style.opacity = 1;
+  }
+
+  onVideoEnded() {
+    this.updateState('ended');
+    if (this.params['start-at'] && this.params.loop) {
+      this.seekTo(this.params['start-at']);
+      this.player.play();
+    }
+  }
+
+  onVideoTimeUpdate(event) {
+    this.currentTime = event.seconds;
+    this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
+
+    if (this.params['end-at'] && event.seconds >= this.params['end-at']) {
+      this.updateState('ended');
+      this.seekTo(this.params['start-at']);
+      if (!this.params.loop) {
+        this.pause();
+        return;
+      }
+    }
+  }
+
+  onVideoBuffering() {
+    this.updateState('buffering');
+  }
+
+  onVideoPlay() {
+    this.updateState('playing');
+    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
+  }
+
+  onVideoPause() {
+    this.updateState('paused');
+    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
+  }
 
   seekTo(time) {
     this.player.setCurrentTime(time);
@@ -116,13 +155,11 @@ export class VimeoBackground extends SuperVideoBackground {
   softPause() {
     if (!this.state.playing || !this.player) return;
     this.player.pause();
-    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
   }
 
   softPlay() {
     if (!this.state.playing || !this.player) return;
     this.player.play();
-    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
 
   play() {
@@ -144,7 +181,6 @@ export class VimeoBackground extends SuperVideoBackground {
     this.state.playing = true;
     
     this.player.play();
-    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
 
   pause() {
@@ -152,7 +188,6 @@ export class VimeoBackground extends SuperVideoBackground {
     this.state.playing = false;
   
     this.player.pause();
-    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
   }
 
   unmute() {

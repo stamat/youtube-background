@@ -122,6 +122,8 @@ export class YoutubeBackground extends SuperVideoBackground {
     }
   
     this.playerElement.style.opacity = 1;
+
+    this.element.dispatchEvent(new CustomEvent('video-background-ready', { bubbles: true, detail: this }));
   }
 
   onVideoStateChange(event) {
@@ -138,6 +140,9 @@ export class YoutubeBackground extends SuperVideoBackground {
     }
 
     if (this.currentState === 'playing') {
+      if (!this.duration && !this.params['end-at']) {
+        this.duration = this.player.getDuration();
+      }
       this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
       this.startTimeUpdateTimer();
     } else {
