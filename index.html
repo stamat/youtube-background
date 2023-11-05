@@ -142,8 +142,12 @@
       				jQuery('[data-vbg]').youtube_background();
             });
 
-            document.querySelector('#vbg2').addEventListener('video-background-pause', function() {
-              console.log(arguments);
+            document.querySelector('#vbg2').addEventListener('video-background-state-change', function(event) {
+              console.log(event.detail.currentState);
+            });
+
+            document.querySelector('#vbg2').addEventListener('video-background-time-update', function(event) {
+              console.log(event.detail.currentTime);
             });
         </script>
     </body>

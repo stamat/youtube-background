@@ -33,7 +33,6 @@ export class SuperVideoBackground {
       'mobile': true,
       'load-background': false,
       'resolution': '16:9',
-      'onStatusChange': function() {},
       'inline-styles': true,
       'fit-box': false,
       'offset': 100, // since showinfo is deprecated and ignored after September 25, 2018. we add +100 to hide it in the overflow

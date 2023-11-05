@@ -202,8 +202,6 @@
         "mobile": true,
         "load-background": false,
         "resolution": "16:9",
-        "onStatusChange": function() {
-        },
         "inline-styles": true,
         "fit-box": false,
         "offset": 100,
@@ -364,6 +362,35 @@
       this.injectScript();
       this.player = null;
       this.injectPlayer();
+      this.STATES = {
+        "-1": "notstarted",
+        "0": "ended",
+        "1": "playing",
+        "2": "paused",
+        "3": "buffering",
+        "5": "video cued"
+      };
+      this.currentState = "notstarted";
+      this.timeUpdateTimer = null;
+      this.currentTime = this.params["start-at"];
+    }
+    startTimeUpdateTimer() {
+      if (this.timeUpdateTimer)
+        return;
+      this.timeUpdateTimer = setInterval(() => {
+        const ctime = this.player.getCurrentTime();
+        if (ctime === this.currentTime)
+          return;
+        this.currentTime = ctime;
+        this.element.dispatchEvent(new CustomEvent("video-background-time-update", { bubbles: true, detail: this }));
+      }, 250);
+    }
+    stopTimeUpdateTimer() {
+      clearInterval(this.timeUpdateTimer);
+      this.timeUpdateTimer = null;
+    }
+    convertState(state) {
+      return this.STATES[state];
     }
     initYTPlayer() {
       if (window.hasOwnProperty("YT") && this.player === null) {
@@ -382,27 +409,6 @@
       tag.src = "https://www.youtube.com/player_api";
       const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
-    onVideoPlayerReady(event) {
-      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
-        if (this.params["start-at"])
-          this.seekTo(this.params["start-at"]);
-        this.player.playVideo();
-        this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
-      }
-      this.playerElement.style.opacity = 1;
-    }
-    onVideoStateChange(event) {
-      if (event.data === 0 && this.params.loop) {
-        this.seekTo(this.params["start-at"]);
-        this.player.playVideo();
-      }
-      if (event.data === -1 && this.params.autoplay) {
-        this.seekTo(this.params["start-at"]);
-        this.player.playVideo();
-        this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
-      }
-      this.params["onStatusChange"](event);
     }
     generatePlayerElement() {
       const playerElement = document.createElement("iframe");
@@ -440,6 +446,33 @@
       this.resize(this.playerElement);
     }
     /* ===== API ===== */
+    onVideoPlayerReady(event) {
+      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
+        if (this.params["start-at"])
+          this.seekTo(this.params["start-at"]);
+        this.player.playVideo();
+      }
+      this.playerElement.style.opacity = 1;
+    }
+    onVideoStateChange(event) {
+      this.currentState = this.convertState(event.data);
+      if (this.currentState === "ended" && this.params.loop) {
+        this.seekTo(this.params["start-at"]);
+        this.player.playVideo();
+      }
+      if (this.currentState === "notstarted" && this.params.autoplay) {
+        this.seekTo(this.params["start-at"]);
+        this.player.playVideo();
+      }
+      if (this.currentState === "playing") {
+        this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
+        this.startTimeUpdateTimer();
+      } else {
+        this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
+        this.stopTimeUpdateTimer();
+      }
+      this.element.dispatchEvent(new CustomEvent("video-background-state-change", { bubbles: true, detail: this }));
+    }
     seekTo(seconds, allowSeekAhead = true) {
       this.player.seekTo(seconds, allowSeekAhead);
     }
@@ -447,13 +480,11 @@
       if (!this.state.playing || !this.player)
         return;
       this.player.pauseVideo();
-      this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
     }
     softPlay() {
       if (!this.state.playing || !this.player)
         return;
       this.player.playVideo();
-      this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
     play() {
       if (!this.player)
@@ -463,12 +494,10 @@
         this.seekTo(this.params["start-at"]);
       }
       this.player.playVideo();
-      this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
     pause() {
       this.state.playing = false;
       this.player.pauseVideo();
-      this.element.dispatchEvent(new CustomEvent("video-background-pause", { bubbles: true, detail: this }));
     }
     unmute() {
       if (!this.player)
