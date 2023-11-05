@@ -894,6 +894,11 @@
       }
       return uid;
     }
+    get(element) {
+      const uid = typeof element === "string" ? element : element.getAttribute("data-vbg-uid");
+      if (uid && this.index.hasOwnProperty(uid))
+        return this.index[uid];
+    }
     pauseVideos() {
       for (let k in this.index) {
         this.index[k].pause();
