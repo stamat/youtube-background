@@ -4,6 +4,7 @@ function buttonOn(buttonObj) {
   buttonObj.element.classList.add(buttonObj.stateClassName);
   buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
   buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
+  buttonObj.element.setAttribute('aria-checked', false);
 }
 
 function buttonOff(buttonObj) {
@@ -11,13 +12,16 @@ function buttonOff(buttonObj) {
   buttonObj.element.classList.remove(buttonObj.stateClassName);
   buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[0]);
   buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[1]);
+  buttonObj.element.setAttribute('aria-checked', true);
 }
 
 export function generateActionButton(obj, props) {
   const btn = document.createElement('button');
   btn.className = props.className;
   btn.innerHTML = props.innerHtml;
+  btn.setAttribute('role', 'switch');
   btn.firstChild.classList.add(props.stateChildClassNames[0]);
+  btn.setAttribute('aria-checked', !props.initialState);
   props.element = btn;
 
   //TODO: solve this with ARIA toggle states
