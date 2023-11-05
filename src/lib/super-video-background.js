@@ -1,5 +1,5 @@
 import { generateActionButton } from './buttons.js';
-import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
+import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage } from 'book-of-spells';
 
 export class SuperVideoBackground {
   constructor(elem, params, id, uid, type) {
@@ -83,6 +83,25 @@ export class SuperVideoBackground {
         actions: ['unmute', 'mute']
       });
     }
+  }
+
+  timeToPercentage(time) {
+    if (!this.duration) return 0;
+    if (this.params['start-at']) time -= this.params['start-at']; // normalize
+    if (time >= this.duration) return 100;
+    if (this.params['end-at'] && time >= this.params['end-at']) return 100;
+    if (time <= 0) return 0;
+    if (this.params['start-at'] && time <= this.params['start-at']) return 0;
+    return percentage(time, this.duration);
+  }
+
+  percentageToTime(percentage) {
+    if (!this.duration) return 0;
+    if (percentage > 100) return this.duration;
+    if (percentage < 0) return 0;
+    let time = percentage * this.duration / 100;
+    if (this.params['start-at']) time += this.params['start-at']; // normalize
+    return time;
   }
 
   resize(element) {

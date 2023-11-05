@@ -17,7 +17,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       '1': 'playing',
       '2': 'paused',
       '3': 'buffering',
-      '5': 'video cued'
+      '5': 'videocued'
     };
 
     this.currentState = 'notstarted';

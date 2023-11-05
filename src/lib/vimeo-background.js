@@ -1,5 +1,3 @@
-import { proportionalParentCoverResize } from 'book-of-spells';
-
 import { SuperVideoBackground } from './super-video-background.js';
 
 export class VimeoBackground extends SuperVideoBackground {

@@ -102,6 +102,11 @@
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+  function percentage(num, total) {
+    if (!num || !total || Number.isNaN(num) || Number.isNaN(total))
+      return 0;
+    return num / total * 100;
+  }
   function parseResolutionString(res) {
     const DEFAULT_RESOLUTION = 1.7777777778;
     if (!res || !res.length || /16[\:x\-\/]{1}9/i.test(res))
@@ -246,6 +251,33 @@
         });
       }
     }
+    timeToPercentage(time) {
+      if (!this.duration)
+        return 0;
+      if (this.params["start-at"])
+        time -= this.params["start-at"];
+      if (time >= this.duration)
+        return 100;
+      if (this.params["end-at"] && time >= this.params["end-at"])
+        return 100;
+      if (time <= 0)
+        return 0;
+      if (this.params["start-at"] && time <= this.params["start-at"])
+        return 0;
+      return percentage(time, this.duration);
+    }
+    percentageToTime(percentage2) {
+      if (!this.duration)
+        return 0;
+      if (percentage2 > 100)
+        return this.duration;
+      if (percentage2 < 0)
+        return 0;
+      let time = percentage2 * this.duration / 100;
+      if (this.params["start-at"])
+        time += this.params["start-at"];
+      return time;
+    }
     resize(element) {
       if (this.params["fit-box"])
         return;
@@ -368,7 +400,7 @@
         "1": "playing",
         "2": "paused",
         "3": "buffering",
-        "5": "video cued"
+        "5": "videocued"
       };
       this.currentState = "notstarted";
       this.timeUpdateTimer = null;
