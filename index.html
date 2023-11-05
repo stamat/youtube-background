@@ -149,7 +149,7 @@
               console.log(event.target);
               const playerElems = document.querySelectorAll('[data-vbg-uid]');
               for (let i = 0; i < playerElems.length; i++) {
-                const vbgInstance = window.VIDEO_BACKGROUNDS[playerElems[i].getAttribute('data-vbg-uid')];
+                const vbgInstance = window.VIDEO_BACKGROUNDS.index[playerElems[i].getAttribute('data-vbg-uid')];
                 console.log(vbgInstance);
                 vbgInstance.play();
               }
