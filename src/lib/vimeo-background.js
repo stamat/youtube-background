@@ -97,6 +97,7 @@ export class VimeoBackground extends SuperVideoBackground {
 
   onVideoPlayerReady() {
     this.seekTo(this.params['start-at']);
+
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       this.player.play();
     }
@@ -106,8 +107,6 @@ export class VimeoBackground extends SuperVideoBackground {
         this.duration = duration;
       });
     }
-  
-    this.playerElement.style.opacity = 1;
   }
 
   onVideoEnded() {
@@ -131,7 +130,21 @@ export class VimeoBackground extends SuperVideoBackground {
     this.updateState('buffering');
   }
 
-  onVideoPlay() {
+  onVideoPlay(event) {
+    if (!this.initialPlay) {
+      this.initialPlay = true;
+      this.playerElement.style.opacity = 1;
+    }
+
+    const seconds = event.seconds;
+    if (self.params['start-at'] && seconds < self.params['start-at']) {
+      self.seekTo(self.params['start-at']);
+    }
+
+    if (self.params['end-at'] && seconds > self.params['end-at']) {
+      self.seekTo(self.params['start-at']);
+    }
+
     this.updateState('playing');
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
@@ -157,20 +170,6 @@ export class VimeoBackground extends SuperVideoBackground {
 
   play() {
     if (!this.player) return;
-  
-    if (this.params['start-at'] || this.params['end-at']) {
-      const self = this;
-      this.player.getCurrentTime().then(function(seconds) {
-        if (self.params['start-at'] && seconds < self.params['start-at']) {
-          self.seekTo(self.params['start-at']);
-        }
-  
-        if (self.params['end-at'] && seconds > self.params['end-at']) {
-          self.seekTo(self.params['start-at']);
-        }
-      });
-    }
-    
     this.state.playing = true;
     
     this.player.play();
@@ -187,8 +186,8 @@ export class VimeoBackground extends SuperVideoBackground {
     if (!this.player) return;
     this.state.muted = false;
   
-    if (!this.state.volume_once) {
-      this.state.volume_once = true;
+    if (!this.initialVolume) {
+      this.initialVolume = true;
       this.setVolume(this.params.volume);
     }
     this.player.setMuted(false);

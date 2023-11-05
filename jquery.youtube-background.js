@@ -194,7 +194,8 @@
       this.state = {};
       this.state.playing = false;
       this.state.muted = false;
-      this.state.volume_once = false;
+      this.initialPlay = false;
+      this.initialVolume = false;
       this.params = {};
       const DEFAULTS = {
         "pause": false,
@@ -489,7 +490,6 @@
       if (!this.params["end-at"]) {
         this.duration = this.player.getDuration();
       }
-      this.playerElement.style.opacity = 1;
       this.element.dispatchEvent(new CustomEvent("video-background-ready", { bubbles: true, detail: this }));
     }
     onVideoStateChange(event) {
@@ -505,6 +505,10 @@
         this.player.playVideo();
       }
       if (this.currentState === "playing") {
+        if (!this.initialPlay) {
+          this.initialPlay = true;
+          this.playerElement.style.opacity = 1;
+        }
         if (!this.duration && !this.params["end-at"]) {
           this.duration = this.player.getDuration();
         }
@@ -546,8 +550,8 @@
       if (!this.player)
         return;
       this.state.muted = false;
-      if (!this.state.volume_once) {
-        this.state.volume_once = true;
+      if (!this.initialVolume) {
+        this.initialVolume = true;
         this.setVolume(this.params.volume);
       }
       this.player.unMute();
@@ -657,7 +661,6 @@
           this.duration = duration;
         });
       }
-      this.playerElement.style.opacity = 1;
     }
     onVideoEnded() {
       this.updateState("ended");
@@ -676,7 +679,18 @@
     onVideoBuffering() {
       this.updateState("buffering");
     }
-    onVideoPlay() {
+    onVideoPlay(event) {
+      if (!this.initialPlay) {
+        this.initialPlay = true;
+        this.playerElement.style.opacity = 1;
+      }
+      const seconds = event.seconds;
+      if (self.params["start-at"] && seconds < self.params["start-at"]) {
+        self.seekTo(self.params["start-at"]);
+      }
+      if (self.params["end-at"] && seconds > self.params["end-at"]) {
+        self.seekTo(self.params["start-at"]);
+      }
       this.updateState("playing");
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
@@ -700,17 +714,6 @@
     play() {
       if (!this.player)
         return;
-      if (this.params["start-at"] || this.params["end-at"]) {
-        const self = this;
-        this.player.getCurrentTime().then(function(seconds) {
-          if (self.params["start-at"] && seconds < self.params["start-at"]) {
-            self.seekTo(self.params["start-at"]);
-          }
-          if (self.params["end-at"] && seconds > self.params["end-at"]) {
-            self.seekTo(self.params["start-at"]);
-          }
-        });
-      }
       this.state.playing = true;
       this.player.play();
     }
@@ -724,8 +727,8 @@
       if (!this.player)
         return;
       this.state.muted = false;
-      if (!this.state.volume_once) {
-        this.state.volume_once = true;
+      if (!this.initialVolume) {
+        this.initialVolume = true;
         this.setVolume(this.params.volume);
       }
       this.player.setMuted(false);
@@ -796,7 +799,7 @@
       this.stylePlayerElement(this.playerElement);
       this.element.appendChild(this.playerElement);
       this.resize(this.playerElement);
-      const self = this;
+      const self2 = this;
       this.player.addEventListener("loadedmetadata", this.onVideoLoadedMetadata.bind(this), { once: true });
       this.player.addEventListener("durationchange", this.onVideoLoadedMetadata.bind(this), { once: true });
       this.player.addEventListener("canplay", this.onVideoCanPlay.bind(this), { once: true });
@@ -822,7 +825,6 @@
     }
     onVideoCanPlay() {
       this.updateDuration();
-      this.playerElement.style.opacity = 1;
       if (this.params["start-at"] && this.params.autoplay) {
         this.seekTo(this.params["start-at"]);
       }
@@ -835,6 +837,10 @@
       }
     }
     onVideoPlay() {
+      if (!this.initialPlay) {
+        this.initialPlay = true;
+        this.playerElement.style.opacity = 1;
+      }
       this.updateState("playing");
       this.element.dispatchEvent(new CustomEvent("video-background-play", { bubbles: true, detail: this }));
     }
@@ -897,8 +903,8 @@
         return;
       this.state.muted = false;
       this.player.muted = false;
-      if (!this.state.volume_once) {
-        this.state.volume_once = true;
+      if (!this.initialVolume) {
+        this.initialVolume = true;
         this.setVolume(this.params.volume);
       }
       this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
@@ -930,22 +936,22 @@
       this.re.YOUTUBE = RE_YOUTUBE;
       this.re.VIMEO = RE_VIMEO;
       this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
-      const self = this;
+      const self2 = this;
       this.intersectionObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           const uid = entry.target.getAttribute("data-vbg-uid");
-          if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
-            self.index[uid].isIntersecting = true;
+          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
+            self2.index[uid].isIntersecting = true;
             try {
-              if (self.index[uid].player && self.index[uid].params.autoplay)
-                self.index[uid].softPlay();
+              if (self2.index[uid].player && self2.index[uid].params.autoplay)
+                self2.index[uid].softPlay();
             } catch (e) {
             }
           } else {
-            self.index[uid].isIntersecting = false;
+            self2.index[uid].isIntersecting = false;
             try {
-              if (self.index[uid].player)
-                self.index[uid].softPause();
+              if (self2.index[uid].player)
+                self2.index[uid].softPause();
             } catch (e) {
             }
           }
@@ -956,15 +962,15 @@
         this.resizeObserver = new ResizeObserver(function(entries) {
           entries.forEach(function(entry) {
             const uid = entry.target.getAttribute("data-vbg-uid");
-            if (uid && self.index.hasOwnProperty(uid)) {
-              window.requestAnimationFrame(() => self.index[uid].resize());
+            if (uid && self2.index.hasOwnProperty(uid)) {
+              window.requestAnimationFrame(() => self2.index[uid].resize());
             }
           });
         });
       } else {
         window.addEventListener("resize", function() {
-          for (let k in self.index) {
-            window.requestAnimationFrame(() => self.index[k].resize(self.index[k].playerElement));
+          for (let k in self2.index) {
+            window.requestAnimationFrame(() => self2.index[k].resize(self2.index[k].playerElement));
           }
         });
       }
@@ -1047,11 +1053,11 @@
       }
     }
     initPlayers(callback) {
-      const self = this;
+      const self2 = this;
       window.onYouTubeIframeAPIReady = function() {
-        for (let k in self.index) {
-          if (self.index[k] instanceof YoutubeBackground) {
-            self.index[k].initYTPlayer();
+        for (let k in self2.index) {
+          if (self2.index[k] instanceof YoutubeBackground) {
+            self2.index[k].initYTPlayer();
           }
         }
         if (callback) {
@@ -1062,9 +1068,9 @@
         window.onYouTubeIframeAPIReady();
       }
       window.onVimeoIframeAPIReady = function() {
-        for (let k in self.index) {
-          if (self.index[k] instanceof VimeoBackground) {
-            self.index[k].initVimeoPlayer();
+        for (let k in self2.index) {
+          if (self2.index[k] instanceof VimeoBackground) {
+            self2.index[k].initVimeoPlayer();
           }
         }
         if (callback) {

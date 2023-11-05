@@ -123,8 +123,6 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (!this.params['end-at']) {
       this.duration = this.player.getDuration();
     }
-  
-    this.playerElement.style.opacity = 1;
 
     this.element.dispatchEvent(new CustomEvent('video-background-ready', { bubbles: true, detail: this }));
   }
@@ -145,6 +143,11 @@ export class YoutubeBackground extends SuperVideoBackground {
     }
 
     if (this.currentState === 'playing') {
+      if (!this.initialPlay) {
+        this.initialPlay = true;
+        this.playerElement.style.opacity = 1;
+      }
+      
       if (!this.duration && !this.params['end-at']) {
         this.duration = this.player.getDuration();
       }
@@ -192,8 +195,8 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (!this.player) return;
     this.state.muted = false;
   
-    if (!this.state.volume_once) {
-      this.state.volume_once = true;
+    if (!this.initialVolume) {
+      this.initialVolume = true;
       this.setVolume(this.params.volume);
     }
     this.player.unMute();

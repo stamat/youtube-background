@@ -19,7 +19,9 @@ export class SuperVideoBackground {
     this.state = {};
     this.state.playing = false;
     this.state.muted = false;
-    this.state.volume_once = false;
+
+    this.initialPlay = false;
+    this.initialVolume = false;
 
     this.params = {};
 

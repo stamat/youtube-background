@@ -90,7 +90,6 @@ export class VideoBackground extends SuperVideoBackground {
 
   onVideoCanPlay() {
     this.updateDuration();
-    this.playerElement.style.opacity = 1;
 
     if (this.params['start-at'] && this.params.autoplay) {
       this.seekTo(this.params['start-at']);
@@ -107,6 +106,10 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   onVideoPlay() {
+    if (!this.initialPlay) {
+      this.initialPlay = true;
+      this.playerElement.style.opacity = 1;
+    }
     this.updateState('playing');
     this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
@@ -180,8 +183,8 @@ export class VideoBackground extends SuperVideoBackground {
     this.state.muted = false;
   
     this.player.muted = false;
-    if (!this.state.volume_once) {
-      this.state.volume_once = true;
+    if (!this.initialVolume) {
+      this.initialVolume = true;
       this.setVolume(this.params.volume);
     }
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
