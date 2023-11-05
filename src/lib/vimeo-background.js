@@ -9,7 +9,6 @@ export class VimeoBackground extends SuperVideoBackground {
     if (this.is_mobile && !this.params.mobile) return;
     this.injectScript();
 
-    this.vid = id;
     this.player = null;
 
     this.injectPlayer();
@@ -70,8 +69,8 @@ export class VimeoBackground extends SuperVideoBackground {
     return playerElement;
   }
 
-  generateSrcURL() {
-    let src = 'https://player.vimeo.com/video/'+this.vid+'?background=1&controls=0';
+  generateSrcURL(id) {
+    let src = 'https://player.vimeo.com/video/'+id+'?background=1&controls=0';
   
     if (this.params.muted) {
       src += '&muted=1';
@@ -99,7 +98,7 @@ export class VimeoBackground extends SuperVideoBackground {
 
   injectPlayer() {
     this.playerElement = this.generatePlayerElement();
-    this.src = this.generateSrcURL();
+    this.src = this.generateSrcURL(this.id);
     this.playerElement.src = this.src;
     this.playerElement.id = this.uid;
     

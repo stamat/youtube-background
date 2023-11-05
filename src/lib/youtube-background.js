@@ -8,7 +8,6 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (this.is_mobile && !this.params.mobile) return;
     this.injectScript();
 
-    this.ytid = id;
     this.player = null;
 
     this.injectPlayer();
@@ -66,12 +65,12 @@ export class YoutubeBackground extends SuperVideoBackground {
     return playerElement;
   }
 
-  generateSrcURL() {
+  generateSrcURL(id) {
     let site = 'https://www.youtube.com/embed/';
     if (this.params['no-cookie']) {
       site = 'https://www.youtube-nocookie.com/embed/';
     }
-    let src = `${site}${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
+    let src = `${site}${id}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
 
     if (this.params.muted) {
       src += '&mute=1';
@@ -94,7 +93,7 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   injectPlayer() {
     this.playerElement = this.generatePlayerElement();
-    this.src = this.generateSrcURL();
+    this.src = this.generateSrcURL(this.id);
     this.playerElement.src = this.src;
     this.playerElement.id = this.uid;
 
@@ -145,7 +144,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   
     if (!this.state.volume_once) {
       this.state.volume_once = true;
-      //this.setVolume(this.params.volume);
+      this.setVolume(this.params.volume);
     }
     this.player.unMute();
     this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));

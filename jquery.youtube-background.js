@@ -1,11 +1,44 @@
 /* youtube-background v1.0.20 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
-  var __defProp = Object.defineProperty;
-  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-  var __publicField = (obj, key, value) => {
-    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-    return value;
-  };
+  // src/lib/buttons.js
+  function buttonOn(buttonObj) {
+    if (!buttonObj)
+      return;
+    buttonObj.element.classList.add(buttonObj.stateClassName);
+    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
+    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
+  }
+  function buttonOff(buttonObj) {
+    if (!buttonObj)
+      return;
+    buttonObj.element.classList.remove(buttonObj.stateClassName);
+    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[0]);
+    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[1]);
+  }
+  function generateActionButton(obj, props) {
+    const btn = document.createElement("button");
+    btn.className = props.className;
+    btn.innerHTML = props.innerHtml;
+    btn.firstChild.classList.add(props.stateChildClassNames[0]);
+    props.element = btn;
+    if (obj.params[props.condition_parameter] === props.initialState) {
+      buttonOn(props);
+    }
+    btn.addEventListener("click", function(e) {
+      if (this.classList.contains(props.stateClassName)) {
+        buttonOff(props);
+        obj[props.actions[0]]();
+      } else {
+        buttonOn(props);
+        obj[props.actions[1]]();
+      }
+    });
+    obj.buttons[props.name] = {
+      element: btn,
+      button_properties: props
+    };
+    obj.controls_element.appendChild(btn);
+  }
 
   // node_modules/book-of-spells/src/helpers.mjs
   function stringToBoolean(str) {
@@ -120,7 +153,6 @@
   // node_modules/book-of-spells/src/regex.mjs
   var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
   var RE_VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
-  var RE_VIDEO = /(.*\/[^\/]+\.mp4|ogg|ogv|ogm|webm|avi)\s?$/i;
 
   // node_modules/book-of-spells/src/browser.mjs
   function isUserAgentMobile(str) {
@@ -134,78 +166,6 @@
     if ("orientation" in window)
       return true;
     return isUserAgentMobile(navigator.userAgent);
-  }
-
-  // src/lib/utils.js
-  function parseProperties(params, defaults, element, attr_prefix) {
-    let res_params = {};
-    if (!params) {
-      res_params = defaults;
-    } else {
-      for (let k in defaults) {
-        if (!params.hasOwnProperty(k)) {
-          res_params[k] = defaults[k];
-        }
-      }
-    }
-    if (!element)
-      return res_params;
-    for (let k in res_params) {
-      let data;
-      if (isArray(attr_prefix)) {
-        for (let i = 0; i < attr_prefix.length; i++) {
-          const temp_data = element.getAttribute(attr_prefix[i] + k);
-          if (temp_data) {
-            data = temp_data;
-            break;
-          }
-        }
-      } else {
-        data = element.getAttribute(attr_prefix + k);
-      }
-      if (data !== void 0 && data !== null) {
-        res_params[k] = stringToType(data);
-      }
-    }
-    return res_params;
-  }
-  function buttonOn(buttonObj) {
-    if (!buttonObj)
-      return;
-    buttonObj.element.classList.add(buttonObj.stateClassName);
-    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
-    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
-  }
-  function buttonOff(buttonObj) {
-    if (!buttonObj)
-      return;
-    buttonObj.element.classList.remove(buttonObj.stateClassName);
-    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[0]);
-    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[1]);
-  }
-  function generateActionButton(obj, props) {
-    const btn = document.createElement("button");
-    btn.className = props.className;
-    btn.innerHTML = props.innerHtml;
-    btn.firstChild.classList.add(props.stateChildClassNames[0]);
-    props.element = btn;
-    if (obj.params[props.condition_parameter] === props.initialState) {
-      buttonOn(props);
-    }
-    btn.addEventListener("click", function(e) {
-      if (this.classList.contains(props.stateClassName)) {
-        buttonOff(props);
-        obj[props.actions[0]]();
-      } else {
-        buttonOn(props);
-        obj[props.actions[1]]();
-      }
-    });
-    obj.buttons[props.name] = {
-      element: btn,
-      button_properties: props
-    };
-    obj.controls_element.appendChild(btn);
   }
 
   // src/lib/super-video-background.js
@@ -251,7 +211,7 @@
         "volume": 1,
         "no-cookie": true
       };
-      this.params = parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
+      this.params = this.parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
       if (this.params.pause) {
         this.params["play-button"] = this.params.pause;
       }
@@ -259,8 +219,6 @@
       this.state.playing = this.params.autoplay;
       this.state.muted = this.params.muted;
       this.buildWrapperHTML();
-      if (this.is_mobile && !this.params.mobile)
-        return;
       if (this.params["play-button"]) {
         generateActionButton(this, {
           name: "playing",
@@ -357,6 +315,38 @@
       }
       return this.element;
     }
+    parseProperties(params, defaults, element, attr_prefix) {
+      let res_params = {};
+      if (!params) {
+        res_params = defaults;
+      } else {
+        for (let k in defaults) {
+          if (!params.hasOwnProperty(k)) {
+            res_params[k] = defaults[k];
+          }
+        }
+      }
+      if (!element)
+        return res_params;
+      for (let k in res_params) {
+        let data;
+        if (isArray(attr_prefix)) {
+          for (let i = 0; i < attr_prefix.length; i++) {
+            const temp_data = element.getAttribute(attr_prefix[i] + k);
+            if (temp_data) {
+              data = temp_data;
+              break;
+            }
+          }
+        } else {
+          data = element.getAttribute(attr_prefix + k);
+        }
+        if (data !== void 0 && data !== null) {
+          res_params[k] = stringToType(data);
+        }
+      }
+      return res_params;
+    }
   };
 
   // src/lib/youtube-background.js
@@ -368,7 +358,6 @@
       if (this.is_mobile && !this.params.mobile)
         return;
       this.injectScript();
-      this.ytid = id;
       this.player = null;
       this.injectPlayer();
     }
@@ -417,12 +406,12 @@
       playerElement.setAttribute("allow", "autoplay; mute");
       return playerElement;
     }
-    generateSrcURL() {
+    generateSrcURL(id) {
       let site = "https://www.youtube.com/embed/";
       if (this.params["no-cookie"]) {
         site = "https://www.youtube-nocookie.com/embed/";
       }
-      let src = `${site}${this.ytid}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
+      let src = `${site}${id}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
       if (this.params.muted) {
         src += "&mute=1";
       }
@@ -439,7 +428,7 @@
     }
     injectPlayer() {
       this.playerElement = this.generatePlayerElement();
-      this.src = this.generateSrcURL();
+      this.src = this.generateSrcURL(this.id);
       this.playerElement.src = this.src;
       this.playerElement.id = this.uid;
       this.stylePlayerElement(this.playerElement);
@@ -483,6 +472,7 @@
       this.state.muted = false;
       if (!this.state.volume_once) {
         this.state.volume_once = true;
+        this.setVolume(this.params.volume);
       }
       this.player.unMute();
       this.element.dispatchEvent(new CustomEvent("video-background-unmute", { bubbles: true, detail: this }));
@@ -511,7 +501,6 @@
       if (this.is_mobile && !this.params.mobile)
         return;
       this.injectScript();
-      this.vid = id;
       this.player = null;
       this.injectPlayer();
     }
@@ -565,8 +554,8 @@
       playerElement.setAttribute("allow", "autoplay; mute");
       return playerElement;
     }
-    generateSrcURL() {
-      let src = "https://player.vimeo.com/video/" + this.vid + "?background=1&controls=0";
+    generateSrcURL(id) {
+      let src = "https://player.vimeo.com/video/" + id + "?background=1&controls=0";
       if (this.params.muted) {
         src += "&muted=1";
       }
@@ -586,7 +575,7 @@
     }
     injectPlayer() {
       this.playerElement = this.generatePlayerElement();
-      this.src = this.generateSrcURL();
+      this.src = this.generateSrcURL(this.id);
       this.playerElement.src = this.src;
       this.playerElement.id = this.uid;
       this.stylePlayerElement(this.playerElement);
@@ -795,13 +784,6 @@
   // src/video-backgrounds.js
   var VideoBackgrounds = class {
     constructor(selector, params) {
-      __publicField(this, "generateUID", function(pref) {
-        let uid = pref + "-" + randomIntInclusive(0, 9999);
-        while (this.index.hasOwnProperty(uid)) {
-          uid = pref + "-" + randomIntInclusive(0, 9999);
-        }
-        return uid;
-      });
       this.elements = selector;
       if (typeof selector === "string") {
         this.elements = document.querySelectorAll(selector);
@@ -810,7 +792,7 @@
       this.re = {};
       this.re.YOUTUBE = RE_YOUTUBE;
       this.re.VIMEO = RE_VIMEO;
-      this.re.VIDEO = RE_VIDEO;
+      this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
       const self = this;
       this.intersectionObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
@@ -858,13 +840,12 @@
     add(element, params) {
       const link = element.getAttribute("data-youtube") || element.getAttribute("data-vbg");
       const vid_data = this.getVidID(link);
-      if (!vid_data) {
+      if (!vid_data)
         return;
-      }
       const uid = this.generateUID(vid_data.id);
-      if (!uid) {
+      console.log(uid);
+      if (!uid)
         return;
-      }
       switch (vid_data.type) {
         case "YOUTUBE":
           const yb = new YoutubeBackground(element, params, vid_data.id, uid);
@@ -887,21 +868,32 @@
       }
     }
     getVidID(link) {
-      if (link !== void 0 && link !== null) {
-        for (let k in this.re) {
-          const pts = link.match(this.re[k]);
-          if (pts && pts.length) {
-            this.re[k].lastIndex = 0;
-            return {
-              id: pts[1],
-              type: k,
-              regex_pts: pts,
-              link
-            };
-          }
+      if (link === void 0 && link === null)
+        return;
+      for (let k in this.re) {
+        const pts = link.match(this.re[k]);
+        if (pts && pts.length) {
+          this.re[k].lastIndex = 0;
+          return {
+            id: pts[1],
+            type: k,
+            regex_pts: pts,
+            link
+          };
         }
       }
-      return null;
+      return;
+    }
+    generateUID(pref) {
+      pref = pref.replace(/[^a-zA-Z0-9\-_]/g, "-");
+      pref = pref.replace(/-{2,}/g, "-");
+      pref = pref.replace(/^-+/, "").replace(/-+$/, "");
+      pref = "vbg-" + pref;
+      let uid = pref + "-" + randomIntInclusive(0, 9999);
+      while (this.index.hasOwnProperty(uid)) {
+        uid = pref + "-" + randomIntInclusive(0, 9999);
+      }
+      return uid;
     }
     pauseVideos() {
       for (let k in this.index) {

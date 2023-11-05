@@ -1,5 +1,5 @@
-import { parseProperties, generateActionButton } from './utils.js';
-import { isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
+import { generateActionButton } from './buttons.js';
+import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize } from 'book-of-spells';
 
 export class SuperVideoBackground {
   constructor(elem, params, id, uid, type) {
@@ -45,7 +45,7 @@ export class SuperVideoBackground {
       'no-cookie': true
     };
 
-    this.params = parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
+    this.params = this.parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
 
     //pause deprecated
     if (this.params.pause) {
@@ -58,8 +58,6 @@ export class SuperVideoBackground {
 
 
     this.buildWrapperHTML();
-
-    if (this.is_mobile && !this.params.mobile) return;
 
     if (this.params['play-button']) {
       generateActionButton(this, {
@@ -168,5 +166,44 @@ export class SuperVideoBackground {
     }
   
     return this.element;
+  }
+
+  parseProperties(params, defaults, element, attr_prefix) {
+    let res_params = {};
+  
+    if (!params) {
+      res_params = defaults;
+    } else {
+      for (let k in defaults) {
+        if (!params.hasOwnProperty(k)) {
+          //load in defaults if the param hasn't been set
+          res_params[k] = defaults[k];
+        }
+      }
+    }
+  
+    if (!element) return res_params;
+    // load params from data attributes
+    for (let k in res_params) {
+      let data;
+  
+      if (isArray(attr_prefix)) {
+        for (let i = 0; i < attr_prefix.length; i++) {
+          const temp_data = element.getAttribute(attr_prefix[i]+k);
+          if (temp_data) {
+            data = temp_data;
+            break;
+          }
+        }
+      } else {
+        data = element.getAttribute(attr_prefix+k);
+      }
+  
+      if (data !== undefined && data !== null) {
+        res_params[k] = stringToType(data);
+      }
+    }
+  
+    return res_params;
   }
 }
