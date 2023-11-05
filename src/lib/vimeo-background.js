@@ -123,12 +123,7 @@ export class VimeoBackground extends SuperVideoBackground {
     this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
 
     if (this.params['end-at'] && event.seconds >= this.params['end-at']) {
-      this.updateState('ended');
-      this.seekTo(this.params['start-at']);
-      if (!this.params.loop) {
-        this.pause();
-        return;
-      }
+      this.onVideoEnded();
     }
   }
 

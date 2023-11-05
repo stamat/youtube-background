@@ -11,6 +11,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.player = null;
 
     this.injectPlayer();
+
     this.STATES = {
       '-1': 'notstarted',
       '0': 'ended',
@@ -28,12 +29,7 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   startTimeUpdateTimer() {
     if (this.timeUpdateTimer) return;
-    this.timeUpdateTimer = setInterval(() => {
-      const ctime = this.player.getCurrentTime();
-      if (ctime === this.currentTime) return;
-      this.currentTime = ctime;
-      this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
-    }, 250);
+    this.timeUpdateTimer = setInterval(this.onVideoTimeUpdate.bind(this), 250);
   };
 
   stopTimeUpdateTimer() {
@@ -111,7 +107,14 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   /* ===== API ===== */
 
-  onVideoPlayerReady(event) {
+  onVideoTimeUpdate() {
+    const ctime = this.player.getCurrentTime();
+    if (ctime === this.currentTime) return;
+    this.currentTime = ctime;
+    this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
+  }
+
+  onVideoPlayerReady() {
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       if (this.params['start-at']) this.seekTo(this.params['start-at']);
       this.player.playVideo();
@@ -130,8 +133,10 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.currentState = this.convertState(event.data);
 
     if (this.currentState === 'ended' && this.params.loop) {
-      this.seekTo(this.params['start-at']);
-      this.player.playVideo();
+      if (this.params['start-at'] && this.params.loop) {
+        this.seekTo(this.params['start-at']);
+        this.player.playVideo();
+      }
     }
   
     if (this.currentState === 'notstarted' && this.params.autoplay) {
