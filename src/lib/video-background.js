@@ -60,8 +60,8 @@ export class VideoBackground extends SuperVideoBackground {
     this.element.appendChild(this.playerElement);
     this.resize(this.playerElement);
 
-    const self = this;
-
+    //TODO: if we are going to enable hot swapping the source, we need a mechanism to check for the duration change and compare the duration to the end-at. If the duration is less than the end-at, we need to adjust end-at to the duration.
+    // Also we can't have `once` on the event listeners in this case.
     this.player.addEventListener('loadedmetadata', this.onVideoLoadedMetadata.bind(this), { once: true });
     this.player.addEventListener('durationchange', this.onVideoLoadedMetadata.bind(this), { once: true });
     this.player.addEventListener('canplay', this.onVideoCanPlay.bind(this), { once: true });
