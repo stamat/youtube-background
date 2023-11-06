@@ -130,6 +130,7 @@ export class VideoBackground extends SuperVideoBackground {
       this.seekTo(this.params['start-at']);
       this.play();
     }
+    this.element.dispatchEvent(new CustomEvent('video-background-ended', { bubbles: true, detail: this }));
   }
 
   onVideoBuffering() {

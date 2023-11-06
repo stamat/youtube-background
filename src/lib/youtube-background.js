@@ -115,9 +115,9 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (ctime === this.currentTime) return;
     this.currentTime = ctime;
     if (this.params['end-at'] && this.currentTime >= this.params['end-at']) {
-      this.onVideoEnded();
       this.currentState = 'ended';
       this.element.dispatchEvent(new CustomEvent('video-background-state-change', { bubbles: true, detail: this }));
+      this.onVideoEnded();
     }
     this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
   }
@@ -174,6 +174,8 @@ export class YoutubeBackground extends SuperVideoBackground {
     } else {
       this.player.pause();
     }
+
+    this.element.dispatchEvent(new CustomEvent('video-background-ended', { bubbles: true, detail: this }));
   }
 
   seekTo(seconds, allowSeekAhead = true) {
