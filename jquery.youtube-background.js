@@ -694,6 +694,7 @@
           this.duration = duration;
         });
       }
+      this.element.dispatchEvent(new CustomEvent("video-background-ready", { bubbles: true, detail: this }));
     }
     onVideoEnded() {
       this.updateState("ended");
@@ -811,6 +812,7 @@
       this.currentTime = this.params["start-at"];
       this.duration = this.params["end-at"];
       this.mobileLowBatteryAutoplayHack();
+      this.element.dispatchEvent(new CustomEvent("video-background-ready", { bubbles: true, detail: this }));
     }
     generatePlayerElement() {
       const playerElement = document.createElement("video");

@@ -32,6 +32,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.duration = 0 || this.params['end-at'];
 
     this.mobileLowBatteryAutoplayHack();
+    this.element.dispatchEvent(new CustomEvent('video-background-ready', { bubbles: true, detail: this }));
   }
 
   generatePlayerElement() {

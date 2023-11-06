@@ -109,6 +109,8 @@ export class VimeoBackground extends SuperVideoBackground {
         this.duration = duration;
       });
     }
+
+    this.element.dispatchEvent(new CustomEvent('video-background-ready', { bubbles: true, detail: this }));
   }
 
   onVideoEnded() {
