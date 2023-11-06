@@ -144,23 +144,6 @@
             document.querySelector('#vbg2').addEventListener('video-background-time-update', function(event) {
               console.log(event.detail.currentTime);
             });
-
-            function mobileAutoplayHack() {
-              const playerElems = document.querySelectorAll('[data-vbg-uid]');
-              for (let i = 0; i < playerElems.length; i++) {
-                const vbgInstance = window.VIDEO_BACKGROUNDS.index[playerElems[i].getAttribute('data-vbg-uid')];
-                if (!vbgInstance.initialPlay && vbgInstance.params.autoplay && vbgInstance.params.muted) {
-                    vbgInstance.softPlay();
-                }
-              }
-              for (let i = 0; i < playerElems.length; i++) {
-                const vbgInstance = window.VIDEO_BACKGROUNDS.index[playerElems[i].getAttribute('data-vbg-uid')];
-                if (vbgInstance.initialPlay && !vbgInstance.params['always-play'] && vbgInstance.params.autoplay && vbgInstance.params.muted && !vbgInstance.isIntersecting) {
-                    vbgInstance.softPause();
-                }
-              }
-            }
-            document.addEventListener('touchstart', mobileAutoplayHack);
         </script>
     </body>
 </html>

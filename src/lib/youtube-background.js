@@ -115,6 +115,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   onVideoPlayerReady() {
+    this.mobileLowBatteryAutoplayHack();
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       if (this.params['start-at']) this.seekTo(this.params['start-at']);
       this.player.playVideo();

@@ -350,6 +350,18 @@
       }
       return this.element;
     }
+    mobileLowBatteryAutoplayHack() {
+      if (this.is_mobile && this.params.mobile) {
+        document.addEventListener("touchstart", () => {
+          if (!this.initialPlay) {
+            this.softPlay();
+          }
+          if (!this.isIntersecting || !this.params["always-play"]) {
+            this.softPause();
+          }
+        }, { once: true });
+      }
+    }
     parseProperties(params, defaults, element, attr_prefix) {
       let res_params = {};
       if (!params) {
@@ -482,6 +494,7 @@
       this.element.dispatchEvent(new CustomEvent("video-background-time-update", { bubbles: true, detail: this }));
     }
     onVideoPlayerReady() {
+      this.mobileLowBatteryAutoplayHack();
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         if (this.params["start-at"])
           this.seekTo(this.params["start-at"]);
@@ -652,6 +665,7 @@
     }
     /* ===== API ===== */
     onVideoPlayerReady() {
+      this.mobileLowBatteryAutoplayHack();
       this.seekTo(this.params["start-at"]);
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         this.player.play();
@@ -823,6 +837,7 @@
       this.updateDuration();
     }
     onVideoCanPlay() {
+      this.mobileLowBatteryAutoplayHack();
       this.updateDuration();
       if (this.params["start-at"] && this.params.autoplay) {
         this.seekTo(this.params["start-at"]);

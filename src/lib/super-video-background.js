@@ -188,6 +188,20 @@ export class SuperVideoBackground {
     return this.element;
   }
 
+  mobileLowBatteryAutoplayHack() {
+    if (this.is_mobile && this.params.mobile) {
+      document.addEventListener('touchstart', () => {
+        if (!this.initialPlay) {
+          this.softPlay();
+        }
+
+        if (!this.isIntersecting || !this.params['always-play']) {
+          this.softPause();
+        }
+      }, { once: true });
+    }
+  }
+
   parseProperties(params, defaults, element, attr_prefix) {
     let res_params = {};
   

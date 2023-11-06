@@ -96,6 +96,7 @@ export class VimeoBackground extends SuperVideoBackground {
   /* ===== API ===== */
 
   onVideoPlayerReady() {
+    this.mobileLowBatteryAutoplayHack();
     this.seekTo(this.params['start-at']);
 
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {

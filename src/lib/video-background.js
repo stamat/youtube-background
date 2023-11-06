@@ -89,6 +89,7 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   onVideoCanPlay() {
+    this.mobileLowBatteryAutoplayHack();
     this.updateDuration();
 
     if (this.params['start-at'] && this.params.autoplay) {
