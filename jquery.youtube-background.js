@@ -356,7 +356,7 @@
           if (!this.initialPlay) {
             this.softPlay();
           }
-          if (!this.isIntersecting || !this.params["always-play"]) {
+          if (!this.isIntersecting && !this.params["always-play"]) {
             this.softPause();
           }
         }, { once: true });

@@ -195,7 +195,7 @@ export class SuperVideoBackground {
           this.softPlay();
         }
 
-        if (!this.isIntersecting || !this.params['always-play']) {
+        if (!this.isIntersecting && !this.params['always-play']) {
           this.softPause();
         }
       }, { once: true });
