@@ -1,4 +1,4 @@
-/* youtube-background v1.0.20 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.22 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // src/lib/buttons.js
   function buttonOn(buttonObj) {
