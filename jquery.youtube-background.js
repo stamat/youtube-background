@@ -423,11 +423,12 @@
       this.timeUpdateTimer = null;
       this.currentTime = this.params["start-at"];
       this.duration = this.params["end-at"];
+      this.timeUpdateInterval = 250;
     }
     startTimeUpdateTimer() {
       if (this.timeUpdateTimer)
         return;
-      this.timeUpdateTimer = setInterval(this.onVideoTimeUpdate.bind(this), 250);
+      this.timeUpdateTimer = setInterval(this.onVideoTimeUpdate.bind(this), this.timeUpdateInterval);
     }
     stopTimeUpdateTimer() {
       clearInterval(this.timeUpdateTimer);
@@ -497,6 +498,11 @@
       if (ctime === this.currentTime)
         return;
       this.currentTime = ctime;
+      if (this.params["end-at"] && this.currentTime >= this.params["end-at"]) {
+        this.onVideoEnded();
+        this.currentState = "ended";
+        this.element.dispatchEvent(new CustomEvent("video-background-state-change", { bubbles: true, detail: this }));
+      }
       this.element.dispatchEvent(new CustomEvent("video-background-time-update", { bubbles: true, detail: this }));
     }
     onVideoPlayerReady() {
@@ -514,10 +520,7 @@
     onVideoStateChange(event) {
       this.currentState = this.convertState(event.data);
       if (this.currentState === "ended") {
-        if (this.params.loop) {
-          this.seekTo(this.params["start-at"]);
-          this.player.playVideo();
-        }
+        this.onVideoEnded();
       }
       if (this.currentState === "notstarted" && this.params.autoplay) {
         this.seekTo(this.params["start-at"]);
@@ -538,6 +541,14 @@
         this.stopTimeUpdateTimer();
       }
       this.element.dispatchEvent(new CustomEvent("video-background-state-change", { bubbles: true, detail: this }));
+    }
+    onVideoEnded() {
+      if (this.params.loop) {
+        this.seekTo(this.params["start-at"]);
+        this.player.playVideo();
+      } else {
+        this.player.pause();
+      }
     }
     seekTo(seconds, allowSeekAhead = true) {
       this.player.seekTo(seconds, allowSeekAhead);

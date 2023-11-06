@@ -25,11 +25,13 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.timeUpdateTimer = null;
     this.currentTime = 0 || this.params['start-at'];
     this.duration = 0 || this.params['end-at'];
+
+    this.timeUpdateInterval = 250;
   }
 
   startTimeUpdateTimer() {
     if (this.timeUpdateTimer) return;
-    this.timeUpdateTimer = setInterval(this.onVideoTimeUpdate.bind(this), 250);
+    this.timeUpdateTimer = setInterval(this.onVideoTimeUpdate.bind(this), this.timeUpdateInterval);
   };
 
   stopTimeUpdateTimer() {
@@ -112,6 +114,11 @@ export class YoutubeBackground extends SuperVideoBackground {
     const ctime = this.player.getCurrentTime();
     if (ctime === this.currentTime) return;
     this.currentTime = ctime;
+    if (this.params['end-at'] && this.currentTime >= this.params['end-at']) {
+      this.onVideoEnded();
+      this.currentState = 'ended';
+      this.element.dispatchEvent(new CustomEvent('video-background-state-change', { bubbles: true, detail: this }));
+    }
     this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
   }
 
@@ -133,10 +140,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.currentState = this.convertState(event.data);
 
     if (this.currentState === 'ended') {
-      if (this.params.loop) {
-        this.seekTo(this.params['start-at']);
-        this.player.playVideo();
-      }
+      this.onVideoEnded();
     }
   
     if (this.currentState === 'notstarted' && this.params.autoplay) {
@@ -161,6 +165,15 @@ export class YoutubeBackground extends SuperVideoBackground {
     }
 
     this.element.dispatchEvent(new CustomEvent('video-background-state-change', { bubbles: true, detail: this }));
+  }
+
+  onVideoEnded() {
+    if (this.params.loop) {
+      this.seekTo(this.params['start-at']);
+      this.player.playVideo();
+    } else {
+      this.player.pause();
+    }
   }
 
   seekTo(seconds, allowSeekAhead = true) {
@@ -189,7 +202,6 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   pause() {
     this.state.playing = false;
-  
     this.player.pauseVideo();
   }
 
