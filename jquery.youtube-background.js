@@ -353,11 +353,11 @@
     mobileLowBatteryAutoplayHack() {
       if (this.is_mobile && this.params.mobile) {
         document.addEventListener("touchstart", () => {
-          if (!this.initialPlay) {
+          if (!this.initialPlay && this.params.autoplay && this.params.muted) {
             this.softPlay();
-          }
-          if (!this.isIntersecting && !this.params["always-play"]) {
-            this.softPause();
+            if (!this.isIntersecting && !this.params["always-play"]) {
+              this.softPause();
+            }
           }
         }, { once: true });
       }
