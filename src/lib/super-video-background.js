@@ -43,7 +43,8 @@ export class SuperVideoBackground {
       'poster': null,
       'always-play': false,
       'volume': 1,
-      'no-cookie': true
+      'no-cookie': true,
+      'force-on-low-battery': false,
     };
 
     this.params = this.parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);
@@ -189,18 +190,17 @@ export class SuperVideoBackground {
   }
 
   mobileLowBatteryAutoplayHack() {
-    if (this.is_mobile && this.params.mobile) {
-      document.addEventListener('touchstart', () => {
-        if (!this.initialPlay && this.params.autoplay && this.params.muted) {
-          this.softPlay();
+    if (!this.params['force-on-low-battery']) return;
+    if (!this.is_mobile && this.params.mobile) return;
+    document.addEventListener('touchstart', () => {
+      if (!this.initialPlay && this.params.autoplay && this.params.muted) {
+        this.softPlay();
 
-          if (!this.isIntersecting && !this.params['always-play']) {
-            this.softPause();
-            //setTimeout(this.softPause.bind(this), 100);
-          }
+        if (!this.isIntersecting && !this.params['always-play']) {
+          this.softPause();
         }
-      }, { once: true });
-    }
+      }
+    }, { once: true });
   }
 
   parseProperties(params, defaults, element, attr_prefix) {

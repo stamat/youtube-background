@@ -30,6 +30,8 @@ export class VideoBackground extends SuperVideoBackground {
     this.timeUpdateTimer = null;
     this.currentTime = 0 || this.params['start-at'];
     this.duration = 0 || this.params['end-at'];
+
+    this.mobileLowBatteryAutoplayHack();
   }
 
   generatePlayerElement() {
@@ -89,7 +91,6 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   onVideoCanPlay() {
-    this.mobileLowBatteryAutoplayHack();
     this.updateDuration();
 
     if (this.params['start-at'] && this.params.autoplay) {

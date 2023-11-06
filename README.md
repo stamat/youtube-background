@@ -100,6 +100,7 @@ Property | Default | Accepts | Description
 **always-play** | false | boolean | Video will stop playing unless always-play is set to true.
 **volume** | 1 | float | From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Sets initial volume. Setting volume doesn't work on mobile, so this setting won't have an effect on mobile.
 **no-cookie** | true | boolean | Disable cookies. This will prevent **YouTube** and **Vimeo** from storing information and tracking you across the web. It is set to true by default.
+**force-on-low-battery** | false | boolean | When mobile device is on battery saver mode, the videos will not autoplay. This setting will force autoplay on battery saver mode on user first interaction. This setting is set to false by default. Be mindful of your users and their data plans, and their battery life.
 
 Noted properties can be added as html attributes as:
 
@@ -120,6 +121,7 @@ Noted properties can be added as html attributes as:
 * **data-vbg-always-play**
 * **data-vbg-volume**
 * **data-vbg-no-cookie**
+* **data-vbg-force-on-low-battery**
 
 #### Example - Properties as HTML attributes
 

@@ -217,7 +217,8 @@
         "poster": null,
         "always-play": false,
         "volume": 1,
-        "no-cookie": true
+        "no-cookie": true,
+        "force-on-low-battery": false
       };
       this.params = this.parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
       if (this.params.pause) {
@@ -351,16 +352,18 @@
       return this.element;
     }
     mobileLowBatteryAutoplayHack() {
-      if (this.is_mobile && this.params.mobile) {
-        document.addEventListener("touchstart", () => {
-          if (!this.initialPlay && this.params.autoplay && this.params.muted) {
-            this.softPlay();
-            if (!this.isIntersecting && !this.params["always-play"]) {
-              this.softPause();
-            }
+      if (!this.params["force-on-low-battery"])
+        return;
+      if (!this.is_mobile && this.params.mobile)
+        return;
+      document.addEventListener("touchstart", () => {
+        if (!this.initialPlay && this.params.autoplay && this.params.muted) {
+          this.softPlay();
+          if (!this.isIntersecting && !this.params["always-play"]) {
+            this.softPause();
           }
-        }, { once: true });
-      }
+        }
+      }, { once: true });
     }
     parseProperties(params, defaults, element, attr_prefix) {
       let res_params = {};
@@ -791,6 +794,7 @@
       this.timeUpdateTimer = null;
       this.currentTime = this.params["start-at"];
       this.duration = this.params["end-at"];
+      this.mobileLowBatteryAutoplayHack();
     }
     generatePlayerElement() {
       const playerElement = document.createElement("video");
@@ -837,7 +841,6 @@
       this.updateDuration();
     }
     onVideoCanPlay() {
-      this.mobileLowBatteryAutoplayHack();
       this.updateDuration();
       if (this.params["start-at"] && this.params.autoplay) {
         this.seekTo(this.params["start-at"]);
