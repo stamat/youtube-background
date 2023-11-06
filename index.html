@@ -145,13 +145,19 @@
               console.log(event.detail.currentTime);
             });
 
-            document.addEventListener('click', function(event) {
-              console.log(event.target);
+            document.addEventListener('touchstart', function(event) {
               const playerElems = document.querySelectorAll('[data-vbg-uid]');
               for (let i = 0; i < playerElems.length; i++) {
                 const vbgInstance = window.VIDEO_BACKGROUNDS.index[playerElems[i].getAttribute('data-vbg-uid')];
-                console.log(vbgInstance);
-                vbgInstance.play();
+                if (vbgInstance.params.autoplay && vbgInstance.params.mute) {
+                    vbgInstance.softPlay();
+                }
+              }
+              for (let i = 0; i < playerElems.length; i++) {
+                const vbgInstance = window.VIDEO_BACKGROUNDS.index[playerElems[i].getAttribute('data-vbg-uid')];
+                if (vbgInstance.params.autoplay && vbgInstance.params.mute && !vbgInstance.isIntersecting) {
+                    vbgInstance.softPause();
+                }
               }
             });
         </script>
