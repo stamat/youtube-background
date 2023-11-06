@@ -147,13 +147,11 @@ export class VideoBackground extends SuperVideoBackground {
   softPause() {
     if (!this.state.playing || !this.player) return;
     this.player.pause();
-    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
   }
 
   softPlay() {
     if (!this.state.playing || !this.player) return;
     this.player.play();
-    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
   }
 
   play() {
