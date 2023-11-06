@@ -64,6 +64,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     const playerElement = document.createElement('iframe');
     playerElement.setAttribute('frameborder', 0);
     playerElement.setAttribute('allow', 'autoplay; mute');
+    if (this.params['lazyloading']) playerElement.setAttribute('loading', 'lazy');
 
     return playerElement;
   }

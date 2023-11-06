@@ -218,7 +218,8 @@
         "always-play": false,
         "volume": 1,
         "no-cookie": true,
-        "force-on-low-battery": false
+        "force-on-low-battery": false,
+        "lazyloading": false
       };
       this.params = this.parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
       if (this.params.pause) {
@@ -457,6 +458,8 @@
       const playerElement = document.createElement("iframe");
       playerElement.setAttribute("frameborder", 0);
       playerElement.setAttribute("allow", "autoplay; mute");
+      if (this.params["lazyloading"])
+        playerElement.setAttribute("loading", "lazy");
       return playerElement;
     }
     generateSrcURL(id) {
@@ -632,6 +635,8 @@
       const playerElement = document.createElement("iframe");
       playerElement.setAttribute("frameborder", 0);
       playerElement.setAttribute("allow", "autoplay; mute");
+      if (this.params["lazyloading"])
+        playerElement.setAttribute("loading", "lazy");
       return playerElement;
     }
     generateSrcURL(id) {
@@ -802,6 +807,8 @@
       playerElement.toggleAttribute("loop", this.params.loop);
       playerElement.toggleAttribute("autoplay", this.params.autoplay && (this.params["always-play"] || this.isIntersecting));
       playerElement.toggleAttribute("muted", this.params.muted);
+      if (this.params["lazyloading"])
+        playerElement.setAttribute("loading", "lazy");
       return playerElement;
     }
     injectPlayer() {

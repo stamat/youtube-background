@@ -45,6 +45,7 @@ export class SuperVideoBackground {
       'volume': 1,
       'no-cookie': true,
       'force-on-low-battery': false,
+      'lazyloading': false
     };
 
     this.params = this.parseProperties(params, DEFAULTS, this.element, ['data-ytbg-', 'data-vbg-']);

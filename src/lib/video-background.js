@@ -40,6 +40,7 @@ export class VideoBackground extends SuperVideoBackground {
     playerElement.toggleAttribute('loop', this.params.loop);
     playerElement.toggleAttribute('autoplay', this.params.autoplay && (this.params['always-play'] || this.isIntersecting));
     playerElement.toggleAttribute('muted', this.params.muted);
+    if (this.params['lazyloading']) playerElement.setAttribute('loading', 'lazy');
 
     return playerElement;
   }
