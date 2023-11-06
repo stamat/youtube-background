@@ -513,8 +513,8 @@
     }
     onVideoStateChange(event) {
       this.currentState = this.convertState(event.data);
-      if (this.currentState === "ended" && this.params.loop) {
-        if (this.params["start-at"] && this.params.loop) {
+      if (this.currentState === "ended") {
+        if (this.params.loop) {
           this.seekTo(this.params["start-at"]);
           this.player.playVideo();
         }
