@@ -422,7 +422,7 @@
         "1": "playing",
         "2": "paused",
         "3": "buffering",
-        "5": "videocued"
+        "5": "cued"
       };
       this.currentState = "notstarted";
       this.timeUpdateTimer = null;
