@@ -62,6 +62,8 @@ export class SuperVideoBackground {
 
     this.buildWrapperHTML();
 
+    if (this.is_mobile && !this.params.mobile) return;
+
     if (this.params['play-button']) {
       generateActionButton(this, {
         name: 'playing',
