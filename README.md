@@ -179,7 +179,7 @@ or with jQuery:
 ```javascript
 jQuery('#video-background').on('video-background-ready', function(event) {
     console.log('video-background-ready'); // the video instance object
-    console.log(event.detail); // the video instance object
+    console.log(event.originalEvent.detail); // the video instance object
 });
 ```
 
