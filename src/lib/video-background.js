@@ -32,7 +32,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.duration = 0 || this.params['end-at'];
 
     this.mobileLowBatteryAutoplayHack();
-    this.element.dispatchEvent(new CustomEvent('video-background-ready', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-ready');
   }
 
   generatePlayerElement() {
@@ -83,7 +83,7 @@ export class VideoBackground extends SuperVideoBackground {
 
   updateState(state) {
     this.currentState = state;
-    this.element.dispatchEvent(new CustomEvent('video-background-state-change', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-state-change');
   }
 
   /* ===== API ===== */
@@ -102,7 +102,7 @@ export class VideoBackground extends SuperVideoBackground {
 
   onVideoTimeUpdate() {
     this.currentTime = this.player.currentTime;
-    this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-time-update');
 
     if (this.currentTime >= this.duration) {
       this.onVideoEnded();
@@ -115,12 +115,12 @@ export class VideoBackground extends SuperVideoBackground {
       this.playerElement.style.opacity = 1;
     }
     this.updateState('playing');
-    this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-play');
   }
 
   onVideoPause() {
     this.updateState('paused');
-    this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-pause');
   }
 
   onVideoEnded() {
@@ -130,7 +130,7 @@ export class VideoBackground extends SuperVideoBackground {
       this.seekTo(this.params['start-at']);
       this.play();
     }
-    this.element.dispatchEvent(new CustomEvent('video-background-ended', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-ended');
   }
 
   onVideoBuffering() {
@@ -190,7 +190,7 @@ export class VideoBackground extends SuperVideoBackground {
       this.initialVolume = true;
       this.setVolume(this.params.volume);
     }
-    this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-unmute');
   }
 
   mute() {
@@ -198,13 +198,13 @@ export class VideoBackground extends SuperVideoBackground {
     this.state.muted = true;
   
     this.player.muted = true;
-    this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-mute');
   }
 
   setVolume(volume) {
     if (!this.player) return;
   
     this.player.volume = volume;
-    this.element.dispatchEvent(new CustomEvent('video-background-volume-change', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-volume-change');
   }
 }

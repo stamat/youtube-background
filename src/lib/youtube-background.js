@@ -116,10 +116,10 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.currentTime = ctime;
     if (this.params['end-at'] && this.currentTime >= this.params['end-at']) {
       this.currentState = 'ended';
-      this.element.dispatchEvent(new CustomEvent('video-background-state-change', { bubbles: true, detail: this }));
+      this.dispatchEvent('video-background-state-change');
       this.onVideoEnded();
     }
-    this.element.dispatchEvent(new CustomEvent('video-background-time-update', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-time-update');
   }
 
   onVideoPlayerReady() {
@@ -133,7 +133,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       this.duration = this.player.getDuration();
     }
 
-    this.element.dispatchEvent(new CustomEvent('video-background-ready', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-ready');
   }
 
   onVideoStateChange(event) {
@@ -157,14 +157,14 @@ export class YoutubeBackground extends SuperVideoBackground {
       if (!this.duration && !this.params['end-at']) {
         this.duration = this.player.getDuration();
       }
-      this.element.dispatchEvent(new CustomEvent('video-background-play', { bubbles: true, detail: this }));
+      this.dispatchEvent('video-background-play');
       this.startTimeUpdateTimer();
     } else {
-      this.element.dispatchEvent(new CustomEvent('video-background-pause', { bubbles: true, detail: this }));
+      this.dispatchEvent('video-background-pause');
       this.stopTimeUpdateTimer();
     }
 
-    this.element.dispatchEvent(new CustomEvent('video-background-state-change', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-state-change');
   }
 
   onVideoEnded() {
@@ -175,7 +175,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       this.player.pause();
     }
 
-    this.element.dispatchEvent(new CustomEvent('video-background-ended', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-ended');
   }
 
   seekTo(seconds, allowSeekAhead = true) {
@@ -216,7 +216,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       this.setVolume(this.params.volume);
     }
     this.player.unMute();
-    this.element.dispatchEvent(new CustomEvent('video-background-unmute', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-unmute');
   }
 
   mute() {
@@ -224,13 +224,13 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.state.muted = true;
   
     this.player.mute();
-    this.element.dispatchEvent(new CustomEvent('video-background-mute', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-mute');
   }
 
   setVolume(volume) {
     if (!this.player) return;
     
     this.player.setVolume(volume * 100);
-    this.element.dispatchEvent(new CustomEvent('video-background-volume-change', { bubbles: true, detail: this }));
+    this.dispatchEvent('video-background-volume-change');
   }
 }

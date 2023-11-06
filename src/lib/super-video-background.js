@@ -192,6 +192,10 @@ export class SuperVideoBackground {
     return this.element;
   }
 
+  dispatchEvent(name) {
+    this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
+  }
+
   mobileLowBatteryAutoplayHack() {
     if (!this.params['force-on-low-battery']) return;
     if (!this.is_mobile && this.params.mobile) return;
