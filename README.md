@@ -151,14 +151,37 @@ Noted properties can be added as html attributes as:
     </script>
 ```
 
-### Events - Youtube and HTML5 video
+### Events
 
+* **video-background-ready** - when the video is ready to play, this event is triggered. HTML5 videos are ready to play immediately.
+* **video-background-time-update** - whenever the time of the video changes while video is playing, this event is triggered. The current time is available from the instance variable `event.detail.currentTime`. On Vimeo and YouTube this event is fired in 250ms intervals.
+* **video-background-state-change** - video changes state. The state is available from the instance variable `event.detail.currentState`. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`, `cued`.
 * **video-background-play** - video starts playing
 * **video-background-pause** - video is paused
+* **video-background-ended** - video ended event. Keep in mind that if loop is set to true the video will start playing from the start after this event.
 * **video-background-mute** - video sound is muted
 * **video-background-unmute** - video sound is unmuted
+* **video-background-volume-change** - video volume is changed. The volume is available from the instance variable `event.detail.volume`.
 
 Events bubble. If you go vanilla, you can get the video object via `event.detail`.
+
+You can add listeners to the events onto the element that you've initialised the video background. If the ID of that element is `#video-background`, you can add listeners like this:
+
+```javascript
+document.querySelector('#video-background').addEventListener('video-background-ready', function(event) {
+    console.log('video-background-ready'); // the video instance object
+    console.log(event.detail); // the video instance object
+});
+```
+
+or with jQuery:
+
+```javascript
+jQuery('#video-background').on('video-background-ready', function(event) {
+    console.log('video-background-ready'); // the video instance object
+    console.log(event.detail); // the video instance object
+});
+```
 
 ## Development
 
