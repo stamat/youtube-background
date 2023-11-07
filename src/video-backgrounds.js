@@ -100,6 +100,16 @@ export class VideoBackgrounds {
     }
   }
 
+  destroy(element) {
+    const uid = element.getAttribute('data-vbg-uid');
+    if (uid && this.index.hasOwnProperty(uid)) {
+      if (!this.index[uid].params['always-play']) this.intersectionObserver.unobserve(element);
+      if (this.resizeObserver) this.resizeObserver.unobserve(element);
+      this.index[uid].destroy();
+      delete this.index[uid];
+    }
+  }
+
   getVidID(link) {
     if (link === undefined && link === null) return;
 

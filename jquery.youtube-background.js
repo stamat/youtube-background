@@ -363,6 +363,17 @@
       if (this.type === "vimeo")
         this.element.style["background-image"] = `url(https://vumbnail.com/${id}.jpg)`;
     }
+    destroy() {
+      this.playerElement.remove();
+      this.element.classList.remove("youtube-background", "video-background");
+      this.element.removeAttribute("data-vbg-uid");
+      this.element.style = "";
+      if (this.params["play-button"] || this.params["mute-button"]) {
+        this.controls_element.remove();
+      }
+      if (this.timeUpdateTimer)
+        clearInterval(this.timeUpdateTimer);
+    }
     setDuration(duration) {
       if (this.duration === duration)
         return;
@@ -454,6 +465,7 @@
       };
       this.timeUpdateTimer = null;
       this.timeUpdateInterval = 250;
+      this.initYTPlayer();
     }
     startTimeUpdateTimer() {
       if (this.timeUpdateTimer)
@@ -468,14 +480,14 @@
       return this.STATES[state];
     }
     initYTPlayer() {
-      if (window.hasOwnProperty("YT") && this.player === null) {
-        this.player = new YT.Player(this.uid, {
-          events: {
-            "onReady": this.onVideoPlayerReady.bind(this),
-            "onStateChange": this.onVideoStateChange.bind(this)
-          }
-        });
-      }
+      if (!window.hasOwnProperty("YT") || this.player !== null)
+        return;
+      this.player = new YT.Player(this.uid, {
+        events: {
+          "onReady": this.onVideoPlayerReady.bind(this),
+          "onStateChange": this.onVideoStateChange.bind(this)
+        }
+      });
     }
     injectScript() {
       if (window.hasOwnProperty("YT") || document.querySelector('script[src="https://www.youtube.com/player_api"]'))
@@ -650,6 +662,7 @@
       this.injectScript();
       this.player = null;
       this.injectPlayer();
+      this.initVimeoPlayer();
     }
     injectScript() {
       if (window.hasOwnProperty("Vimeo") || document.querySelector('script[src="https://player.vimeo.com/api/player.js"]'))
@@ -664,7 +677,7 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
     initVimeoPlayer() {
-      if (!window.hasOwnProperty("Vimeo") && this.player !== null)
+      if (!window.hasOwnProperty("Vimeo") || this.player !== null)
         return;
       this.player = new Vimeo.Player(this.playerElement);
       this.player.on("loaded", this.onVideoPlayerReady.bind(this));
@@ -732,7 +745,8 @@
     }
     onVideoPlayerReady() {
       this.mobileLowBatteryAutoplayHack();
-      this.seekTo(this.params["start-at"]);
+      if (this.params["start-at"])
+        this.seekTo(this.params["start-at"]);
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         this.player.play();
       }
@@ -1092,6 +1106,17 @@
       }
       if (!this.index[uid].params["always-play"]) {
         this.intersectionObserver.observe(element);
+      }
+    }
+    destroy(element) {
+      const uid = element.getAttribute("data-vbg-uid");
+      if (uid && this.index.hasOwnProperty(uid)) {
+        if (!this.index[uid].params["always-play"])
+          this.intersectionObserver.unobserve(element);
+        if (this.resizeObserver)
+          this.resizeObserver.unobserve(element);
+        this.index[uid].destroy();
+        delete this.index[uid];
       }
     }
     getVidID(link) {

@@ -200,6 +200,19 @@ export class SuperVideoBackground {
     if (this.type === 'vimeo') this.element.style['background-image'] = `url(https://vumbnail.com/${id}.jpg)`;
   }
 
+  destroy() {
+    this.playerElement.remove();
+    this.element.classList.remove('youtube-background', 'video-background');
+    this.element.removeAttribute('data-vbg-uid');
+    this.element.style = '';
+
+    if (this.params['play-button'] || this.params['mute-button']) {
+      this.controls_element.remove();
+    }
+
+    if (this.timeUpdateTimer) clearInterval(this.timeUpdateTimer);
+  }
+
   setDuration(duration) {
     if (this.duration === duration) return;
 

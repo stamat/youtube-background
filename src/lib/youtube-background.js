@@ -24,6 +24,8 @@ export class YoutubeBackground extends SuperVideoBackground {
 
     this.timeUpdateTimer = null;
     this.timeUpdateInterval = 250;
+
+    this.initYTPlayer();
   }
 
   startTimeUpdateTimer() {
@@ -41,14 +43,14 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   initYTPlayer() {
-    if (window.hasOwnProperty('YT') && this.player === null) {
-      this.player = new YT.Player(this.uid, {
-        events: {
-          'onReady': this.onVideoPlayerReady.bind(this),
-          'onStateChange': this.onVideoStateChange.bind(this)
-        }
-      });
-    }
+    if (!window.hasOwnProperty('YT') || this.player !== null) return;
+
+    this.player = new YT.Player(this.uid, {
+      events: {
+        'onReady': this.onVideoPlayerReady.bind(this),
+        'onStateChange': this.onVideoStateChange.bind(this)
+      }
+    });
   }
 
   injectScript() {
@@ -130,6 +132,7 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   onVideoPlayerReady() {
     this.mobileLowBatteryAutoplayHack();
+
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       if (this.params['start-at']) this.seekTo(this.params['start-at']);
       this.player.playVideo();

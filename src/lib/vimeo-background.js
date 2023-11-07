@@ -11,6 +11,8 @@ export class VimeoBackground extends SuperVideoBackground {
     this.player = null;
 
     this.injectPlayer();
+
+    this.initVimeoPlayer();
   }
 
   injectScript() {
@@ -25,7 +27,7 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   initVimeoPlayer() {
-    if (!window.hasOwnProperty('Vimeo') && this.player !== null) return
+    if (!window.hasOwnProperty('Vimeo') || this.player !== null) return;
     this.player = new Vimeo.Player(this.playerElement);
   
     this.player.on('loaded', this.onVideoPlayerReady.bind(this));
@@ -99,7 +101,7 @@ export class VimeoBackground extends SuperVideoBackground {
     this.id = pts[1];
     this.src = this.generateSrcURL(this.id);
     this.playerElement.src = this.src;
-    
+
     if (this.element.hasAttribute('data-vbg')) this.element.setAttribute('data-vbg', this.src);
     if (this.element.hasAttribute('data-ytbg')) this.element.setAttribute('data-ytbg', this.src);
     this.loadBackground(this.id);
@@ -107,7 +109,8 @@ export class VimeoBackground extends SuperVideoBackground {
 
   onVideoPlayerReady() {
     this.mobileLowBatteryAutoplayHack();
-    this.seekTo(this.params['start-at']);
+
+    if (this.params['start-at']) this.seekTo(this.params['start-at']);
 
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       this.player.play();
