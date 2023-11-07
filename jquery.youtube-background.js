@@ -1031,9 +1031,10 @@
   var VideoBackgrounds = class {
     constructor(selector, params) {
       this.elements = selector;
-      if (typeof selector === "string") {
+      if (this.elements instanceof Element)
+        this.elements = [this.elements];
+      if (typeof this.elements === "string")
         this.elements = document.querySelectorAll(selector);
-      }
       this.index = {};
       const self2 = this;
       this.intersectionObserver = new IntersectionObserver(function(entries) {
@@ -1074,6 +1075,8 @@
         });
       }
       this.initPlayers();
+      if (!this.elements || !this.elements.length)
+        return;
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         this.add(element, params);

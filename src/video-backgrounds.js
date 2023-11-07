@@ -7,10 +7,8 @@ import { randomIntInclusive, RE_VIMEO, RE_YOUTUBE, RE_VIDEO } from 'book-of-spel
 export class VideoBackgrounds {
   constructor(selector, params) {
     this.elements = selector;
-
-    if (typeof selector === 'string') {
-      this.elements = document.querySelectorAll(selector);
-    }
+    if (this.elements instanceof Element) this.elements = [this.elements];
+    if (typeof this.elements === 'string') this.elements = document.querySelectorAll(selector);
 
     this.index = {};
 
@@ -60,6 +58,7 @@ export class VideoBackgrounds {
     
     this.initPlayers();
 
+    if (!this.elements || !this.elements.length) return;
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
       this.add(element, params);
