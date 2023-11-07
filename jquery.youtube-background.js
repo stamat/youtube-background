@@ -361,10 +361,18 @@
     setDuration(duration) {
       if (this.duration === duration)
         return;
-      if (this.params["end-at"] && duration > this.params["end-at"])
-        this.duration = this.params["end-at"];
-      if (duration < this.params["end-at"]) {
+      if (this.params["end-at"]) {
+        if (duration > this.params["end-at"]) {
+          this.duration = this.params["end-at"];
+          return;
+        }
+        if (duration < this.params["end-at"]) {
+          this.duration = duration;
+          return;
+        }
+      } else {
         this.duration = duration;
+        return;
       }
       if (duration <= 0)
         this.duration = this.params["end-at"];

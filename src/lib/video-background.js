@@ -117,6 +117,7 @@ export class VideoBackground extends SuperVideoBackground {
       this.initialPlay = true;
       this.playerElement.style.opacity = 1;
     }
+
     this.updateState('playing');
     this.dispatchEvent('video-background-play');
   }
@@ -161,6 +162,7 @@ export class VideoBackground extends SuperVideoBackground {
     if (!this.player) return;
   
     const seconds = this.player.currentTime;
+    
     if (this.params['start-at'] && seconds <= this.params['start-at']) {
       this.seekTo(this.params['start-at']);
     }
