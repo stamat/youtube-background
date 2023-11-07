@@ -1,4 +1,5 @@
 import { SuperVideoBackground } from './super-video-background.js';
+import { RE_VIMEO } from 'book-of-spells';
 
 export class VimeoBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid) {
@@ -24,18 +25,17 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   initVimeoPlayer() {
-    if (window.hasOwnProperty('Vimeo') && this.player === null) {
-      this.player = new Vimeo.Player(this.playerElement);
+    if (!window.hasOwnProperty('Vimeo') && this.player !== null) return
+    this.player = new Vimeo.Player(this.playerElement);
   
-      this.player.on('loaded', this.onVideoPlayerReady.bind(this));
-      this.player.on('ended', this.onVideoEnded.bind(this));
-      this.player.on('play', this.onVideoPlay.bind(this));
-      this.player.on('pause', this.onVideoPause.bind(this));
-      this.player.on('bufferstart', this.onVideoBuffering.bind(this));
-      this.player.on('timeupdate', this.onVideoTimeUpdate.bind(this));
+    this.player.on('loaded', this.onVideoPlayerReady.bind(this));
+    this.player.on('ended', this.onVideoEnded.bind(this));
+    this.player.on('play', this.onVideoPlay.bind(this));
+    this.player.on('pause', this.onVideoPause.bind(this));
+    this.player.on('bufferstart', this.onVideoBuffering.bind(this));
+    this.player.on('timeupdate', this.onVideoTimeUpdate.bind(this));
 
-      if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
-    }
+    if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
   }
 
   generatePlayerElement() {
@@ -91,6 +91,15 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   /* ===== API ===== */
+
+  setSource(url) {
+    const pts = url.match(RE_VIMEO);
+    if (!pts || !pts.length) return;
+
+    this.id = pts[1];
+    this.src = this.generateSrcURL(this.id);
+    this.playerElement.src = this.src;
+  }
 
   onVideoPlayerReady() {
     this.mobileLowBatteryAutoplayHack();

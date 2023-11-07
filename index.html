@@ -101,6 +101,7 @@
                     <div class="content">
                         <div class="inner">
                             <h1>Mute / Unmute.</h1>
+                            <button class="src-change-button" data-src="https://www.youtube.com/watch?v=UIyoNvInzCI">Change Source</button>
                         </div>
                     </div>
                 </div>
@@ -118,6 +119,7 @@
                     <div class="content">
                         <div class="inner">
                             <h1>VIMEO!</h1>
+                            <button class="src-change-button" data-src="https://vimeo.com/64289386">Change Source</button>
                         </div>
                     </div>
                 </div>
@@ -142,6 +144,7 @@
                     <div class="content">
                         <div class="inner">
                             <h1>HTML5 VIDEO!</h1>
+                            <button class="src-change-button" data-src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">Change Source</button>
                         </div>
                     </div>
                 </div>
@@ -168,6 +171,21 @@
             document.querySelector('#vbg2').addEventListener('video-background-time-update', function(event) {
               console.log(event.detail.currentTime);
             });
+
+            const srcChangeButtons = document.querySelectorAll('.src-change-button');
+
+            for (let i = 0; i < srcChangeButtons.length; i++) {
+                srcChangeButtons[i].addEventListener('click', function(event) {
+                    const target = event.target;
+                    const src = target.getAttribute('data-src');
+                    const vbgElem = target.closest('.example-marquee').querySelector('[data-vbg]');
+                    if (!vbgElem) return;
+                    const uid = vbgElem.getAttribute('data-vbg-uid');
+                    if (!uid) return;
+
+                    VIDEO_BACKGROUNDS.index[uid].setSource(src);
+                })
+            }
         </script>
     </body>
 </html>

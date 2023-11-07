@@ -1,4 +1,5 @@
 import { SuperVideoBackground } from './super-video-background.js';
+import { RE_YOUTUBE } from 'book-of-spells';
 
 export class YoutubeBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid) {
@@ -87,7 +88,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     }
   
     if (this.params['end-at'] > 0) {
-      src += `&end=${this.params['end-at']}`;
+      src += `&end=${Math.ceil(this.params['end-at'])}`;
     }
 
     return src;
@@ -114,6 +115,15 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   /* ===== API ===== */
+
+  setSource(url) {
+    const pts = url.match(RE_YOUTUBE);
+    if (!pts || !pts.length) return;
+
+    this.id = pts[1];
+    this.src = this.generateSrcURL(this.id);
+    this.playerElement.src = this.src;
+  }
 
   onVideoTimeUpdate() {
     const ctime = this.player.getCurrentTime();

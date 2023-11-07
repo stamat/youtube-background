@@ -1,4 +1,5 @@
 import { SuperVideoBackground } from './super-video-background.js';
+import { RE_VIDEO } from 'book-of-spells';
 
 export class VideoBackground extends SuperVideoBackground {
   constructor(elem, params, vid_data, uid) {
@@ -13,7 +14,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.player = null;
     this.buttons = {};
 
-    const MIME_MAP = {
+    this.MIME_MAP = {
       'ogv' : 'video/ogg',
       'ogm' : 'video/ogg',
       'ogg' : 'video/ogg',
@@ -22,7 +23,7 @@ export class VideoBackground extends SuperVideoBackground {
       'webm' : 'video/webm'
     };
 
-    this.mime = MIME_MAP[this.ext.toLowerCase()];
+    this.mime = this.MIME_MAP[this.ext.toLowerCase()];
 
     this.injectPlayer();
 
@@ -75,6 +76,20 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   /* ===== API ===== */
+
+  setSource(url) {
+    const pts = url.match(RE_VIDEO);
+    if (!pts || !pts.length) return;
+    this.id = pts[1];
+    this.ext = /(?:\.([^.]+))?$/.exec(this.id)[1];
+    this.mime = this.MIME_MAP[this.ext.toLowerCase()];
+    this.playerElement.innerHTML = '';
+    const source = document.createElement('source');
+    source.setAttribute('src', url);
+    source.setAttribute('type', this.mime);
+    this.playerElement.appendChild(source);
+    this.src = url;
+  }
 
   onVideoLoadedMetadata() {
     this.setDuration(this.player.duration);

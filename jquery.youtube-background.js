@@ -496,7 +496,7 @@
         src += "&loop=1";
       }
       if (this.params["end-at"] > 0) {
-        src += `&end=${this.params["end-at"]}`;
+        src += `&end=${Math.ceil(this.params["end-at"])}`;
       }
       return src;
     }
@@ -521,6 +521,14 @@
         this.duration = this.params["end-at"];
     }
     /* ===== API ===== */
+    setSource(url) {
+      const pts = url.match(RE_YOUTUBE);
+      if (!pts || !pts.length)
+        return;
+      this.id = pts[1];
+      this.src = this.generateSrcURL(this.id);
+      this.playerElement.src = this.src;
+    }
     onVideoTimeUpdate() {
       const ctime = this.player.getCurrentTime();
       if (ctime === this.currentTime)
@@ -652,17 +660,17 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
     initVimeoPlayer() {
-      if (window.hasOwnProperty("Vimeo") && this.player === null) {
-        this.player = new Vimeo.Player(this.playerElement);
-        this.player.on("loaded", this.onVideoPlayerReady.bind(this));
-        this.player.on("ended", this.onVideoEnded.bind(this));
-        this.player.on("play", this.onVideoPlay.bind(this));
-        this.player.on("pause", this.onVideoPause.bind(this));
-        this.player.on("bufferstart", this.onVideoBuffering.bind(this));
-        this.player.on("timeupdate", this.onVideoTimeUpdate.bind(this));
-        if (this.params.volume !== 1 && !this.params.muted)
-          this.setVolume(this.params.volume);
-      }
+      if (!window.hasOwnProperty("Vimeo") && this.player !== null)
+        return;
+      this.player = new Vimeo.Player(this.playerElement);
+      this.player.on("loaded", this.onVideoPlayerReady.bind(this));
+      this.player.on("ended", this.onVideoEnded.bind(this));
+      this.player.on("play", this.onVideoPlay.bind(this));
+      this.player.on("pause", this.onVideoPause.bind(this));
+      this.player.on("bufferstart", this.onVideoBuffering.bind(this));
+      this.player.on("timeupdate", this.onVideoTimeUpdate.bind(this));
+      if (this.params.volume !== 1 && !this.params.muted)
+        this.setVolume(this.params.volume);
     }
     generatePlayerElement() {
       const playerElement = document.createElement("iframe");
@@ -705,6 +713,14 @@
       this.dispatchEvent("video-background-state-change");
     }
     /* ===== API ===== */
+    setSource(url) {
+      const pts = url.match(RE_VIMEO);
+      if (!pts || !pts.length)
+        return;
+      this.id = pts[1];
+      this.src = this.generateSrcURL(this.id);
+      this.playerElement.src = this.src;
+    }
     onVideoPlayerReady() {
       this.mobileLowBatteryAutoplayHack();
       this.seekTo(this.params["start-at"]);
@@ -819,7 +835,7 @@
       this.element.setAttribute("data-vbg-uid", uid);
       this.player = null;
       this.buttons = {};
-      const MIME_MAP = {
+      this.MIME_MAP = {
         "ogv": "video/ogg",
         "ogm": "video/ogg",
         "ogg": "video/ogg",
@@ -827,7 +843,7 @@
         "mp4": "video/mp4",
         "webm": "video/webm"
       };
-      this.mime = MIME_MAP[this.ext.toLowerCase()];
+      this.mime = this.MIME_MAP[this.ext.toLowerCase()];
       this.injectPlayer();
       this.mobileLowBatteryAutoplayHack();
       this.dispatchEvent("video-background-ready");
@@ -869,6 +885,20 @@
       this.dispatchEvent("video-background-state-change");
     }
     /* ===== API ===== */
+    setSource(url) {
+      const pts = url.match(RE_VIDEO);
+      if (!pts || !pts.length)
+        return;
+      this.id = pts[1];
+      this.ext = /(?:\.([^.]+))?$/.exec(this.id)[1];
+      this.mime = this.MIME_MAP[this.ext.toLowerCase()];
+      this.playerElement.innerHTML = "";
+      const source = document.createElement("source");
+      source.setAttribute("src", url);
+      source.setAttribute("type", this.mime);
+      this.playerElement.appendChild(source);
+      this.src = url;
+    }
     onVideoLoadedMetadata() {
       this.setDuration(this.player.duration);
     }
