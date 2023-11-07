@@ -101,15 +101,6 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.resize(this.playerElement);
   }
 
-  setDuration(duration) {
-    if (this.duration === duration) return;
-    if (this.params['end-at'] && duration > this.params['end-at']) this.duration = this.params['end-at'];
-    if (duration < this.params['end-at']) {
-      this.duration = duration;
-    }
-    if (duration <= 0) this.duration = this.params['end-at'];
-  }
-
   /* ===== API ===== */
 
   setSource(url) {
