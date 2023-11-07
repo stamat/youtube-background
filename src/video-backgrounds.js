@@ -13,10 +13,6 @@ export class VideoBackgrounds {
     }
 
     this.index = {};
-    this.re = {};
-    this.re.YOUTUBE = RE_YOUTUBE;
-    this.re.VIMEO = RE_VIMEO;
-    this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
 
     const self = this;
 
@@ -106,6 +102,11 @@ export class VideoBackgrounds {
 
   getVidID(link) {
     if (link === undefined && link === null) return;
+
+    this.re = {};
+    this.re.YOUTUBE = RE_YOUTUBE;
+    this.re.VIMEO = RE_VIMEO;
+    this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
     
     for (let k in this.re) {
       const pts = link.match(this.re[k]);

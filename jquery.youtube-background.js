@@ -976,10 +976,6 @@
         this.elements = document.querySelectorAll(selector);
       }
       this.index = {};
-      this.re = {};
-      this.re.YOUTUBE = RE_YOUTUBE;
-      this.re.VIMEO = RE_VIMEO;
-      this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
       const self2 = this;
       this.intersectionObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
@@ -1056,6 +1052,10 @@
     getVidID(link) {
       if (link === void 0 && link === null)
         return;
+      this.re = {};
+      this.re.YOUTUBE = RE_YOUTUBE;
+      this.re.VIMEO = RE_VIMEO;
+      this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
       for (let k in this.re) {
         const pts = link.match(this.re[k]);
         if (pts && pts.length) {
