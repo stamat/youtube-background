@@ -503,9 +503,6 @@
       if (this.params.loop) {
         src += "&loop=1";
       }
-      if (this.params["end-at"] > 0) {
-        src += `&end=${Math.ceil(this.params["end-at"])}`;
-      }
       return src;
     }
     injectPlayer() {
