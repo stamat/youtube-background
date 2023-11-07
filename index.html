@@ -166,12 +166,13 @@
       			jQuery('[data-vbg]').youtube_background();
             });
 
-            document.querySelector('#vbg3').addEventListener('video-background-state-change', function(event) {
+            document.querySelector('#vbg2').addEventListener('video-background-state-change', function(event) {
               console.log(event.detail.currentState);
+              console.log('duration', event.detail.duration);
             });
 
-            document.querySelector('#vbg3').addEventListener('video-background-time-update', function(event) {
-              console.log(event.detail.currentTime);
+            document.querySelector('#vbg2').addEventListener('video-background-time-update', function(event) {
+                console.log(event.detail.percentComplete);
             });
 
             const srcChangeButtons = document.querySelectorAll('.src-change-button');

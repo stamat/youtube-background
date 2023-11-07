@@ -134,6 +134,7 @@ export class VimeoBackground extends SuperVideoBackground {
 
   onVideoTimeUpdate(event) {
     this.currentTime = event.seconds;
+    this.percentComplete = this.timeToPercentage(event.seconds);
     this.dispatchEvent('video-background-time-update');
 
     if (this.duration && event.seconds >= this.duration) {

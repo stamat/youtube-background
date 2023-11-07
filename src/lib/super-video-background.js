@@ -62,7 +62,8 @@ export class SuperVideoBackground {
 
     this.currentTime = 0 || this.params['start-at'];
     this.duration = 0 || this.params['end-at'];
-
+    this.percentComplete = 0;
+    if (this.params['start-at']) this.percentComplete = this.timeToPercentage(this.params['start-at']);
 
     this.buildWrapperHTML();
 
@@ -96,20 +97,20 @@ export class SuperVideoBackground {
   }
 
   timeToPercentage(time) {
-    if (!this.duration) return 0;
-    if (this.params['start-at']) time -= this.params['start-at']; // normalize
+    if (time <= this.params['start-at']) return 0;
     if (time >= this.duration) return 100;
-    if (this.params['end-at'] && time >= this.params['end-at']) return 100;
     if (time <= 0) return 0;
-    if (this.params['start-at'] && time <= this.params['start-at']) return 0;
-    return percentage(time, this.duration);
+    time -= this.params['start-at']; // normalize
+    const duration = this.duration - this.params['start-at']; // normalize
+    return percentage(time, duration);
   }
 
   percentageToTime(percentage) {
     if (!this.duration) return 0;
     if (percentage > 100) return this.duration;
     if (percentage < 0) return 0;
-    let time = percentage * this.duration / 100;
+    const duration = this.duration - this.params['start-at']; // normalize
+    let time = percentage * duration / 100;
     if (this.params['start-at']) time += this.params['start-at']; // normalize
     return time;
   }

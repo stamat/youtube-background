@@ -122,6 +122,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     const ctime = this.player.getCurrentTime();
     if (ctime === this.currentTime) return;
     this.currentTime = ctime;
+    this.percentComplete = this.timeToPercentage(this.currentTime);
     if (this.duration && this.currentTime >= this.duration) {
       this.currentState = 'ended';
       this.dispatchEvent('video-background-state-change');

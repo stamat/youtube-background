@@ -232,6 +232,9 @@
       this.state.muted = this.params.muted;
       this.currentTime = this.params["start-at"];
       this.duration = this.params["end-at"];
+      this.percentComplete = 0;
+      if (this.params["start-at"])
+        this.percentComplete = this.timeToPercentage(this.params["start-at"]);
       this.buildWrapperHTML();
       if (this.is_mobile && !this.params.mobile)
         return;
@@ -261,19 +264,15 @@
       }
     }
     timeToPercentage(time) {
-      if (!this.duration)
+      if (time <= this.params["start-at"])
         return 0;
-      if (this.params["start-at"])
-        time -= this.params["start-at"];
       if (time >= this.duration)
-        return 100;
-      if (this.params["end-at"] && time >= this.params["end-at"])
         return 100;
       if (time <= 0)
         return 0;
-      if (this.params["start-at"] && time <= this.params["start-at"])
-        return 0;
-      return percentage(time, this.duration);
+      time -= this.params["start-at"];
+      const duration = this.duration - this.params["start-at"];
+      return percentage(time, duration);
     }
     percentageToTime(percentage2) {
       if (!this.duration)
@@ -282,7 +281,8 @@
         return this.duration;
       if (percentage2 < 0)
         return 0;
-      let time = percentage2 * this.duration / 100;
+      const duration = this.duration - this.params["start-at"];
+      let time = percentage2 * duration / 100;
       if (this.params["start-at"])
         time += this.params["start-at"];
       return time;
@@ -550,6 +550,7 @@
       if (ctime === this.currentTime)
         return;
       this.currentTime = ctime;
+      this.percentComplete = this.timeToPercentage(this.currentTime);
       if (this.duration && this.currentTime >= this.duration) {
         this.currentState = "ended";
         this.dispatchEvent("video-background-state-change");
@@ -765,6 +766,7 @@
     }
     onVideoTimeUpdate(event) {
       this.currentTime = event.seconds;
+      this.percentComplete = this.timeToPercentage(event.seconds);
       this.dispatchEvent("video-background-time-update");
       if (this.duration && event.seconds >= this.duration) {
         this.onVideoEnded();
@@ -937,6 +939,7 @@
     }
     onVideoTimeUpdate() {
       this.currentTime = this.player.currentTime;
+      this.percentComplete = this.timeToPercentage(this.player.currentTime);
       this.dispatchEvent("video-background-time-update");
       if (this.currentTime >= this.duration) {
         this.onVideoEnded();
