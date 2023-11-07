@@ -19,6 +19,7 @@ export class SuperVideoBackground {
     this.state = {};
     this.state.playing = false;
     this.state.muted = false;
+    this.currentState = 'notstarted';
 
     this.initialPlay = false;
     this.initialVolume = false;
@@ -58,6 +59,9 @@ export class SuperVideoBackground {
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
     this.state.playing = this.params.autoplay;
     this.state.muted = this.params.muted;
+
+    this.currentTime = 0 || this.params['start-at'];
+    this.duration = 0 || this.params['end-at'];
 
 
     this.buildWrapperHTML();
@@ -190,6 +194,15 @@ export class SuperVideoBackground {
     }
   
     return this.element;
+  }
+
+  setDuration(duration) {
+    if (this.duration === duration) return;
+    if (this.params['end-at'] && duration > this.params['end-at']) this.duration = this.params['end-at'];
+    if (duration < this.params['end-at']) {
+      this.duration = duration;
+    }
+    if (duration <= 0) this.duration = this.params['end-at'];
   }
 
   dispatchEvent(name) {

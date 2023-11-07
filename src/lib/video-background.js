@@ -26,11 +26,6 @@ export class VideoBackground extends SuperVideoBackground {
 
     this.injectPlayer();
 
-    this.currentState = 'notstarted';
-    this.timeUpdateTimer = null;
-    this.currentTime = 0 || this.params['start-at'];
-    this.duration = 0 || this.params['end-at'];
-
     this.mobileLowBatteryAutoplayHack();
     this.dispatchEvent('video-background-ready');
   }
@@ -64,21 +59,14 @@ export class VideoBackground extends SuperVideoBackground {
     this.element.appendChild(this.playerElement);
     this.resize(this.playerElement);
 
-    //TODO: if we are going to enable hot swapping the source, we need a mechanism to check for the duration change and compare the duration to the end-at. If the duration is less than the end-at, we need to adjust end-at to the duration.
-    // Also we can't have `once` on the event listeners in this case.
-    this.player.addEventListener('loadedmetadata', this.onVideoLoadedMetadata.bind(this), { once: true });
-    this.player.addEventListener('durationchange', this.onVideoLoadedMetadata.bind(this), { once: true });
-    this.player.addEventListener('canplay', this.onVideoCanPlay.bind(this), { once: true });
+    this.player.addEventListener('loadedmetadata', this.onVideoLoadedMetadata.bind(this));
+    this.player.addEventListener('durationchange', this.onVideoLoadedMetadata.bind(this));
+    this.player.addEventListener('canplay', this.onVideoCanPlay.bind(this));
     this.player.addEventListener('timeupdate', this.onVideoTimeUpdate.bind(this));
     this.player.addEventListener('play', this.onVideoPlay.bind(this));
     this.player.addEventListener('pause', this.onVideoPause.bind(this));
     this.player.addEventListener('waiting', this.onVideoBuffering.bind(this));
     this.player.addEventListener('ended', this.onVideoEnded.bind(this));
-  }
-
-  updateDuration() {
-    if (!this.player) return;
-    if (!this.duration && !this.params['end-at']) this.duration = this.player.duration;
   }
 
   updateState(state) {
@@ -89,11 +77,11 @@ export class VideoBackground extends SuperVideoBackground {
   /* ===== API ===== */
 
   onVideoLoadedMetadata() {
-    this.updateDuration();
+    this.setDuration(this.player.duration);
   }
 
   onVideoCanPlay() {
-    this.updateDuration();
+    this.setDuration(this.player.duration);
 
     if (this.params['start-at'] && this.params.autoplay) {
       this.seekTo(this.params['start-at']);
@@ -125,12 +113,11 @@ export class VideoBackground extends SuperVideoBackground {
 
   onVideoEnded() {
     this.updateState('ended');
-
-    if (this.params['start-at'] && this.params.loop) {
-      this.seekTo(this.params['start-at']);
-      this.play();
-    }
     this.dispatchEvent('video-background-ended');
+    if (!this.params.loop) return this.pause();
+      
+    this.seekTo(this.params['start-at']);
+    this.onVideoPlay();
   }
 
   onVideoBuffering() {
@@ -158,15 +145,13 @@ export class VideoBackground extends SuperVideoBackground {
   play() {
     if (!this.player) return;
   
-    if (this.params['start-at'] || this.params['end-at']) {
-      const seconds = this.player.currentTime;
-      if (this.params['start-at'] && seconds <= this.params['start-at']) {
-        this.seekTo(this.params['start-at']);
-      }
-  
-      if (this.params['end-at'] && seconds >= this.params['end-at']) {
-        this.seekTo(this.params['start-at']);
-      }
+    const seconds = this.player.currentTime;
+    if (this.params['start-at'] && seconds <= this.params['start-at']) {
+      this.seekTo(this.params['start-at']);
+    }
+
+    if (this.duration && seconds >= this.duration) {
+      this.seekTo(this.params['start-at']);
     }
   
     this.state.playing = true;

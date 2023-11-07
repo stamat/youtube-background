@@ -1,4 +1,4 @@
-/* youtube-background v1.0.22 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.20 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // src/lib/buttons.js
   function buttonOn(buttonObj) {
@@ -194,6 +194,7 @@
       this.state = {};
       this.state.playing = false;
       this.state.muted = false;
+      this.currentState = "notstarted";
       this.initialPlay = false;
       this.initialVolume = false;
       this.params = {};
@@ -228,6 +229,8 @@
       this.params.resolution_mod = parseResolutionString(this.params.resolution);
       this.state.playing = this.params.autoplay;
       this.state.muted = this.params.muted;
+      this.currentTime = this.params["start-at"];
+      this.duration = this.params["end-at"];
       this.buildWrapperHTML();
       if (this.is_mobile && !this.params.mobile)
         return;
@@ -354,6 +357,17 @@
       }
       return this.element;
     }
+    setDuration(duration) {
+      if (this.duration === duration)
+        return;
+      if (this.params["end-at"] && duration > this.params["end-at"])
+        this.duration = this.params["end-at"];
+      if (duration < this.params["end-at"]) {
+        this.duration = duration;
+      }
+      if (duration <= 0)
+        this.duration = this.params["end-at"];
+    }
     dispatchEvent(name) {
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
     }
@@ -424,10 +438,7 @@
         "3": "buffering",
         "5": "cued"
       };
-      this.currentState = "notstarted";
       this.timeUpdateTimer = null;
-      this.currentTime = this.params["start-at"];
-      this.duration = this.params["end-at"];
       this.timeUpdateInterval = 250;
     }
     startTimeUpdateTimer() {
@@ -497,13 +508,24 @@
       this.element.appendChild(this.playerElement);
       this.resize(this.playerElement);
     }
+    setDuration(duration) {
+      if (this.duration === duration)
+        return;
+      if (this.params["end-at"] && duration > this.params["end-at"])
+        this.duration = this.params["end-at"];
+      if (duration < this.params["end-at"]) {
+        this.duration = duration;
+      }
+      if (duration <= 0)
+        this.duration = this.params["end-at"];
+    }
     /* ===== API ===== */
     onVideoTimeUpdate() {
       const ctime = this.player.getCurrentTime();
       if (ctime === this.currentTime)
         return;
       this.currentTime = ctime;
-      if (this.params["end-at"] && this.currentTime >= this.params["end-at"]) {
+      if (this.duration && this.currentTime >= this.duration) {
         this.currentState = "ended";
         this.dispatchEvent("video-background-state-change");
         this.onVideoEnded();
@@ -517,9 +539,7 @@
           this.seekTo(this.params["start-at"]);
         this.player.playVideo();
       }
-      if (!this.params["end-at"]) {
-        this.duration = this.player.getDuration();
-      }
+      this.setDuration(this.player.getDuration());
       this.dispatchEvent("video-background-ready");
     }
     onVideoStateChange(event) {
@@ -536,8 +556,8 @@
           this.initialPlay = true;
           this.playerElement.style.opacity = 1;
         }
-        if (!this.duration && !this.params["end-at"]) {
-          this.duration = this.player.getDuration();
+        if (!this.duration) {
+          this.setDuration(this.player.getDuration());
         }
         this.dispatchEvent("video-background-play");
         this.startTimeUpdateTimer();
@@ -548,13 +568,11 @@
       this.dispatchEvent("video-background-state-change");
     }
     onVideoEnded() {
-      if (this.params.loop) {
-        this.seekTo(this.params["start-at"]);
-        this.player.playVideo();
-      } else {
-        this.player.pause();
-      }
       this.dispatchEvent("video-background-ended");
+      if (!this.params.loop)
+        return this.player.pause();
+      this.seekTo(this.params["start-at"]);
+      this.player.playVideo();
     }
     seekTo(seconds, allowSeekAhead = true) {
       this.player.seekTo(seconds, allowSeekAhead);
@@ -619,9 +637,6 @@
       this.injectScript();
       this.player = null;
       this.injectPlayer();
-      this.currentState = "notstarted";
-      this.currentTime = this.params["start-at"];
-      this.duration = this.params["end-at"];
     }
     injectScript() {
       if (window.hasOwnProperty("Vimeo") || document.querySelector('script[src="https://player.vimeo.com/api/player.js"]'))
@@ -695,25 +710,23 @@
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         this.player.play();
       }
-      if (!this.params["end-at"]) {
-        this.player.getDuration().then((duration) => {
-          this.duration = duration;
-        });
-      }
+      this.player.getDuration().then((duration) => {
+        this.setDuration(duration);
+      });
       this.dispatchEvent("video-background-ready");
     }
     onVideoEnded() {
       this.updateState("ended");
-      if (this.params["start-at"] && this.params.loop) {
-        this.seekTo(this.params["start-at"]);
-        this.player.play();
-      }
       this.dispatchEvent("video-background-ended");
+      if (!this.params.loop)
+        return this.pause();
+      this.updateState("playing");
+      this.dispatchEvent("video-background-play");
     }
     onVideoTimeUpdate(event) {
       this.currentTime = event.seconds;
       this.dispatchEvent("video-background-time-update");
-      if (this.params["end-at"] && event.seconds >= this.params["end-at"]) {
+      if (this.duration && event.seconds >= this.duration) {
         this.onVideoEnded();
       }
     }
@@ -729,7 +742,7 @@
       if (self.params["start-at"] && seconds < self.params["start-at"]) {
         self.seekTo(self.params["start-at"]);
       }
-      if (self.params["end-at"] && seconds > self.params["end-at"]) {
+      if (self.duration && seconds >= self.duration) {
         self.seekTo(self.params["start-at"]);
       }
       this.updateState("playing");
@@ -814,10 +827,6 @@
       };
       this.mime = MIME_MAP[this.ext.toLowerCase()];
       this.injectPlayer();
-      this.currentState = "notstarted";
-      this.timeUpdateTimer = null;
-      this.currentTime = this.params["start-at"];
-      this.duration = this.params["end-at"];
       this.mobileLowBatteryAutoplayHack();
       this.dispatchEvent("video-background-ready");
     }
@@ -844,20 +853,14 @@
       this.stylePlayerElement(this.playerElement);
       this.element.appendChild(this.playerElement);
       this.resize(this.playerElement);
-      this.player.addEventListener("loadedmetadata", this.onVideoLoadedMetadata.bind(this), { once: true });
-      this.player.addEventListener("durationchange", this.onVideoLoadedMetadata.bind(this), { once: true });
-      this.player.addEventListener("canplay", this.onVideoCanPlay.bind(this), { once: true });
+      this.player.addEventListener("loadedmetadata", this.onVideoLoadedMetadata.bind(this));
+      this.player.addEventListener("durationchange", this.onVideoLoadedMetadata.bind(this));
+      this.player.addEventListener("canplay", this.onVideoCanPlay.bind(this));
       this.player.addEventListener("timeupdate", this.onVideoTimeUpdate.bind(this));
       this.player.addEventListener("play", this.onVideoPlay.bind(this));
       this.player.addEventListener("pause", this.onVideoPause.bind(this));
       this.player.addEventListener("waiting", this.onVideoBuffering.bind(this));
       this.player.addEventListener("ended", this.onVideoEnded.bind(this));
-    }
-    updateDuration() {
-      if (!this.player)
-        return;
-      if (!this.duration && !this.params["end-at"])
-        this.duration = this.player.duration;
     }
     updateState(state) {
       this.currentState = state;
@@ -865,10 +868,10 @@
     }
     /* ===== API ===== */
     onVideoLoadedMetadata() {
-      this.updateDuration();
+      this.setDuration(this.player.duration);
     }
     onVideoCanPlay() {
-      this.updateDuration();
+      this.setDuration(this.player.duration);
       if (this.params["start-at"] && this.params.autoplay) {
         this.seekTo(this.params["start-at"]);
       }
@@ -894,11 +897,11 @@
     }
     onVideoEnded() {
       this.updateState("ended");
-      if (this.params["start-at"] && this.params.loop) {
-        this.seekTo(this.params["start-at"]);
-        this.play();
-      }
       this.dispatchEvent("video-background-ended");
+      if (!this.params.loop)
+        return this.pause();
+      this.seekTo(this.params["start-at"]);
+      this.onVideoPlay();
     }
     onVideoBuffering() {
       this.updateState("buffering");
@@ -923,14 +926,12 @@
     play() {
       if (!this.player)
         return;
-      if (this.params["start-at"] || this.params["end-at"]) {
-        const seconds = this.player.currentTime;
-        if (this.params["start-at"] && seconds <= this.params["start-at"]) {
-          this.seekTo(this.params["start-at"]);
-        }
-        if (this.params["end-at"] && seconds >= this.params["end-at"]) {
-          this.seekTo(this.params["start-at"]);
-        }
+      const seconds = this.player.currentTime;
+      if (this.params["start-at"] && seconds <= this.params["start-at"]) {
+        this.seekTo(this.params["start-at"]);
+      }
+      if (this.duration && seconds >= this.duration) {
+        this.seekTo(this.params["start-at"]);
       }
       this.state.playing = true;
       this.player.play();

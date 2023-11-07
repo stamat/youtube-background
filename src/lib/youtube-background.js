@@ -21,11 +21,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       '5': 'cued'
     };
 
-    this.currentState = 'notstarted';
     this.timeUpdateTimer = null;
-    this.currentTime = 0 || this.params['start-at'];
-    this.duration = 0 || this.params['end-at'];
-
     this.timeUpdateInterval = 250;
   }
 
@@ -108,13 +104,22 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.resize(this.playerElement);
   }
 
+  setDuration(duration) {
+    if (this.duration === duration) return;
+    if (this.params['end-at'] && duration > this.params['end-at']) this.duration = this.params['end-at'];
+    if (duration < this.params['end-at']) {
+      this.duration = duration;
+    }
+    if (duration <= 0) this.duration = this.params['end-at'];
+  }
+
   /* ===== API ===== */
 
   onVideoTimeUpdate() {
     const ctime = this.player.getCurrentTime();
     if (ctime === this.currentTime) return;
     this.currentTime = ctime;
-    if (this.params['end-at'] && this.currentTime >= this.params['end-at']) {
+    if (this.duration && this.currentTime >= this.duration) {
       this.currentState = 'ended';
       this.dispatchEvent('video-background-state-change');
       this.onVideoEnded();
@@ -129,9 +134,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       this.player.playVideo();
     }
 
-    if (!this.params['end-at']) {
-      this.duration = this.player.getDuration();
-    }
+    this.setDuration(this.player.getDuration());
 
     this.dispatchEvent('video-background-ready');
   }
@@ -154,8 +157,8 @@ export class YoutubeBackground extends SuperVideoBackground {
         this.playerElement.style.opacity = 1;
       }
       
-      if (!this.duration && !this.params['end-at']) {
-        this.duration = this.player.getDuration();
+      if (!this.duration) {
+        this.setDuration(this.player.getDuration());
       }
       this.dispatchEvent('video-background-play');
       this.startTimeUpdateTimer();
@@ -168,14 +171,11 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   onVideoEnded() {
-    if (this.params.loop) {
-      this.seekTo(this.params['start-at']);
-      this.player.playVideo();
-    } else {
-      this.player.pause();
-    }
-
     this.dispatchEvent('video-background-ended');
+
+    if (!this.params.loop) return this.player.pause();
+    this.seekTo(this.params['start-at']);
+    this.player.playVideo();
   }
 
   seekTo(seconds, allowSeekAhead = true) {

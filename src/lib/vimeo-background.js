@@ -10,10 +10,6 @@ export class VimeoBackground extends SuperVideoBackground {
     this.player = null;
 
     this.injectPlayer();
-
-    this.currentState = 'notstarted';
-    this.currentTime = 0 || this.params['start-at'];
-    this.duration = 0 || this.params['end-at'];
   }
 
   injectScript() {
@@ -104,29 +100,27 @@ export class VimeoBackground extends SuperVideoBackground {
       this.player.play();
     }
 
-    if (!this.params['end-at']) {
-      this.player.getDuration().then((duration) => {
-        this.duration = duration;
-      });
-    }
+    this.player.getDuration().then((duration) => {
+      this.setDuration(duration);
+    });
 
     this.dispatchEvent('video-background-ready');
   }
 
   onVideoEnded() {
     this.updateState('ended');
-    if (this.params['start-at'] && this.params.loop) {
-      this.seekTo(this.params['start-at']);
-      this.player.play();
-    }
     this.dispatchEvent('video-background-ended');
+    if (!this.params.loop) return this.pause();
+      
+    this.updateState('playing');
+    this.dispatchEvent('video-background-play');
   }
 
   onVideoTimeUpdate(event) {
     this.currentTime = event.seconds;
     this.dispatchEvent('video-background-time-update');
 
-    if (this.params['end-at'] && event.seconds >= this.params['end-at']) {
+    if (this.duration && event.seconds >= this.duration) {
       this.onVideoEnded();
     }
   }
@@ -146,7 +140,7 @@ export class VimeoBackground extends SuperVideoBackground {
       self.seekTo(self.params['start-at']);
     }
 
-    if (self.params['end-at'] && seconds > self.params['end-at']) {
+    if (self.duration && seconds >= self.duration) {
       self.seekTo(self.params['start-at']);
     }
 
