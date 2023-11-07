@@ -99,6 +99,10 @@ export class VimeoBackground extends SuperVideoBackground {
     this.id = pts[1];
     this.src = this.generateSrcURL(this.id);
     this.playerElement.src = this.src;
+    
+    if (this.element.hasAttribute('data-vbg')) this.element.setAttribute('data-vbg', this.src);
+    if (this.element.hasAttribute('data-ytbg')) this.element.setAttribute('data-ytbg', this.src);
+    this.loadBackground(this.id);
   }
 
   onVideoPlayerReady() {

@@ -159,10 +159,7 @@ export class SuperVideoBackground {
     }
   
     if (this.params['load-background'] || this.params['poster']) {
-      if (this.params['load-background']) {
-        if (this.type === 'youtube') wrapper_styles['background-image'] = 'url(https://img.youtube.com/vi/'+this.id+'/hqdefault.jpg)';
-        if (this.type === 'vimeo') wrapper_styles['background-image'] = 'url(https://vumbnail.com/'+this.id+'.jpg)';
-      }
+      this.loadBackground(this.id);
       if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
       wrapper_styles['background-size'] = 'cover';
       wrapper_styles['background-repeat'] = 'no-repeat';
@@ -194,6 +191,13 @@ export class SuperVideoBackground {
     }
   
     return this.element;
+  }
+
+  loadBackground(id) {
+    if (!this.params['load-background']);
+    if (!id) return;
+    if (this.type === 'youtube') this.element.style['background-image'] = `url(https://img.youtube.com/vi/${id}/hqdefault.jpg)`;
+    if (this.type === 'vimeo') this.element.style['background-image'] = `url(https://vumbnail.com/${id}.jpg)`;
   }
 
   setDuration(duration) {

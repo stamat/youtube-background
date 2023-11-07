@@ -326,12 +326,7 @@
         wrapper_styles["pointer-events"] = "none";
       }
       if (this.params["load-background"] || this.params["poster"]) {
-        if (this.params["load-background"]) {
-          if (this.type === "youtube")
-            wrapper_styles["background-image"] = "url(https://img.youtube.com/vi/" + this.id + "/hqdefault.jpg)";
-          if (this.type === "vimeo")
-            wrapper_styles["background-image"] = "url(https://vumbnail.com/" + this.id + ".jpg)";
-        }
+        this.loadBackground(this.id);
         if (this.params["poster"])
           wrapper_styles["background-image"] = this.params["poster"];
         wrapper_styles["background-size"] = "cover";
@@ -357,6 +352,16 @@
         parent.appendChild(controls);
       }
       return this.element;
+    }
+    loadBackground(id) {
+      if (!this.params["load-background"])
+        ;
+      if (!id)
+        return;
+      if (this.type === "youtube")
+        this.element.style["background-image"] = `url(https://img.youtube.com/vi/${id}/hqdefault.jpg)`;
+      if (this.type === "vimeo")
+        this.element.style["background-image"] = `url(https://vumbnail.com/${id}.jpg)`;
     }
     setDuration(duration) {
       if (this.duration === duration)
@@ -522,6 +527,11 @@
       this.id = pts[1];
       this.src = this.generateSrcURL(this.id);
       this.playerElement.src = this.src;
+      if (this.element.hasAttribute("data-vbg"))
+        this.element.setAttribute("data-vbg", this.src);
+      if (this.element.hasAttribute("data-ytbg"))
+        this.element.setAttribute("data-ytbg", this.src);
+      this.loadBackground(this.id);
     }
     onVideoTimeUpdate() {
       const ctime = this.player.getCurrentTime();
@@ -714,6 +724,11 @@
       this.id = pts[1];
       this.src = this.generateSrcURL(this.id);
       this.playerElement.src = this.src;
+      if (this.element.hasAttribute("data-vbg"))
+        this.element.setAttribute("data-vbg", this.src);
+      if (this.element.hasAttribute("data-ytbg"))
+        this.element.setAttribute("data-ytbg", this.src);
+      this.loadBackground(this.id);
     }
     onVideoPlayerReady() {
       this.mobileLowBatteryAutoplayHack();
@@ -892,6 +907,10 @@
       source.setAttribute("type", this.mime);
       this.playerElement.appendChild(source);
       this.src = url;
+      if (this.element.hasAttribute("data-vbg"))
+        this.element.setAttribute("data-vbg", this.src);
+      if (this.element.hasAttribute("data-ytbg"))
+        this.element.setAttribute("data-ytbg", this.src);
     }
     onVideoLoadedMetadata() {
       this.setDuration(this.player.duration);
