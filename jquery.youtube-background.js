@@ -1,4 +1,4 @@
-/* youtube-background v1.0.20 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.0.22 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // src/lib/buttons.js
   function buttonOn(buttonObj) {
@@ -162,6 +162,7 @@
   // node_modules/book-of-spells/src/regex.mjs
   var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
   var RE_VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
+  var RE_VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
 
   // node_modules/book-of-spells/src/browser.mjs
   function isUserAgentMobile(str) {
@@ -1055,7 +1056,7 @@
       this.re = {};
       this.re.YOUTUBE = RE_YOUTUBE;
       this.re.VIMEO = RE_VIMEO;
-      this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
+      this.re.VIDEO = RE_VIDEO;
       for (let k in this.re) {
         const pts = link.match(this.re[k]);
         if (pts && pts.length) {

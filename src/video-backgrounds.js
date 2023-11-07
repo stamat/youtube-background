@@ -2,7 +2,7 @@ import { YoutubeBackground } from './lib/youtube-background.js';
 import { VimeoBackground } from './lib/vimeo-background.js';
 import { VideoBackground } from './lib/video-background.js';
 
-import { randomIntInclusive, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
+import { randomIntInclusive, RE_VIMEO, RE_YOUTUBE, RE_VIDEO } from 'book-of-spells';
 
 export class VideoBackgrounds {
   constructor(selector, params) {
@@ -106,7 +106,7 @@ export class VideoBackgrounds {
     this.re = {};
     this.re.YOUTUBE = RE_YOUTUBE;
     this.re.VIMEO = RE_VIMEO;
-    this.re.VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
+    this.re.VIDEO = RE_VIDEO;
     
     for (let k in this.re) {
       const pts = link.match(this.re[k]);
