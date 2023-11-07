@@ -739,6 +739,7 @@
         this.initialPlay = true;
         this.playerElement.style.opacity = 1;
       }
+      this.setDuration(event.duration);
       const seconds = event.seconds;
       if (self.params["start-at"] && seconds < self.params["start-at"]) {
         self.seekTo(self.params["start-at"]);
