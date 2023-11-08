@@ -173,6 +173,10 @@ export class VimeoBackground extends SuperVideoBackground {
     this.dispatchEvent('video-background-pause');
   }
 
+  seek(percentage) {
+    this.seekTo(this.percentageToTime(percentage));
+  }
+
   seekTo(time) {
     this.player.setCurrentTime(time);
   }

@@ -183,6 +183,10 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.player.playVideo();
   }
 
+  seek(percentage) {
+    this.seekTo(this.percentageToTime(percentage), true);
+  }
+
   seekTo(seconds, allowSeekAhead = true) {
     this.player.seekTo(seconds, allowSeekAhead);
   }

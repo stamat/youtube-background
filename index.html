@@ -360,19 +360,7 @@
 
             const seekInputs = document.querySelectorAll('.seek-wrapper');
             for (let i = 0; i < seekInputs.length; i++) {
-                const seekElem = seekInputs[i];
-                const selector = seekElem.getAttribute('data-target');
-                if (!selector) continue;
-                const vbgElem = document.querySelector(selector);
-                if (!vbgElem) continue;
-                const seekProgress = seekElem.querySelector('.seek-progress');
-                const seekInput = seekElem.querySelector('.seek');
-                    
-                vbgElem.addEventListener('video-background-time-update', function(event) {
-                    const percentComplete = event.detail.percentComplete;
-                    if (seekProgress) seekProgress.value = percentComplete;
-                    if (seekInput) seekInput.value = percentComplete;
-                });
+                new SeekBar(seekInputs[i]);
             }
 
         </script>

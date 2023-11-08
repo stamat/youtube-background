@@ -143,6 +143,10 @@ export class VideoBackground extends SuperVideoBackground {
     this.updateState('buffering');
   }
 
+  seek(percentage) {
+    this.seekTo(this.percentageToTime(percentage));
+  }
+
   seekTo(seconds) {
     if (this.player.hasOwnProperty('fastSeek')) {
       this.player.fastSeek(seconds);

@@ -202,3 +202,45 @@ export class VideoBackgrounds {
     }
   }
 }
+
+export class SeekBar {
+  constructor(seekBarElem, vbgInstance) {
+      this.lock = false;
+      if (!seekBarElem) return;
+      this.seekBarElem = seekBarElem;
+      this.progressElem = this.seekBarElem.querySelector('.seek-progress');
+      this.inputElem = this.seekBarElem.querySelector('.seek');
+      this.targetSelector = this.seekBarElem.getAttribute('data-target');
+      if (!this.targetSelector) return;
+      this.targetElem = document.querySelector(this.targetSelector);
+      if (!this.targetElem) return;
+
+      if (vbgInstance) this.vbgInstance = vbgInstance;
+
+      this.targetElem.addEventListener('video-background-time-update', this.onTimeUpdate.bind(this));
+
+      this.inputElem.addEventListener('input', this.onInput.bind(this));
+      this.inputElem.addEventListener('change', this.onChange.bind(this));
+  }
+
+  onTimeUpdate(event) {
+      if (!this.vbgInstance) this.vbgInstance = event.detail;
+      if (!this.lock) this.setProgress(this.vbgInstance.percentComplete);
+  }
+
+  onInput(event) {
+      this.lock = true;
+      this.setProgress(event.target.value);
+  }
+
+  onChange(event) {
+      this.lock = false;
+      this.setProgress(event.target.value);
+      if (this.vbgInstance) this.vbgInstance.seek(event.target.value);
+  }
+
+  setProgress(value) {
+      if (this.progressElem) this.progressElem.value = value;
+      if (this.inputElem) this.inputElem.value = value;
+  }
+}
