@@ -761,6 +761,7 @@
       this.dispatchEvent("video-background-ended");
       if (!this.params.loop)
         return this.pause();
+      this.seekTo(this.params["start-at"]);
       this.updateState("playing");
       this.dispatchEvent("video-background-play");
     }
