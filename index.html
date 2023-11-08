@@ -228,7 +228,7 @@
 
                             <div class="seek-wrapper" style="width: 100%" data-target="#vbg">
                                 <progress class="seek-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" aria-label="Seek" class="seek">
+                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek">
                             </div>
                         </div>
                     </div>
@@ -366,19 +366,13 @@
                 const vbgElem = document.querySelector(selector);
                 if (!vbgElem) continue;
                 const seekProgress = seekElem.querySelector('.seek-progress');
-                if (seekProgress) {
-                    seekProgress.value = 0;
-                }
                 const seekInput = seekElem.querySelector('.seek');
                     
 
                 vbgElem.addEventListener('video-background-time-update', function(event) {
-                    if (!seekInput.max) {
-                        seekInput.max = event.detail.duration;
-                    }
                     const percentComplete = event.detail.percentComplete;
                     if (seekProgress) seekProgress.value = percentComplete;
-                    if (seekInput) seekInput.value = event.detail.currentTime;
+                    if (seekInput) seekInput.value = percentComplete;
                 });
             }
 
