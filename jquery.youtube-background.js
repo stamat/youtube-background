@@ -1229,24 +1229,32 @@
       if (vbgInstance)
         this.vbgInstance = vbgInstance;
       this.targetElem.addEventListener("video-background-time-update", this.onTimeUpdate.bind(this));
+      this.targetElem.addEventListener("video-background-play", this.onReady.bind(this));
+      this.targetElem.addEventListener("video-background-ready", this.onReady.bind(this));
       this.inputElem.addEventListener("input", this.onInput.bind(this));
       this.inputElem.addEventListener("change", this.onChange.bind(this));
+    }
+    onReady(event) {
+      this.vbgInstance = event.detail;
     }
     onTimeUpdate(event) {
       if (!this.vbgInstance)
         this.vbgInstance = event.detail;
       if (!this.lock)
-        this.setProgress(this.vbgInstance.percentComplete);
+        requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
     }
     onInput(event) {
       this.lock = true;
-      this.setProgress(event.target.value);
+      requestAnimationFrame(() => this.setProgress(event.target.value));
     }
     onChange(event) {
       this.lock = false;
-      this.setProgress(event.target.value);
-      if (this.vbgInstance)
+      requestAnimationFrame(() => this.setProgress(event.target.value));
+      if (this.vbgInstance) {
         this.vbgInstance.seek(event.target.value);
+        if (this.vbgInstance.playerElement && this.vbgInstance.playerElement.style.opacity === 0)
+          this.vbgInstance.playerElement.style.opacity = 1;
+      }
     }
     setProgress(value) {
       if (this.progressElem)
