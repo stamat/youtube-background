@@ -49,16 +49,8 @@ export class VideoBackground extends SuperVideoBackground {
     if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
   
     this.playerElement.setAttribute('id', this.uid)
-
-    const source = document.createElement('source');
-    source.setAttribute('src', this.src);
-    source.setAttribute('type', this.mime);
-    this.playerElement.appendChild(source);
     
-  
     this.stylePlayerElement(this.playerElement);
-    this.element.appendChild(this.playerElement);
-    this.resize(this.playerElement);
 
     this.player.addEventListener('loadedmetadata', this.onVideoLoadedMetadata.bind(this));
     this.player.addEventListener('durationchange', this.onVideoLoadedMetadata.bind(this));
@@ -68,6 +60,13 @@ export class VideoBackground extends SuperVideoBackground {
     this.player.addEventListener('pause', this.onVideoPause.bind(this));
     this.player.addEventListener('waiting', this.onVideoBuffering.bind(this));
     this.player.addEventListener('ended', this.onVideoEnded.bind(this));
+
+    this.element.appendChild(this.playerElement);
+    const source = document.createElement('source');
+    source.setAttribute('src', this.src);
+    source.setAttribute('type', this.mime);
+    this.playerElement.appendChild(source);
+    this.resize(this.playerElement);
   }
 
   updateState(state) {

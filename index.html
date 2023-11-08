@@ -368,7 +368,6 @@
                 const seekProgress = seekElem.querySelector('.seek-progress');
                 const seekInput = seekElem.querySelector('.seek');
                     
-
                 vbgElem.addEventListener('video-background-time-update', function(event) {
                     const percentComplete = event.detail.percentComplete;
                     if (seekProgress) seekProgress.value = percentComplete;
