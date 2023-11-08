@@ -71,6 +71,145 @@
 			.video-background-controls button:hover {
 				opacity: 0.5;
 			}
+
+            :root {
+                --seek-thumb-color: #fff;
+                --seek-progress-background: #fff;
+                --seek-background: rgba(255, 255, 255, 0.4);
+            }
+
+            .seek-wrapper {
+                height: 6px;
+                background: var(--seek-background);
+                position: relative;
+            }
+
+            .seek-progress {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                overflow: hidden;
+                background: transparent !important;
+                border: 0;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 1;
+            }
+
+            .seek-progress::-webkit-progress-bar {
+                background: transparent;
+            }
+
+            .seek-progress::-webkit-progress-value {
+                background: var(--seek-progress-background);
+            }
+
+            .seek-progress::-moz-progress-bar {
+                background: var(--seek-progress-background);
+            }
+
+            .seek {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                position: relative;
+                top: calc(50% - 10px);
+                z-index: 1;
+                display: block;
+                width: 100%;
+                height: 20px;
+                margin: 0;
+                cursor: pointer;
+                background: transparent;
+            }
+
+            .seek {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                position: relative;
+                top: calc(50% - 10px);
+                z-index: 1;
+                display: block;
+                width: 100%;
+                height: 20px;
+                margin: 0;
+                cursor: pointer;
+                background: transparent;
+            }
+
+            .seek::-webkit-slider-runnable-track {
+                -webkit-appearance: none;
+                appearance: none;
+                height: 6px;
+                cursor: pointer;
+                background: transparent;
+                border: 0;
+                border-radius: 0;
+            }
+
+            .seek::-moz-range-track {
+                -moz-appearance: none;
+                appearance: none;
+                width: 100%;
+                height: 6px;
+                cursor: pointer;
+                background: transparent;
+                border: 0;
+                border-radius: 0;
+            }
+
+            .seek::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 12px;
+                height: 12px;
+                margin-top: 3px;
+                cursor: pointer;
+                background: var(--seek-thumb-color);
+                border: 0;
+                border-radius: 8px;
+                transform: translateY(-50%);
+                transition: opacity 0.4s ease-in-out;
+            }
+
+            .seek::-moz-range-progress {
+                margin-top: 0;
+                background: transparent;
+                border: 0;
+            }
+
+            .seek::-moz-range-thumb {
+                -moz-appearance: none;
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                margin-top: 0;
+                cursor: pointer;
+                background: var(--seek-thumb-color);
+                border: 0;
+                border-radius: 8px;
+                transition: opacity 0.4s ease-in-out;
+            }
+
+            .seek-wrapper ::-webkit-slider-thumb {
+                opacity: 0;
+            }
+
+            .seek-wrapper ::-moz-range-thumb {
+                opacity: 0;
+            }
+
+            .seek-wrapper:hover ::-webkit-slider-thumb {
+                opacity: 1;
+            }
+
+            .seek-wrapper:hover ::-moz-range-thumb {
+                opacity: 1;
+            }
         </style>
 
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -86,6 +225,11 @@
                             <h1>Cake in a frying pan? Impossible!</h1>
                             <button class="vbg-destroy" data-selector="#vbg">Destroy</button>
                             <button class="vbg-initialize" data-selector="#vbg" data-src="https://www.youtube.com/watch?v=LC5rEhxGqT4">Initialize</button>
+
+                            <div class="seek-wrapper" style="width: 100%" data-target="#vbg">
+                                <progress class="seek-progress" value="0" max="100" aria-hidden="true"></progress>
+                                <input type="range" value="0" min="0" aria-label="Seek" class="seek">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -213,6 +357,31 @@
                     VIDEO_BACKGROUNDS.add(vbgElem);
                 })
             }
+
+            const seekInputs = document.querySelectorAll('.seek-wrapper');
+            for (let i = 0; i < seekInputs.length; i++) {
+                const seekElem = seekInputs[i];
+                const selector = seekElem.getAttribute('data-target');
+                if (!selector) continue;
+                const vbgElem = document.querySelector(selector);
+                if (!vbgElem) continue;
+                const seekProgress = seekElem.querySelector('.seek-progress');
+                if (seekProgress) {
+                    seekProgress.value = 0;
+                }
+                const seekInput = seekElem.querySelector('.seek');
+                    
+
+                vbgElem.addEventListener('video-background-time-update', function(event) {
+                    if (!seekInput.max) {
+                        seekInput.max = event.detail.duration;
+                    }
+                    const percentComplete = event.detail.percentComplete;
+                    if (seekProgress) seekProgress.value = percentComplete;
+                    if (seekInput) seekInput.value = event.detail.currentTime;
+                });
+            }
+
         </script>
     </body>
 </html>
