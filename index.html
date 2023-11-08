@@ -73,18 +73,18 @@
 			}
 
             :root {
-                --seek-thumb-color: #fff;
-                --seek-progress-background: #fff;
-                --seek-background: rgba(255, 255, 255, 0.4);
+                --seek-bar-thumb-color: #fff;
+                --seek-bar-progress-background: #fff;
+                --seek-bar-background: rgba(255, 255, 255, 0.4);
             }
 
-            .seek-wrapper {
+            .seek-bar-wrapper {
                 height: 6px;
-                background: var(--seek-background);
+                background: var(--seek-bar-background);
                 position: relative;
             }
 
-            .seek-progress {
+            .seek-bar-progress {
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 appearance: none;
@@ -99,19 +99,19 @@
                 z-index: 1;
             }
 
-            .seek-progress::-webkit-progress-bar {
+            .seek-bar-progress::-webkit-progress-bar {
                 background: transparent;
             }
 
-            .seek-progress::-webkit-progress-value {
-                background: var(--seek-progress-background);
+            .seek-bar-progress::-webkit-progress-value {
+                background: var(--seek-bar-progress-background);
             }
 
-            .seek-progress::-moz-progress-bar {
-                background: var(--seek-progress-background);
+            .seek-bar-progress::-moz-progress-bar {
+                background: var(--seek-bar-progress-background);
             }
 
-            .seek {
+            .seek-bar {
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 appearance: none;
@@ -126,7 +126,7 @@
                 background: transparent;
             }
 
-            .seek {
+            .seek-bar {
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 appearance: none;
@@ -141,7 +141,7 @@
                 background: transparent;
             }
 
-            .seek::-webkit-slider-runnable-track {
+            .seek-bar::-webkit-slider-runnable-track {
                 -webkit-appearance: none;
                 appearance: none;
                 height: 6px;
@@ -151,7 +151,7 @@
                 border-radius: 0;
             }
 
-            .seek::-moz-range-track {
+            .seek-bar::-moz-range-track {
                 -moz-appearance: none;
                 appearance: none;
                 width: 100%;
@@ -162,52 +162,52 @@
                 border-radius: 0;
             }
 
-            .seek::-webkit-slider-thumb {
+            .seek-bar::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 appearance: none;
                 width: 12px;
                 height: 12px;
                 margin-top: 3px;
                 cursor: pointer;
-                background: var(--seek-thumb-color);
+                background: var(--seek-bar-thumb-color);
                 border: 0;
                 border-radius: 8px;
                 transform: translateY(-50%);
                 transition: opacity 0.4s ease-in-out;
             }
 
-            .seek::-moz-range-progress {
+            .seek-bar::-moz-range-progress {
                 margin-top: 0;
                 background: transparent;
                 border: 0;
             }
 
-            .seek::-moz-range-thumb {
+            .seek-bar::-moz-range-thumb {
                 -moz-appearance: none;
                 appearance: none;
                 width: 16px;
                 height: 16px;
                 margin-top: 0;
                 cursor: pointer;
-                background: var(--seek-thumb-color);
+                background: var(--seek-bar-thumb-color);
                 border: 0;
                 border-radius: 8px;
                 transition: opacity 0.4s ease-in-out;
             }
 
-            .seek-wrapper ::-webkit-slider-thumb {
+            .seek-bar-wrapper ::-webkit-slider-thumb {
                 opacity: 0;
             }
 
-            .seek-wrapper ::-moz-range-thumb {
+            .seek-bar-wrapper ::-moz-range-thumb {
                 opacity: 0;
             }
 
-            .seek-wrapper:hover ::-webkit-slider-thumb {
+            .seek-bar-wrapper:hover ::-webkit-slider-thumb {
                 opacity: 1;
             }
 
-            .seek-wrapper:hover ::-moz-range-thumb {
+            .seek-bar-wrapper:hover ::-moz-range-thumb {
                 opacity: 1;
             }
         </style>
@@ -226,9 +226,9 @@
                             <button class="vbg-destroy" data-selector="#vbg">Destroy</button>
                             <button class="vbg-initialize" data-selector="#vbg" data-src="https://www.youtube.com/watch?v=LC5rEhxGqT4">Initialize</button>
 
-                            <div class="seek-wrapper" style="width: 100%" data-target="#vbg">
-                                <progress class="seek-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek">
+                            <div class="seek-bar-wrapper" style="width: 100%" data-target="#vbg">
+                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
                             </div>
                         </div>
                     </div>
@@ -358,7 +358,7 @@
                 })
             }
 
-            const seekInputs = document.querySelectorAll('.seek-wrapper');
+            const seekInputs = document.querySelectorAll('.seek-bar-wrapper');
             for (let i = 0; i < seekInputs.length; i++) {
                 new SeekBar(seekInputs[i]);
             }

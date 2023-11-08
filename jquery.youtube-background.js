@@ -1218,8 +1218,8 @@
       if (!seekBarElem)
         return;
       this.seekBarElem = seekBarElem;
-      this.progressElem = this.seekBarElem.querySelector(".seek-progress");
-      this.inputElem = this.seekBarElem.querySelector(".seek");
+      this.progressElem = this.seekBarElem.querySelector(".js-seek-bar-progress");
+      this.inputElem = this.seekBarElem.querySelector(".js-seek-bar");
       this.targetSelector = this.seekBarElem.getAttribute("data-target");
       if (!this.targetSelector)
         return;
