@@ -116,8 +116,8 @@ export class SuperVideoBackground {
   }
 
   resize(element) {
-    if (this.params['fit-box']) return;
-    proportionalParentCoverResize(element || this.playerElement, this.params.resolution_mod, this.params.offset);
+    if (!this.params['fit-box']) proportionalParentCoverResize(element || this.playerElement, this.params.resolution_mod, this.params.offset);
+    this.dispatchEvent('video-background-resize');
   }
 
   stylePlayerElement(element) {
@@ -212,7 +212,7 @@ export class SuperVideoBackground {
     }
 
     if (this.timeUpdateTimer) clearInterval(this.timeUpdateTimer);
-    dispatchEvent('video-background-destroyed');
+    this.dispatchEvent('video-background-destroyed');
   }
 
   setDuration(duration) {
