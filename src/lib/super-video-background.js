@@ -235,6 +235,16 @@ export class SuperVideoBackground {
     if (duration <= 0) this.duration = this.params['end-at'];
   }
 
+  setStartAt(startAt) {
+    this.params['start-at'] = startAt;
+  }
+
+  setEndAt(endAt) {
+    this.params['end-at'] = endAt;
+    if (this.duration > endAt) this.duration = endAt;
+    if (this.currentTime > endAt) this.onVideoEnded();
+  }
+
   dispatchEvent(name) {
     this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
   }

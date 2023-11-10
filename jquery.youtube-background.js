@@ -394,6 +394,12 @@
       if (duration <= 0)
         this.duration = this.params["end-at"];
     }
+    setStartAt(startAt) {
+      this.params["start-at"] = startAt;
+    }
+    setEndAt(endAt) {
+      this.params["end-at"] = endAt;
+    }
     dispatchEvent(name) {
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
     }
