@@ -212,6 +212,7 @@ export class SuperVideoBackground {
     }
 
     if (this.timeUpdateTimer) clearInterval(this.timeUpdateTimer);
+    dispatchEvent('video-background-destroyed');
   }
 
   setDuration(duration) {

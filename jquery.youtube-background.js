@@ -373,6 +373,7 @@
       }
       if (this.timeUpdateTimer)
         clearInterval(this.timeUpdateTimer);
+      dispatchEvent("video-background-destroyed");
     }
     setDuration(duration) {
       if (this.duration === duration)
@@ -1231,6 +1232,7 @@
       this.targetElem.addEventListener("video-background-time-update", this.onTimeUpdate.bind(this));
       this.targetElem.addEventListener("video-background-play", this.onReady.bind(this));
       this.targetElem.addEventListener("video-background-ready", this.onReady.bind(this));
+      this.targetElem.addEventListener("video-background-destroyed", this.onDestroyed.bind(this));
       this.inputElem.addEventListener("input", this.onInput.bind(this));
       this.inputElem.addEventListener("change", this.onChange.bind(this));
     }
@@ -1242,6 +1244,10 @@
         this.vbgInstance = event.detail;
       if (!this.lock)
         requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
+    }
+    onDestroyed(event) {
+      this.vbgInstance = null;
+      requestAnimationFrame(() => this.setProgress(0));
     }
     onInput(event) {
       this.lock = true;
