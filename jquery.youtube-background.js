@@ -288,9 +288,9 @@
       return time;
     }
     resize(element) {
-      if (this.params["fit-box"])
-        return;
-      proportionalParentCoverResize(element || this.playerElement, this.params.resolution_mod, this.params.offset);
+      if (!this.params["fit-box"])
+        proportionalParentCoverResize(element || this.playerElement, this.params.resolution_mod, this.params.offset);
+      this.dispatchEvent("video-background-resize");
     }
     stylePlayerElement(element) {
       if (!element)
@@ -373,7 +373,7 @@
       }
       if (this.timeUpdateTimer)
         clearInterval(this.timeUpdateTimer);
-      dispatchEvent("video-background-destroyed");
+      this.dispatchEvent("video-background-destroyed");
     }
     setDuration(duration) {
       if (this.duration === duration)
@@ -399,6 +399,10 @@
     }
     setEndAt(endAt) {
       this.params["end-at"] = endAt;
+      if (this.duration > endAt)
+        this.duration = endAt;
+      if (this.currentTime > endAt)
+        this.onVideoEnded();
     }
     dispatchEvent(name) {
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));

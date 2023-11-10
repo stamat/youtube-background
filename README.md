@@ -2,40 +2,36 @@
 [![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
 [![CSS gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
 
-~~Another 100 liner in a form of a~~ simple script (or jQuery plugin) to facilitate YouTube embeds as a cover background using YouTube Embed API.
+> Create video backgrounds from a YouTube, Vimeo or video file links.
 
-I wrote this code several times over the years and never bothered to make it reusable. Now when I needed it again I could not even find where I wrote it last...
+This project started as a simple 100 liner jQuery plugin for YouTube video backgrounds. The idea behind it was to have a straightforward minimal way to add a YouTube video as a background for a div, or any other HTML element. It was intended to be used on hero and banner elements mostly. You would add a data attribute to the element, and the script would take care of the rest, no CSS required.
 
-Goodbye careless days... I'm getting old...
+Since it's creation has evolved to support Vimeo and video files as well. Numerous features were added out of necessity on other projects or by community requests.
+
+After numerous iterations and is now a fully fledged ES module that can be used with or without jQuery. It is also available as a standalone script.
 
 [DEMO HERE ➡️](http://stamat.github.io/youtube-background/)
 
-## Features
+P.S.
 
-* Play/Pause button
-* Mute/Unmute button
-* Video will pause when not visible
-* No CSS required
-* No longer jQuery dependant
+The future development of this project will most probably be moved to a new repo and going towards a custom element implementation (this is a maybe, I kinda like the factory class) and completely excluding jQuery. The goal will be to stay focused on the primary use case but to provide an extensive API for possible extensions.
 
 ## Installation
 
-### As a JS module
+### As a ESM module
 
-To install the package from NPM run the good old command
+To install the package from NPM run:
 ```
 npm install youtube-background
 ```
 
-To import it in your script add:
+Then import the script just like any other ESM module (if your bundler supports resolving `node_modules`, your import will look like this, otherwise you'll have to provide the full path to the script):
 
 ```
 import 'youtube-background';
 ```
 
-Don't forget to point your bundler to use `node_modules` as an include path.
-
-If you wish to use it as a jQuery plugin, make sure you import jQuery as well.
+If you are using a bundler and you wish to use this script as a jQuery plugin, don't forget to import jQuery too.
 
 ### Over CDN
 
@@ -49,13 +45,13 @@ or minified:
 
 ## Usage
 
+There are two ways to use this script: as a jQuery plugin, as an ESM module which provides a factory class.
+
 Usage is pretty simple, add a data attribute **data-vbg** containing a full YouTube, Vimeo or video file link or just the YouTube or Vimeo ID.
 
 You can trigger all elements containing the noted attribute with `$("[data-vbg]").youtube_background();`, or specify your selector, on jQuery document ready event.
 
 **Note:** From version 1.0.6 **jQuery is no longer a dependency**, but purely optional. To initialise youtube video backgrounds without jQuery use: `new VideoBackgrounds('[data-vbg]');`.
-
-P.S. *https://www.youtube.com/player_api* is injected automatically, only once per script init. I've seen some implementations like Elementor WP plugin that inject it several times, for no reason. Anyway, you're welcome.
 
 ### Quick Example
 
@@ -151,21 +147,43 @@ Noted properties can be added as html attributes as:
     </script>
 ```
 
+### Instance Methods
+
+* **play** - play the video
+* **pause** - pause the video
+* **mute** - mute the video
+* **unmute** - unmute the video
+* **setSource** - set the video source
+* **setVolume** - set the video volume
+* **destroy** - destroy the video background instance
+* **seek** - seek the video to a specific percentage complete
+* **seekTo** - seek the video to a specific time in seconds
+
+### Instance variables
+* **currentState** - the current state of the video. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`.
+* **currentTime** - the current time of the video in seconds
+* **percentComplete** - the percentage of the video that has been played
+* **element** - the element that the video background is attached to
+* **playerElement** - the element of the video player, meaning either an iframe in case of YouTube and Vimeo, or a video element
+* **player** - the video player object, meaning either a YouTube or Vimeo player object, or a video element in case of HTML5 video
+
 ### Events
 
 * **video-background-ready** - when the video is ready to play, this event is triggered. HTML5 videos are ready to play immediately.
 * **video-background-time-update** - whenever the time of the video changes while video is playing, this event is triggered. The current time is available from the instance variable `event.detail.currentTime`. On Vimeo and YouTube this event is fired in 250ms intervals.
-* **video-background-state-change** - video changes state. The state is available from the instance variable `event.detail.currentState`. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`, `cued`.
+* **video-background-state-change** - video changes state. The state is available from the instance variable `event.detail.currentState`. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`.
 * **video-background-play** - video starts playing
 * **video-background-pause** - video is paused
 * **video-background-ended** - video ended event. Keep in mind that if loop is set to true the video will start playing from the start after this event.
 * **video-background-mute** - video sound is muted
 * **video-background-unmute** - video sound is unmuted
 * **video-background-volume-change** - video volume is changed. The volume is available from the instance variable `event.detail.volume`.
+* **video-background-resize** - when the video background is resized, this event is fired.
+* **video-background-destroyed** - when the video background is destroyed using the `destroy` function of the instance and reverted to pre-initialization state, this event is fired.
 
 Events bubble. If you go vanilla, you can get the video object via `event.detail`.
 
-You can add listeners to the events onto the element that you've initialised the video background. If the ID of that element is `#video-background`, you can add listeners like this:
+You can add listeners to the events onto the element that you've initialized the video background. If the ID of that element is `#video-background`, you can add listeners like this:
 
 ```javascript
 document.querySelector('#video-background').addEventListener('video-background-ready', function(event) {
