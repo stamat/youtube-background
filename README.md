@@ -6,7 +6,17 @@
 
 This project started as a simple 100 liner jQuery plugin for YouTube video backgrounds. The idea behind it was to have a straightforward minimal way to add a YouTube video as a background for a div, or any other HTML element. It was intended to be used on hero and banner elements mostly. You would add a data attribute to the element, and the script would take care of the rest, no CSS required.
 
-Since it's creation has evolved to support Vimeo and video files as well. Numerous features were added out of necessity on other projects or by community requests.
+```html
+    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery('[data-vbg]').youtube_background();
+        });
+    </script>
+```
+
+Since it's creation it has evolved to support Vimeo and video files as well. Numerous features were added out of necessity on other projects or by community requests.
 
 After numerous iterations and is now a fully fledged ES module that can be used with or without jQuery. It is also available as a standalone script.
 
@@ -15,6 +25,15 @@ After numerous iterations and is now a fully fledged ES module that can be used 
 P.S.
 
 The future development of this project will most probably be moved to a new repo and going towards a custom element implementation (this is a maybe, I kinda like the factory class) and completely excluding jQuery. The goal will be to stay focused on the primary use case but to provide an extensive API for possible extensions.
+
+## Features
+
+* **No CSS required** - the script takes care of everything
+* **YouTube**, **Vimeo** and **video files** support
+* **jQuery** plugin and **ESM** module
+* **Lazyloading** - lazyload the iframe/video
+* YouTube and Vimeo **cookies** are disabled by default
+* YouTube and Vimeo player API scrips are loaded only when needed
 
 ## Installation
 
@@ -45,34 +64,102 @@ or minified:
 
 ## Usage
 
-There are two ways to use this script: as a jQuery plugin, as an ESM module which provides a factory class.
+There are two ways to use this script: as a jQuery plugin or vanilla ES6 implementation via the factory class.
+
+### ES6 Way
+ **As of version 1.0.6 jQuery is no longer a dependency**, but purely optional. To initialize video backgrounds without jQuery use the global class: `new VideoBackgrounds('[data-vbg]');`.
+
+```javascript
+    import VideoBackgrounds from 'youtube-background'; // or if you are loading it from CDN as a standalone script, you can use the global variable `VideoBackgrounds`
+
+    const videoBackground = new VideoBackgrounds('[data-vbg]');
+```
+
+`VideoBackgrounds` is a factory class - this means that it is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file. It accepts a selector as a parameter and properties that will be applied to all instances queried by the selector.
+
+To initialize video backgrounds with jQuery
+
+This class instance also indexes all of the individual video background instances by UID in it's property `index`, so you can access them later on if you need to.
+
+UID is assigned to all target elements as a `data-vbg-uid` attribute when the video background is initialized. You can get the instance of the element by using a `get` function of the factory instance, which accepts the element object, where the element object must have the UID attribute.
+
+```javascript
+    // get the first element
+    const firstElement = document.querySelector('[data-vbg]');
+
+    // get the first instance instance by UID
+    const firstInstance = videoBackground.get(firstElement);
+```
+
+You can programmatically control the video playing in the background regardless of the provider and access all of it's properties via the instance object.
+
+```javascript
+    // current state of the video
+    console.log(firstInstance.currentState);
+
+    // current time of the video in seconds
+    console.log(firstInstance.currentTime);
+
+    // percentage of the video that has been played
+    console.log(firstInstance.percentComplete);
+
+    // the element that the video background is attached to. `firstElement` from the above example
+    console.log(firstInstance.element);
+
+    // play the video
+    firstInstance.play();
+
+    // pause the video
+    firstInstance.pause();
+
+    // mute the video
+    firstInstance.mute();
+
+    // unmute the video
+    firstInstance.unmute();
+
+    // set the video source
+    firstInstance.setSource('https://www.youtube.com/watch?v=eEpEeyqGlxA');
+
+    // set the video volume
+    firstInstance.setVolume(0.5);
+
+    // seek the video to a specific percentage complete
+    firstInstance.seek(25);
+
+    // seek the video to a specific time in seconds
+    firstInstance.seekTo(1.25);
+
+    // set Start At seconds
+    firstInstance.setStartAt(10);
+
+    // set End At in seconds
+    firstInstance.setEndAt(20);
+```
+
+In order to destroy the video background and revert the element to it's pre-initialization state, you can use the `destroy` function of the factory instance.
+
+```javascript
+    // destroy the video background by providing the element
+    videoBackground.destroy(firstElement);
+
+    // or by providing the instance videoBackground.destroy(firstInstance);
+```
+
+If you wish to tune to the videos events, you can add listeners to the element that you've initialized the video background on. In `event.detail` you will get the instance object of the video background. Do refer to the [Events](#events) section for the list of all events.
+
+```javascript
+    firstElement.addEventListener('video-background-ready', function(event) {
+        console.log('video-background-ready'); // the video instance object
+        console.log(event.detail); // the video instance object
+    })
+```
+
+The factory class takes a selector as a parameter. The selector can be a string, a DOM element, or a jQuery object.
 
 Usage is pretty simple, add a data attribute **data-vbg** containing a full YouTube, Vimeo or video file link or just the YouTube or Vimeo ID.
 
 You can trigger all elements containing the noted attribute with `$("[data-vbg]").youtube_background();`, or specify your selector, on jQuery document ready event.
-
-**Note:** From version 1.0.6 **jQuery is no longer a dependency**, but purely optional. To initialise youtube video backgrounds without jQuery use: `new VideoBackgrounds('[data-vbg]');`.
-
-### Quick Example
-
-```html
-	<style>
-		/* optional css fade in animation */
-		iframe {
-			transition: opacity 500ms ease-in-out;
-			transition-delay: 250ms;
-		}
-	</style>
-
-	<!-- target element -->
-    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
-
-    <script type="text/javascript">
-        jQuery(document).ready(function() {
-            jQuery('[data-vbg]').youtube_background();
-        });
-    </script>
-```
 
 ### Properties
 
@@ -155,7 +242,6 @@ Noted properties can be added as html attributes as:
 * **unmute** - unmute the video
 * **setSource** - set the video source
 * **setVolume** - set the video volume
-* **destroy** - destroy the video background instance
 * **seek** - seek the video to a specific percentage complete
 * **seekTo** - seek the video to a specific time in seconds
 

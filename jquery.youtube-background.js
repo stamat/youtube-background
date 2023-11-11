@@ -1136,7 +1136,7 @@
       }
     }
     destroy(element) {
-      const uid = element.getAttribute("data-vbg-uid");
+      const uid = element.uid || element.getAttribute("data-vbg-uid");
       if (uid && this.index.hasOwnProperty(uid)) {
         if (!this.index[uid].params["always-play"])
           this.intersectionObserver.unobserve(element);
