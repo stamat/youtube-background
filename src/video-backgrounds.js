@@ -163,27 +163,33 @@ export class VideoBackgrounds {
     if (uid && this.index.hasOwnProperty(uid)) return this.index[uid];
   }
 
-  pauseVideos() {
+  pauseAll() {
     for (let k in this.index) {
       this.index[k].pause();
     }
   }
 
-  playVideos() {
+  playAll() {
     for (let k in this.index) {
       this.index[k].play();
     }
   }
 
-  muteVideos() {
+  muteAll() {
     for (let k in this.index) {
       this.index[k].mute();
     }
   }
 
-  unmuteVideos() {
+  unmuteAll() {
     for (let k in this.index) {
       this.index[k].unmute();
+    }
+  }
+
+  setVolumeAll(volume) {
+    for (let k in this.index) {
+      this.index[k].setVolume(volume);
     }
   }
 
