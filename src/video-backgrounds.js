@@ -14,27 +14,31 @@ export class VideoBackgrounds {
 
     const self = this;
 
-    this.intersectionObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        const uid = entry.target.getAttribute('data-vbg-uid');
+    this.intersectionObserver = null;
 
-        if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
-          self.index[uid].isIntersecting = true;
-          try {
-            if (self.index[uid].player && self.index[uid].params.autoplay) self.index[uid].softPlay();
-          } catch (e) {
-            // console.log(e);
+    if ('IntersectionObserver' in window) {
+      this.intersectionObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          const uid = entry.target.getAttribute('data-vbg-uid');
+  
+          if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
+            self.index[uid].isIntersecting = true;
+            try {
+              if (self.index[uid].player && self.index[uid].params.autoplay) self.index[uid].softPlay();
+            } catch (e) {
+              // console.log(e);
+            }
+          } else {
+            self.index[uid].isIntersecting = false;
+            try {
+              if (self.index[uid].player) self.index[uid].softPause();
+            } catch (e) {
+              // console.log(e);
+            }
           }
-        } else {
-          self.index[uid].isIntersecting = false;
-          try {
-            if (self.index[uid].player) self.index[uid].softPause();
-          } catch (e) {
-            // console.log(e);
-          }
-        }
+        });
       });
-    });
+    }
 
     this.resizeObserver = null;
 
@@ -97,7 +101,7 @@ export class VideoBackgrounds {
       this.resizeObserver.observe(element);
     }
   
-    if (!this.index[uid].params['always-play']) {
+    if (!this.index[uid].params['always-play'] && this.intersectionObserver) {
       this.intersectionObserver.observe(element);
     }
   }
@@ -105,7 +109,7 @@ export class VideoBackgrounds {
   destroy(element) {
     const uid = element.uid || element.getAttribute('data-vbg-uid');
     if (uid && this.index.hasOwnProperty(uid)) {
-      if (!this.index[uid].params['always-play']) this.intersectionObserver.unobserve(element);
+      if (!this.index[uid].params['always-play'] && this.intersectionObserver) this.intersectionObserver.unobserve(element);
       if (this.resizeObserver) this.resizeObserver.unobserve(element);
       this.index[uid].destroy();
       delete this.index[uid];

@@ -1082,26 +1082,29 @@
         this.elements = document.querySelectorAll(selector);
       this.index = {};
       const self2 = this;
-      this.intersectionObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          const uid = entry.target.getAttribute("data-vbg-uid");
-          if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
-            self2.index[uid].isIntersecting = true;
-            try {
-              if (self2.index[uid].player && self2.index[uid].params.autoplay)
-                self2.index[uid].softPlay();
-            } catch (e) {
+      this.intersectionObserver = null;
+      if ("IntersectionObserver" in window) {
+        this.intersectionObserver = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            const uid = entry.target.getAttribute("data-vbg-uid");
+            if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
+              self2.index[uid].isIntersecting = true;
+              try {
+                if (self2.index[uid].player && self2.index[uid].params.autoplay)
+                  self2.index[uid].softPlay();
+              } catch (e) {
+              }
+            } else {
+              self2.index[uid].isIntersecting = false;
+              try {
+                if (self2.index[uid].player)
+                  self2.index[uid].softPause();
+              } catch (e) {
+              }
             }
-          } else {
-            self2.index[uid].isIntersecting = false;
-            try {
-              if (self2.index[uid].player)
-                self2.index[uid].softPause();
-            } catch (e) {
-            }
-          }
+          });
         });
-      });
+      }
       this.resizeObserver = null;
       if ("ResizeObserver" in window) {
         this.resizeObserver = new ResizeObserver(function(entries) {
@@ -1156,14 +1159,14 @@
       if (this.resizeObserver) {
         this.resizeObserver.observe(element);
       }
-      if (!this.index[uid].params["always-play"]) {
+      if (!this.index[uid].params["always-play"] && this.intersectionObserver) {
         this.intersectionObserver.observe(element);
       }
     }
     destroy(element) {
       const uid = element.uid || element.getAttribute("data-vbg-uid");
       if (uid && this.index.hasOwnProperty(uid)) {
-        if (!this.index[uid].params["always-play"])
+        if (!this.index[uid].params["always-play"] && this.intersectionObserver)
           this.intersectionObserver.unobserve(element);
         if (this.resizeObserver)
           this.resizeObserver.unobserve(element);
