@@ -66,6 +66,9 @@ export class VideoBackgrounds {
   }
 
   add(element, params) {
+    if (!element) return;
+    if (element.hasAttribute('data-vbg-uid')) return;
+
     const link = element.getAttribute('data-youtube') || element.getAttribute('data-vbg');
     const vid_data = this.getVidID(link);
   
@@ -106,6 +109,12 @@ export class VideoBackgrounds {
       if (this.resizeObserver) this.resizeObserver.unobserve(element);
       this.index[uid].destroy();
       delete this.index[uid];
+    }
+  }
+
+  destroyAll() {
+    for (let k in this.index) {
+      this.destroy(this.index[k].playerElement);
     }
   }
 
@@ -163,6 +172,18 @@ export class VideoBackgrounds {
   playVideos() {
     for (let k in this.index) {
       this.index[k].play();
+    }
+  }
+
+  muteVideos() {
+    for (let k in this.index) {
+      this.index[k].mute();
+    }
+  }
+
+  unmuteVideos() {
+    for (let k in this.index) {
+      this.index[k].unmute();
     }
   }
 

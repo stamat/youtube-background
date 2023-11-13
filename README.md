@@ -6,12 +6,22 @@
 
 This project started as a simple 100 liner jQuery plugin for YouTube video backgrounds. The idea behind it was to have a straightforward minimal way to add a YouTube video as a background for a div, or any other HTML element. It was intended to be used on hero and banner elements mostly. You would add a data attribute to the element, and the script would take care of the rest, no CSS required.
 
+Vanilla | jQuery
+-------- | -------
+
 ```html
+    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+
+    <script type="text/javascript">
+        const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
+    </script>```|```html
     <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
         jQuery(document).ready(function() {
             jQuery('[data-vbg]').youtube_background();
+
+            const videoBackgrounds = VIDEO_BACKGROUNDS;
         });
     </script>
 ```
@@ -69,26 +79,40 @@ There are two ways to use this script: as a jQuery plugin or vanilla ES6 impleme
 ### ES6 Way
  **As of version 1.0.6 jQuery is no longer a dependency**, but purely optional. To initialize video backgrounds without jQuery use the global class: `new VideoBackgrounds('[data-vbg]');`.
 
+ ```html
+    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+```
+
 ```javascript
     import VideoBackgrounds from 'youtube-background'; // or if you are loading it from CDN as a standalone script, you can use the global variable `VideoBackgrounds`
 
-    const videoBackground = new VideoBackgrounds('[data-vbg]');
+    const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
 ```
 
-`VideoBackgrounds` is a factory class - this means that it is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file. It accepts a selector as a parameter and properties that will be applied to all instances queried by the selector.
+`VideoBackgrounds` is a factory class - this means that it is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file. It accepts a selector as a parameter and properties that will be applied to all of the instances queried by the selector.
 
-To initialize video backgrounds with jQuery
+In order to programmatically add a new element to the factory instance and initialize the video background, for instance on an async event. You can use the `add` function of the factory instance, which accepts the element object.
 
-This class instance also indexes all of the individual video background instances by UID in it's property `index`, so you can access them later on if you need to.
+```javascript
+    // get the first element
+    const firstElement = document.querySelector('[data-vbg]');
 
-UID is assigned to all target elements as a `data-vbg-uid` attribute when the video background is initialized. You can get the instance of the element by using a `get` function of the factory instance, which accepts the element object, where the element object must have the UID attribute.
+    // add the element to the factory instance
+    videoBackgrounds.add(firstElement);
+```
+
+In order to automatically initialize video backgrounds on all elements that match the selector as they appear in the DOM, you will have to implement MutationObserver manually.
+
+The factory instance also indexes all of the individual video background instances by generated UID in it's property `index`, so you can access them later on if you need to.
+
+UID is assigned to all target elements as a `data-vbg-uid` attribute when the video background is initialized. You can get the instance of the element by using a `get` function of the factory instance, which accepts the UID string or element object with UID attribute. 
 
 ```javascript
     // get the first element
     const firstElement = document.querySelector('[data-vbg]');
 
     // get the first instance instance by UID
-    const firstInstance = videoBackground.get(firstElement);
+    const firstInstance = videoBackgrounds.get(firstElement);
 ```
 
 You can programmatically control the video playing in the background regardless of the provider and access all of it's properties via the instance object.
@@ -137,15 +161,6 @@ You can programmatically control the video playing in the background regardless 
     firstInstance.setEndAt(20);
 ```
 
-In order to destroy the video background and revert the element to it's pre-initialization state, you can use the `destroy` function of the factory instance.
-
-```javascript
-    // destroy the video background by providing the element
-    videoBackground.destroy(firstElement);
-
-    // or by providing the instance videoBackground.destroy(firstInstance);
-```
-
 If you wish to tune to the videos events, you can add listeners to the element that you've initialized the video background on. In `event.detail` you will get the instance object of the video background. Do refer to the [Events](#events) section for the list of all events.
 
 ```javascript
@@ -155,7 +170,36 @@ If you wish to tune to the videos events, you can add listeners to the element t
     })
 ```
 
-The factory class takes a selector as a parameter. The selector can be a string, a DOM element, or a jQuery object.
+In order to destroy the video background instance and revert the element to it's pre-initialization state, you can use the `destroy` function of the factory instance.
+
+```javascript
+    // destroy the video background by providing the element
+    videoBackgrounds.destroy(firstElement);
+
+    // or by providing the instance videoBackground.destroy(firstInstance);
+```
+
+To destroy all the instances in the index you can use `destroyAll` function of the factory instance.
+
+Factory instance also implements the `IntersectionObserver` out of the box to keep track of the visible video backgrounds in order to toggle their play/pause state and preserve the bandwidth and improve the performance. You can find the instance of the `IntersectionObserver` in the `intersectionObserver` property of the factory instance.
+
+For the resize events, the factory instance implements the `ResizeObserver` out of the box. You can find the instance of the `ResizeObserver` in the `resizeObserver` property of the factory instance. If the `resizeObserver` is not supported, the factory instance will fallback to the `window` resize event.
+
+### jQuery Way
+
+jQuery is no longer a dependency, but purely optional. To initialize video backgrounds with jQuery use the global function: `jQuery('[data-vbg]').youtube_background();`.
+
+```html
+    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+```
+
+```javascript
+    jQuery(document).ready(function() {
+        jQuery('[data-vbg]').youtube_background();
+    });
+```
+
+This function does exactly the same thing as if you would initialize the ES6 factory class. It will pass the selected elements and initialize the factory class in the global variable `VIDEO_BACKGROUNDS`. So everything that applies for the factory instance in the ES6 guide applies to this instance.
 
 Usage is pretty simple, add a data attribute **data-vbg** containing a full YouTube, Vimeo or video file link or just the YouTube or Vimeo ID.
 
