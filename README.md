@@ -6,15 +6,17 @@
 
 This project started as a simple 100 liner jQuery plugin for YouTube video backgrounds. The idea behind it was to have a straightforward minimal way to add a YouTube video as a background for a div, or any other HTML element. It was intended to be used on hero and banner elements mostly. You would add a data attribute to the element, and the script would take care of the rest, no CSS required.
 
-Vanilla | jQuery
--------- | -------
+**Vanilla**
 
 ```html
     <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
         const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
-    </script>```|```html
+    </script>
+```
+**jQuery**
+```html
     <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
