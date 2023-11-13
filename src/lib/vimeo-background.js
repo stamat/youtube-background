@@ -9,7 +9,6 @@ export class VimeoBackground extends SuperVideoBackground {
     this.injectScript();
 
     this.player = null;
-    this.volume = 1;
 
     this.injectPlayer();
 
@@ -38,9 +37,7 @@ export class VimeoBackground extends SuperVideoBackground {
     this.player.on('bufferstart', this.onVideoBuffering.bind(this));
     this.player.on('timeupdate', this.onVideoTimeUpdate.bind(this));
 
-    this.volume = this.params.volume;
-
-    if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
+    if (this.volume !== 1 && !this.muted) this.setVolume(this.volume);
   }
 
   generatePlayerElement() {
@@ -185,32 +182,32 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   softPause() {
-    if (!this.state.playing || !this.player) return;
+    if (!this.playing || !this.player) return;
     this.player.pause();
   }
 
   softPlay() {
-    if (!this.state.playing || !this.player) return;
+    if (!this.playing || !this.player) return;
     this.player.play();
   }
 
   play() {
     if (!this.player) return;
-    this.state.playing = true;
+    this.playing = true;
     
     this.player.play();
   }
 
   pause() {
     if (!this.player) return;
-    this.state.playing = false;
+    this.playing = false;
   
     this.player.pause();
   }
 
   unmute() {
     if (!this.player) return;
-    this.state.muted = false;
+    this.muted = false;
   
     if (!this.initialVolume) {
       this.initialVolume = true;
@@ -222,7 +219,7 @@ export class VimeoBackground extends SuperVideoBackground {
 
   mute() {
     if (!this.player) return;
-    this.state.muted = true;
+    this.muted = true;
   
     this.player.setMuted(true);
     this.dispatchEvent('video-background-mute');

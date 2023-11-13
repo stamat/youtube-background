@@ -1,4 +1,4 @@
-import { VideoBackgrounds, SeekBar } from './video-backgrounds.js';
+import { VideoBackgrounds } from './video-backgrounds.js';
 
 if (typeof jQuery == 'function') {
   (function ($) {
@@ -14,5 +14,4 @@ if (typeof jQuery == 'function') {
   })(jQuery);
 }
 
-window.SeekBar = SeekBar;
 window.VideoBackgrounds = VideoBackgrounds;

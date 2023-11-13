@@ -24,7 +24,6 @@ export function generateActionButton(obj, props) {
   btn.setAttribute('aria-checked', !props.initialState);
   props.element = btn;
 
-  //TODO: solve this with ARIA toggle states
   if (obj.params[props.condition_parameter] === props.initialState) {
     buttonOn(props);
   }

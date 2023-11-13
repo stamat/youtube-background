@@ -192,12 +192,12 @@
       this.element.setAttribute("data-vbg-uid", uid);
       this.buttons = {};
       this.isIntersecting = false;
-      this.state = {};
-      this.state.playing = false;
-      this.state.muted = false;
+      this.playing = false;
+      this.muted = false;
       this.currentState = "notstarted";
       this.initialPlay = false;
       this.initialVolume = false;
+      this.volume = 1;
       this.params = {};
       const DEFAULTS = {
         "pause": false,
@@ -228,10 +228,11 @@
         this.params["play-button"] = this.params.pause;
       }
       this.params.resolution_mod = parseResolutionString(this.params.resolution);
-      this.state.playing = this.params.autoplay;
-      this.state.muted = this.params.muted;
-      this.currentTime = this.params["start-at"];
-      this.duration = this.params["end-at"];
+      this.playing = this.params.autoplay;
+      this.muted = this.params.muted;
+      this.volume = this.params.volume;
+      this.currentTime = this.params["start-at"] || 0;
+      this.duration = this.params["end-at"] || 0;
       this.percentComplete = 0;
       if (this.params["start-at"])
         this.percentComplete = this.timeToPercentage(this.params["start-at"]);
@@ -243,7 +244,7 @@
           name: "playing",
           className: "play-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: !this.state.playing,
+          initialState: !this.playing,
           stateClassName: "paused",
           condition_parameter: "autoplay",
           stateChildClassNames: ["fa-pause-circle", "fa-play-circle"],
@@ -255,7 +256,7 @@
           name: "muted",
           className: "mute-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: this.state.muted,
+          initialState: this.muted,
           stateClassName: "muted",
           condition_parameter: "muted",
           stateChildClassNames: ["fa-volume-up", "fa-volume-mute"],
@@ -465,7 +466,6 @@
         return;
       this.injectScript();
       this.player = null;
-      this.volume = 1;
       this.injectPlayer();
       this.STATES = {
         "-1": "notstarted",
@@ -500,9 +500,8 @@
           "onStateChange": this.onVideoStateChange.bind(this)
         }
       });
-      this.volume = this.params.volume;
-      if (this.params.volume !== 1 && !this.params.muted)
-        this.setVolume(this.params.volume);
+      if (this.volume !== 1 && !this.muted)
+        this.setVolume(this.volume);
     }
     injectScript() {
       if (window.hasOwnProperty("YT") || document.querySelector('script[src="https://www.youtube.com/player_api"]'))
@@ -622,32 +621,32 @@
       this.player.seekTo(seconds, allowSeekAhead);
     }
     softPause() {
-      if (!this.state.playing || !this.player)
+      if (!this.playing || !this.player)
         return;
       this.player.pauseVideo();
     }
     softPlay() {
-      if (!this.state.playing || !this.player)
+      if (!this.playing || !this.player)
         return;
       this.player.playVideo();
     }
     play() {
       if (!this.player)
         return;
-      this.state.playing = true;
+      this.playing = true;
       if (this.params["start-at"] && this.player.getCurrentTime() < this.params["start-at"]) {
         this.seekTo(this.params["start-at"]);
       }
       this.player.playVideo();
     }
     pause() {
-      this.state.playing = false;
+      this.playing = false;
       this.player.pauseVideo();
     }
     unmute() {
       if (!this.player)
         return;
-      this.state.muted = false;
+      this.muted = false;
       if (!this.initialVolume) {
         this.initialVolume = true;
         this.setVolume(this.params.volume);
@@ -658,7 +657,7 @@
     mute() {
       if (!this.player)
         return;
-      this.state.muted = true;
+      this.muted = true;
       this.player.mute();
       this.dispatchEvent("video-background-mute");
     }
@@ -686,7 +685,6 @@
         return;
       this.injectScript();
       this.player = null;
-      this.volume = 1;
       this.injectPlayer();
       this.initVimeoPlayer();
     }
@@ -712,9 +710,8 @@
       this.player.on("pause", this.onVideoPause.bind(this));
       this.player.on("bufferstart", this.onVideoBuffering.bind(this));
       this.player.on("timeupdate", this.onVideoTimeUpdate.bind(this));
-      this.volume = this.params.volume;
-      if (this.params.volume !== 1 && !this.params.muted)
-        this.setVolume(this.params.volume);
+      if (this.volume !== 1 && !this.muted)
+        this.setVolume(this.volume);
     }
     generatePlayerElement() {
       const playerElement = document.createElement("iframe");
@@ -829,31 +826,31 @@
       this.player.setCurrentTime(time);
     }
     softPause() {
-      if (!this.state.playing || !this.player)
+      if (!this.playing || !this.player)
         return;
       this.player.pause();
     }
     softPlay() {
-      if (!this.state.playing || !this.player)
+      if (!this.playing || !this.player)
         return;
       this.player.play();
     }
     play() {
       if (!this.player)
         return;
-      this.state.playing = true;
+      this.playing = true;
       this.player.play();
     }
     pause() {
       if (!this.player)
         return;
-      this.state.playing = false;
+      this.playing = false;
       this.player.pause();
     }
     unmute() {
       if (!this.player)
         return;
-      this.state.muted = false;
+      this.muted = false;
       if (!this.initialVolume) {
         this.initialVolume = true;
         this.setVolume(this.params.volume);
@@ -864,7 +861,7 @@
     mute() {
       if (!this.player)
         return;
-      this.state.muted = true;
+      this.muted = true;
       this.player.setMuted(true);
       this.dispatchEvent("video-background-mute");
     }
@@ -896,7 +893,6 @@
       this.element.setAttribute("data-vbg-uid", uid);
       this.player = null;
       this.buttons = {};
-      this.volume = 1;
       this.MIME_MAP = {
         "ogv": "video/ogg",
         "ogm": "video/ogg",
@@ -923,9 +919,8 @@
     injectPlayer() {
       this.player = this.generatePlayerElement();
       this.playerElement = this.player;
-      this.volume = this.params.volume;
-      if (this.params.volume !== 1 && !this.params.muted)
-        this.setVolume(this.params.volume);
+      if (this.volume !== 1 && !this.muted)
+        this.setVolume(this.volume);
       this.playerElement.setAttribute("id", this.uid);
       this.stylePlayerElement(this.playerElement);
       this.player.addEventListener("loadedmetadata", this.onVideoLoadedMetadata.bind(this));
@@ -1017,12 +1012,12 @@
       this.player.currentTime = seconds;
     }
     softPause() {
-      if (!this.state.playing || !this.player)
+      if (!this.playing || !this.player)
         return;
       this.player.pause();
     }
     softPlay() {
-      if (!this.state.playing || !this.player)
+      if (!this.playing || !this.player)
         return;
       this.player.play();
     }
@@ -1036,19 +1031,19 @@
       if (this.duration && seconds >= this.duration) {
         this.seekTo(this.params["start-at"]);
       }
-      this.state.playing = true;
+      this.playing = true;
       this.player.play();
     }
     pause() {
       if (!this.player)
         return;
-      this.state.playing = false;
+      this.playing = false;
       this.player.pause();
     }
     unmute() {
       if (!this.player)
         return;
-      this.state.muted = false;
+      this.muted = false;
       this.player.muted = false;
       if (!this.initialVolume) {
         this.initialVolume = true;
@@ -1059,7 +1054,7 @@
     mute() {
       if (!this.player)
         return;
-      this.state.muted = true;
+      this.muted = true;
       this.player.muted = true;
       this.dispatchEvent("video-background-mute");
     }
@@ -1273,62 +1268,6 @@
       }
     }
   };
-  var SeekBar = class {
-    constructor(seekBarElem, vbgInstance) {
-      this.lock = false;
-      if (!seekBarElem)
-        return;
-      this.seekBarElem = seekBarElem;
-      this.progressElem = this.seekBarElem.querySelector(".js-seek-bar-progress");
-      this.inputElem = this.seekBarElem.querySelector(".js-seek-bar");
-      this.targetSelector = this.seekBarElem.getAttribute("data-target");
-      if (!this.targetSelector)
-        return;
-      this.targetElem = document.querySelector(this.targetSelector);
-      if (!this.targetElem)
-        return;
-      if (vbgInstance)
-        this.vbgInstance = vbgInstance;
-      this.targetElem.addEventListener("video-background-time-update", this.onTimeUpdate.bind(this));
-      this.targetElem.addEventListener("video-background-play", this.onReady.bind(this));
-      this.targetElem.addEventListener("video-background-ready", this.onReady.bind(this));
-      this.targetElem.addEventListener("video-background-destroyed", this.onDestroyed.bind(this));
-      this.inputElem.addEventListener("input", this.onInput.bind(this));
-      this.inputElem.addEventListener("change", this.onChange.bind(this));
-    }
-    onReady(event) {
-      this.vbgInstance = event.detail;
-    }
-    onTimeUpdate(event) {
-      if (!this.vbgInstance)
-        this.vbgInstance = event.detail;
-      if (!this.lock)
-        requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
-    }
-    onDestroyed(event) {
-      this.vbgInstance = null;
-      requestAnimationFrame(() => this.setProgress(0));
-    }
-    onInput(event) {
-      this.lock = true;
-      requestAnimationFrame(() => this.setProgress(event.target.value));
-    }
-    onChange(event) {
-      this.lock = false;
-      requestAnimationFrame(() => this.setProgress(event.target.value));
-      if (this.vbgInstance) {
-        this.vbgInstance.seek(event.target.value);
-        if (this.vbgInstance.playerElement && this.vbgInstance.playerElement.style.opacity === 0)
-          this.vbgInstance.playerElement.style.opacity = 1;
-      }
-    }
-    setProgress(value) {
-      if (this.progressElem)
-        this.progressElem.value = value;
-      if (this.inputElem)
-        this.inputElem.value = value;
-    }
-  };
 
   // src/main.js
   if (typeof jQuery == "function") {
@@ -1344,7 +1283,6 @@
       };
     })(jQuery);
   }
-  window.SeekBar = SeekBar;
   window.VideoBackgrounds = VideoBackgrounds;
 })();
 //# sourceMappingURL=jquery.youtube-background.js.map

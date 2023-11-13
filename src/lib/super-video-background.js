@@ -16,13 +16,14 @@ export class SuperVideoBackground {
     this.buttons = {};
     this.isIntersecting = false;
 
-    this.state = {};
-    this.state.playing = false;
-    this.state.muted = false;
+    this.playing = false;
+    this.muted = false;
     this.currentState = 'notstarted';
 
     this.initialPlay = false;
     this.initialVolume = false;
+
+    this.volume = 1;
 
     this.params = {};
 
@@ -57,11 +58,13 @@ export class SuperVideoBackground {
     }
 
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
-    this.state.playing = this.params.autoplay;
-    this.state.muted = this.params.muted;
+    this.playing = this.params.autoplay;
+    this.muted = this.params.muted;
 
-    this.currentTime = 0 || this.params['start-at'];
-    this.duration = 0 || this.params['end-at'];
+    this.volume = this.params.volume;
+
+    this.currentTime = this.params['start-at'] || 0;
+    this.duration = this.params['end-at'] || 0;
     this.percentComplete = 0;
     if (this.params['start-at']) this.percentComplete = this.timeToPercentage(this.params['start-at']);
 
@@ -74,7 +77,7 @@ export class SuperVideoBackground {
         name: 'playing',
         className: 'play-toggle',
         innerHtml: '<i class="fa"></i>',
-        initialState: !this.state.playing,
+        initialState: !this.playing,
         stateClassName: 'paused',
         condition_parameter: 'autoplay',
         stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
@@ -87,7 +90,7 @@ export class SuperVideoBackground {
         name: 'muted',
         className: 'mute-toggle',
         innerHtml: '<i class="fa"></i>',
-        initialState: this.state.muted,
+        initialState: this.muted,
         stateClassName: 'muted',
         condition_parameter: 'muted',
         stateChildClassNames: ['fa-volume-up', 'fa-volume-mute'],

@@ -120,6 +120,15 @@ UID is assigned to all target elements as a `data-vbg-uid` attribute when the vi
 You can programmatically control the video playing in the background regardless of the provider and access all of it's properties via the instance object.
 
 ```javascript
+    // true if the video is playing, false if the video is not playing
+    console.log(firstInstance.playing);
+    
+    // true if video is muted, false if video is not muted
+    console.log(firstInstance.muted);
+
+    // true if the video is intersecting the viewport, false if the video is not intersecting the viewport.
+    console.log(firstInstance.isIntersecting); 
+
     // current state of the video
     console.log(firstInstance.currentState);
 
@@ -380,6 +389,9 @@ Method | Accepts | Description
 **seekTo** | int | Seek the video to a specific time in seconds. From 0 to the duration of the video in seconds.
 
 ## Instance variables
+* **playing** - boolean, true if the video is playing, false if the video is not playing. Hard playing state, doesn't change on video being paused via IntersectionObserver.
+* **muted** - boolean, true if the video is muted, false if the video is not muted.
+* **isIntersecting** - boolean, true if the video is intersecting the viewport, false if the video is not intersecting the viewport.
 * **currentState** - the current state of the video. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`.
 * **currentTime** - the current time of the video in seconds
 * **percentComplete** - the percentage of the video that has been played

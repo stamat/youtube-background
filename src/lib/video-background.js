@@ -13,7 +13,6 @@ export class VideoBackground extends SuperVideoBackground {
     this.element.setAttribute('data-vbg-uid', uid);
     this.player = null;
     this.buttons = {};
-    this.volume = 1;
 
     this.MIME_MAP = {
       'ogv' : 'video/ogg',
@@ -47,8 +46,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.player = this.generatePlayerElement();
     this.playerElement = this.player;
     
-    this.volume = this.params.volume;
-    if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
+    if (this.volume !== 1 && !this.muted) this.setVolume(this.volume);
   
     this.playerElement.setAttribute('id', this.uid)
     
@@ -158,12 +156,12 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   softPause() {
-    if (!this.state.playing || !this.player) return;
+    if (!this.playing || !this.player) return;
     this.player.pause();
   }
 
   softPlay() {
-    if (!this.state.playing || !this.player) return;
+    if (!this.playing || !this.player) return;
     this.player.play();
   }
 
@@ -180,21 +178,21 @@ export class VideoBackground extends SuperVideoBackground {
       this.seekTo(this.params['start-at']);
     }
   
-    this.state.playing = true;
+    this.playing = true;
   
     this.player.play();
   }
 
   pause() {
     if (!this.player) return;
-    this.state.playing = false;
+    this.playing = false;
   
     this.player.pause();
   }
 
   unmute() {
     if (!this.player) return;
-    this.state.muted = false;
+    this.muted = false;
   
     this.player.muted = false;
     if (!this.initialVolume) {
@@ -206,7 +204,7 @@ export class VideoBackground extends SuperVideoBackground {
 
   mute() {
     if (!this.player) return;
-    this.state.muted = true;
+    this.muted = true;
   
     this.player.muted = true;
     this.dispatchEvent('video-background-mute');

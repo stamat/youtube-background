@@ -10,7 +10,6 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.injectScript();
 
     this.player = null;
-    this.volume = 1;
 
     this.injectPlayer();
 
@@ -53,8 +52,7 @@ export class YoutubeBackground extends SuperVideoBackground {
       }
     });
 
-    this.volume = this.params.volume;
-    if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
+    if (this.volume !== 1 && !this.muted) this.setVolume(this.volume);
   }
 
   injectScript() {
@@ -196,18 +194,18 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   softPause() {
-    if (!this.state.playing || !this.player) return;
+    if (!this.playing || !this.player) return;
     this.player.pauseVideo();
   }
 
   softPlay() {
-    if (!this.state.playing || !this.player) return;
+    if (!this.playing || !this.player) return;
     this.player.playVideo();
   }
 
   play() {
     if (!this.player) return;
-    this.state.playing = true;
+    this.playing = true;
   
     if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
       this.seekTo(this.params['start-at']);
@@ -216,13 +214,13 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   pause() {
-    this.state.playing = false;
+    this.playing = false;
     this.player.pauseVideo();
   }
 
   unmute() {
     if (!this.player) return;
-    this.state.muted = false;
+    this.muted = false;
   
     if (!this.initialVolume) {
       this.initialVolume = true;
@@ -234,7 +232,7 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   mute() {
     if (!this.player) return;
-    this.state.muted = true;
+    this.muted = true;
   
     this.player.mute();
     this.dispatchEvent('video-background-mute');
