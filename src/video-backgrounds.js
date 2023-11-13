@@ -73,6 +73,9 @@ export class VideoBackgrounds {
     if (!element) return;
     if (element.hasAttribute('data-vbg-uid')) return;
 
+    if (!params) params = {};
+    if (!this.intersectionObserver) params['always-play'] = true;
+
     const link = element.getAttribute('data-youtube') || element.getAttribute('data-vbg');
     const vid_data = this.getVidID(link);
   
@@ -105,6 +108,7 @@ export class VideoBackgrounds {
       this.intersectionObserver.observe(element);
     } else {
       this.index[uid].isIntersecting = true;
+
       element.addEventListener('youtube-background-ready', () => {
         if (this.index[uid].player && this.index[uid].params.autoplay) this.index[uid].softPlay();
       }, { once: true });

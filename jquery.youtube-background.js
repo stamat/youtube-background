@@ -428,9 +428,7 @@
         res_params = defaults;
       } else {
         for (let k in defaults) {
-          if (!params.hasOwnProperty(k)) {
-            res_params[k] = defaults[k];
-          }
+          res_params[k] = !params.hasOwnProperty(k) ? defaults[k] : params[k];
         }
       }
       if (!element)
@@ -1138,6 +1136,10 @@
         return;
       if (element.hasAttribute("data-vbg-uid"))
         return;
+      if (!params)
+        params = {};
+      if (!this.intersectionObserver)
+        params["always-play"] = true;
       const link = element.getAttribute("data-youtube") || element.getAttribute("data-vbg");
       const vid_data = this.getVidID(link);
       if (!vid_data)
