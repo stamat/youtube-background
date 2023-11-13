@@ -103,6 +103,8 @@ export class VideoBackgrounds {
   
     if (!this.index[uid].params['always-play'] && this.intersectionObserver) {
       this.intersectionObserver.observe(element);
+    } else {
+      this.isIntersecting = true;
     }
   }
 

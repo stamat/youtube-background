@@ -56,7 +56,7 @@ export class VimeoBackground extends SuperVideoBackground {
       src += '&muted=1';
     }
   
-    if (this.params.autoplay && this.params['always-play']) {
+    if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       src += '&autoplay=1';
     }
   

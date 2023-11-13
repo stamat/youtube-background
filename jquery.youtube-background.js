@@ -528,7 +528,7 @@
       if (this.params.muted) {
         src += "&mute=1";
       }
-      if (this.params.autoplay && this.params["always-play"]) {
+      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         src += "&autoplay=1";
       }
       if (this.params.loop) {
@@ -726,7 +726,7 @@
       if (this.params.muted) {
         src += "&muted=1";
       }
-      if (this.params.autoplay && this.params["always-play"]) {
+      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         src += "&autoplay=1";
       }
       if (this.params.loop) {
@@ -1164,6 +1164,8 @@
       }
       if (!this.index[uid].params["always-play"] && this.intersectionObserver) {
         this.intersectionObserver.observe(element);
+      } else {
+        this.isIntersecting = true;
       }
     }
     destroy(element) {

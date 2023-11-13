@@ -378,7 +378,7 @@
                     const uid = vbgElem.getAttribute('data-vbg-uid');
                     if (!uid) return;
 
-                    VIDEO_BACKGROUNDS.index[uid].setSource(src);
+                    window.VIDEO_BACKGROUNDS.index[uid].setSource(src);
                 })
             }
 
@@ -388,7 +388,7 @@
                     const target = event.target;
                     const selector = target.getAttribute('data-selector');
                     const vbgElem = document.querySelector(selector);
-                    VIDEO_BACKGROUNDS.destroy(vbgElem);
+                    window.VIDEO_BACKGROUNDS.destroy(vbgElem);
                 })
             }
 
@@ -401,12 +401,12 @@
                     const vbgElem = document.querySelector(selector);
 
                     if (!vbgElem) return;
-                    if (vbgElem.getAttribute('data-vbg-uid')) VIDEO_BACKGROUNDS.destroy(vbgElem);
+                    if (vbgElem.getAttribute('data-vbg-uid')) window.VIDEO_BACKGROUNDS.destroy(vbgElem);
 
                     if (src) {
                         vbgElem.setAttribute('data-vbg', src);
                     }
-                    VIDEO_BACKGROUNDS.add(vbgElem);
+                    window.VIDEO_BACKGROUNDS.add(vbgElem);
                 })
             }
             
