@@ -104,7 +104,10 @@ export class VideoBackgrounds {
     if (!this.index[uid].params['always-play'] && this.intersectionObserver) {
       this.intersectionObserver.observe(element);
     } else {
-      this.isIntersecting = true;
+      this.index[uid].isIntersecting = true;
+      element.addEventListener('youtube-background-ready', () => {
+        if (this.index[uid].player && this.index[uid].params.autoplay) this.index[uid].softPlay();
+      }, { once: true });
     }
   }
 
