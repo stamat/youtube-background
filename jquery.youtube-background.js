@@ -908,10 +908,13 @@
     }
     generatePlayerElement() {
       const playerElement = document.createElement("video");
-      playerElement.setAttribute("playsinline", true);
-      playerElement.setAttribute("loop", this.params.loop);
-      playerElement.setAttribute("autoplay", this.params.autoplay && (this.params["always-play"] || this.isIntersecting));
-      playerElement.setAttribute("muted", this.params.muted);
+      playerElement.setAttribute("playsinline", "");
+      if (this.params.loop)
+        playerElement.setAttribute("loop", "");
+      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting))
+        playerElement.setAttribute("autoplay", "");
+      if (this.muted)
+        playerElement.setAttribute("muted", "");
       if (this.params["lazyloading"])
         playerElement.setAttribute("loading", "lazy");
       return playerElement;
