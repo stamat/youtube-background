@@ -273,10 +273,8 @@ export class SuperVideoBackground {
       res_params = defaults;
     } else {
       for (let k in defaults) {
-        if (!params.hasOwnProperty(k)) {
-          //load in defaults if the param hasn't been set
-          res_params[k] = defaults[k];
-        }
+        //load in defaults if the param hasn't been set
+        res_params[k] = !params.hasOwnProperty(k) ? defaults[k] : params[k];
       }
     }
   
