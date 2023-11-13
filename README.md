@@ -141,6 +141,9 @@ You can programmatically control the video playing in the background regardless 
     // the type of the video, can be `youtube`, `vimeo` or `video`
     console.log(firstInstance.type)
 
+    // volume of the video from 0 to 1
+    console.log(firstInstance.volume);
+
     // play the video
     firstInstance.play();
 
@@ -158,6 +161,9 @@ You can programmatically control the video playing in the background regardless 
 
     // set the video volume
     firstInstance.setVolume(0.5);
+
+    // volume of the video from 0 to 1, or in case of Vimeo a promise that resolves to the volume value
+    firstInstance.getVolume(); 
 
     // seek the video to a specific percentage complete
     firstInstance.seek(25);
@@ -230,7 +236,7 @@ The plugin method accepts properties object as a parameter. For the list of avai
     });
 ```
 
-### Properties
+## Properties
 
 Property | Default | Accepts | Description
 -------- | ------- | ------- | -----------
@@ -324,27 +330,6 @@ Noted properties can be added as html attributes as:
     </script>
 ```
 
-## Instance Methods
-
-Method | Accepts | Description
--------- | ------- | -----------
-**play** | - | Play the video
-**pause** | - | Pause the video
-**mute** | - | Mute the video
-**unmute**  | - | Unmute the video
-**setSource** | string | Set the video source, must be a link of the same type as the original video. Meaning, for example, if the original video was a YouTube video, the new source must be a YouTube video as well.
-**setVolume** | float | Set the video volume. From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Setting volume doesn't work on mobile, so this setting won't have an effect on mobile.
-**seek** | int | Seek the video to a specific percentage complete. From 0 to 100. 0 is the start of the video, 100 is the end of the video.
-**seekTo** | int | Seek the video to a specific time in seconds. From 0 to the duration of the video in seconds.
-
-## Instance variables
-* **currentState** - the current state of the video. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`.
-* **currentTime** - the current time of the video in seconds
-* **percentComplete** - the percentage of the video that has been played
-* **element** - the element that the video background is attached to
-* **playerElement** - the element of the video player, meaning either an iframe in case of YouTube and Vimeo, or a video element
-* **player** - the video player object, meaning either a YouTube or Vimeo player object, or a video element in case of HTML5 video
-* **type** - the type of the video, can be `youtube`, `vimeo` or `video`
 
 ## Events
 
@@ -379,6 +364,30 @@ jQuery('#video-background').on('video-background-ready', function(event) {
     console.log(event.originalEvent.detail); // the video instance object
 });
 ```
+
+## Instance Methods
+
+Method | Accepts | Description
+-------- | ------- | -----------
+**play** | - | Play the video
+**pause** | - | Pause the video
+**mute** | - | Mute the video
+**unmute**  | - | Unmute the video
+**setSource** | string | Set the video source, must be a link of the same type as the original video. Meaning, for example, if the original video was a YouTube video, the new source must be a YouTube video as well.
+**setVolume** | float | Set the video volume. From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Setting volume doesn't work on mobile, so this setting won't have an effect on mobile.
+**getVolume** | - | Get the video volume. From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Vimeo instance will return a promise that resolves to the volume value.
+**seek** | int | Seek the video to a specific percentage complete. From 0 to 100. 0 is the start of the video, 100 is the end of the video.
+**seekTo** | int | Seek the video to a specific time in seconds. From 0 to the duration of the video in seconds.
+
+## Instance variables
+* **currentState** - the current state of the video. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`.
+* **currentTime** - the current time of the video in seconds
+* **percentComplete** - the percentage of the video that has been played
+* **element** - the element that the video background is attached to
+* **playerElement** - the element of the video player, meaning either an iframe in case of YouTube and Vimeo, or a video element
+* **player** - the video player object, meaning either a YouTube or Vimeo player object, or a video element in case of HTML5 video
+* **type** - the type of the video, can be `youtube`, `vimeo` or `video`
+* **volume** - volume of the video from 0 to 1
 
 ## Factory Instance Methods
 
@@ -437,7 +446,7 @@ The code is structured like this:
 * **lib/video-background.js** - It contains the `VideoBackground` class that is used to create and control HTML5 video backgrounds. Inherits from `SuperVideoBackground`.
 * **lib/buttons.js** - It contains the play and pause automatic buttons and their functionality that are added to the video backgrounds. I seriously don't know why I created this in the first place.
 
-The code is structured like this because YouTube, Vimeo and HTML5 Video API's are different and we need a way to generalize these APIs and provide a common interface for all of them. Due to a lot of common code we have the `SuperVideoBackground` class that is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
+Tu summarize, because YouTube, Vimeo and HTML5 Video API's are different - we need a way to generalize these APIs and provide a common interface for all of them. Due to a lot of common code we have the `SuperVideoBackground` class that is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
 
 And lastly we have the `VideoBackgrounds` factory class that is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file and provide a single IntersectionObserver and ResizeObserver for all of the instances.
 

@@ -10,6 +10,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.injectScript();
 
     this.player = null;
+    this.volume = 1;
 
     this.injectPlayer();
 
@@ -51,6 +52,9 @@ export class YoutubeBackground extends SuperVideoBackground {
         'onStateChange': this.onVideoStateChange.bind(this)
       }
     });
+
+    this.volume = this.params.volume;
+    if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
   }
 
   injectScript() {
@@ -236,10 +240,17 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.dispatchEvent('video-background-mute');
   }
 
+  getVolume() {
+    if (!this.player) return;
+    return this.player.getVolume() / 100;
+  }
+
   setVolume(volume) {
     if (!this.player) return;
+    this.volume = volume;
     
     this.player.setVolume(volume * 100);
     this.dispatchEvent('video-background-volume-change');
   }
 }
+ 

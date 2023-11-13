@@ -9,6 +9,7 @@ export class VimeoBackground extends SuperVideoBackground {
     this.injectScript();
 
     this.player = null;
+    this.volume = 1;
 
     this.injectPlayer();
 
@@ -36,6 +37,8 @@ export class VimeoBackground extends SuperVideoBackground {
     this.player.on('pause', this.onVideoPause.bind(this));
     this.player.on('bufferstart', this.onVideoBuffering.bind(this));
     this.player.on('timeupdate', this.onVideoTimeUpdate.bind(this));
+
+    this.volume = this.params.volume;
 
     if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
   }
@@ -225,8 +228,14 @@ export class VimeoBackground extends SuperVideoBackground {
     this.dispatchEvent('video-background-mute');
   }
 
+  async getVolume() {
+    if (!this.player) return;
+    return await this.player.getVolume();
+  }
+
   setVolume(volume) {
     if (!this.player) return;
+    this.volume = volume;
   
     this.player.setVolume(volume);
     this.dispatchEvent('video-background-volume-change');

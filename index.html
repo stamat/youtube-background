@@ -397,6 +397,10 @@
                     const selector = target.getAttribute('data-selector');
                     const src = target.getAttribute('data-src');
                     const vbgElem = document.querySelector(selector);
+
+                    if (!vbgElem) return;
+                    if (vbgElem.getAttribute('data-vbg-uid')) VIDEO_BACKGROUNDS.destroy(vbgElem);
+
                     if (src) {
                         vbgElem.setAttribute('data-vbg', src);
                     }

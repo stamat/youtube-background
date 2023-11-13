@@ -13,6 +13,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.element.setAttribute('data-vbg-uid', uid);
     this.player = null;
     this.buttons = {};
+    this.volume = 1;
 
     this.MIME_MAP = {
       'ogv' : 'video/ogg',
@@ -45,7 +46,8 @@ export class VideoBackground extends SuperVideoBackground {
   injectPlayer() {
     this.player = this.generatePlayerElement();
     this.playerElement = this.player;
-  
+    
+    this.volume = this.params.volume;
     if (this.params.volume !== 1 && !this.params.muted) this.setVolume(this.params.volume);
   
     this.playerElement.setAttribute('id', this.uid)
@@ -210,8 +212,14 @@ export class VideoBackground extends SuperVideoBackground {
     this.dispatchEvent('video-background-mute');
   }
 
+  getVolume() {
+    if (!this.player) return;
+    return this.player.volume;
+  }
+
   setVolume(volume) {
     if (!this.player) return;
+    this.volume = volume;
   
     this.player.volume = volume;
     this.dispatchEvent('video-background-volume-change');

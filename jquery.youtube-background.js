@@ -465,6 +465,7 @@
         return;
       this.injectScript();
       this.player = null;
+      this.volume = 1;
       this.injectPlayer();
       this.STATES = {
         "-1": "notstarted",
@@ -499,6 +500,9 @@
           "onStateChange": this.onVideoStateChange.bind(this)
         }
       });
+      this.volume = this.params.volume;
+      if (this.params.volume !== 1 && !this.params.muted)
+        this.setVolume(this.params.volume);
     }
     injectScript() {
       if (window.hasOwnProperty("YT") || document.querySelector('script[src="https://www.youtube.com/player_api"]'))
@@ -658,9 +662,15 @@
       this.player.mute();
       this.dispatchEvent("video-background-mute");
     }
+    getVolume() {
+      if (!this.player)
+        return;
+      return this.player.getVolume() / 100;
+    }
     setVolume(volume) {
       if (!this.player)
         return;
+      this.volume = volume;
       this.player.setVolume(volume * 100);
       this.dispatchEvent("video-background-volume-change");
     }
@@ -676,6 +686,7 @@
         return;
       this.injectScript();
       this.player = null;
+      this.volume = 1;
       this.injectPlayer();
       this.initVimeoPlayer();
     }
@@ -701,6 +712,7 @@
       this.player.on("pause", this.onVideoPause.bind(this));
       this.player.on("bufferstart", this.onVideoBuffering.bind(this));
       this.player.on("timeupdate", this.onVideoTimeUpdate.bind(this));
+      this.volume = this.params.volume;
       if (this.params.volume !== 1 && !this.params.muted)
         this.setVolume(this.params.volume);
     }
@@ -856,9 +868,15 @@
       this.player.setMuted(true);
       this.dispatchEvent("video-background-mute");
     }
+    async getVolume() {
+      if (!this.player)
+        return;
+      return await this.player.getVolume();
+    }
     setVolume(volume) {
       if (!this.player)
         return;
+      this.volume = volume;
       this.player.setVolume(volume);
       this.dispatchEvent("video-background-volume-change");
     }
@@ -878,6 +896,7 @@
       this.element.setAttribute("data-vbg-uid", uid);
       this.player = null;
       this.buttons = {};
+      this.volume = 1;
       this.MIME_MAP = {
         "ogv": "video/ogg",
         "ogm": "video/ogg",
@@ -904,6 +923,7 @@
     injectPlayer() {
       this.player = this.generatePlayerElement();
       this.playerElement = this.player;
+      this.volume = this.params.volume;
       if (this.params.volume !== 1 && !this.params.muted)
         this.setVolume(this.params.volume);
       this.playerElement.setAttribute("id", this.uid);
@@ -1043,9 +1063,15 @@
       this.player.muted = true;
       this.dispatchEvent("video-background-mute");
     }
+    getVolume() {
+      if (!this.player)
+        return;
+      return this.player.volume;
+    }
     setVolume(volume) {
       if (!this.player)
         return;
+      this.volume = volume;
       this.player.volume = volume;
       this.dispatchEvent("video-background-volume-change");
     }
@@ -1107,6 +1133,10 @@
       }
     }
     add(element, params) {
+      if (!element)
+        return;
+      if (element.hasAttribute("data-vbg-uid"))
+        return;
       const link = element.getAttribute("data-youtube") || element.getAttribute("data-vbg");
       const vid_data = this.getVidID(link);
       if (!vid_data)
@@ -1146,6 +1176,11 @@
         delete this.index[uid];
       }
     }
+    destroyAll() {
+      for (let k in this.index) {
+        this.destroy(this.index[k].playerElement);
+      }
+    }
     getVidID(link) {
       if (link === void 0 && link === null)
         return;
@@ -1183,14 +1218,29 @@
       if (uid && this.index.hasOwnProperty(uid))
         return this.index[uid];
     }
-    pauseVideos() {
+    pauseAll() {
       for (let k in this.index) {
         this.index[k].pause();
       }
     }
-    playVideos() {
+    playAll() {
       for (let k in this.index) {
         this.index[k].play();
+      }
+    }
+    muteAll() {
+      for (let k in this.index) {
+        this.index[k].mute();
+      }
+    }
+    unmuteAll() {
+      for (let k in this.index) {
+        this.index[k].unmute();
+      }
+    }
+    setVolumeAll(volume) {
+      for (let k in this.index) {
+        this.index[k].setVolume(volume);
       }
     }
     initPlayers(callback) {
