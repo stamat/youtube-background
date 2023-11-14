@@ -35,7 +35,6 @@ export class VideoBackground extends SuperVideoBackground {
     const playerElement = document.createElement('video');
     playerElement.setAttribute('playsinline', '');
     if (this.params.loop) playerElement.setAttribute('loop', '');
-    console.log(this.type, this.params.autoplay, this.params['always-play'], this.isIntersecting, this.params.autoplay && (this.params['always-play'] || this.isIntersecting))
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) playerElement.setAttribute('autoplay', '');
     if (this.muted) playerElement.setAttribute('muted', '');
     if (this.params['lazyloading']) playerElement.setAttribute('loading', 'lazy');

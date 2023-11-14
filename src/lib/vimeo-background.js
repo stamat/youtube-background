@@ -225,9 +225,9 @@ export class VimeoBackground extends SuperVideoBackground {
     this.dispatchEvent('video-background-mute');
   }
 
-  async getVolume() {
+  getVolume() {
     if (!this.player) return;
-    return await this.player.getVolume();
+    return this.player.getVolume();
   }
 
   setVolume(volume) {

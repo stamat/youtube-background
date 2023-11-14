@@ -863,10 +863,10 @@
       this.player.setMuted(true);
       this.dispatchEvent("video-background-mute");
     }
-    async getVolume() {
+    getVolume() {
       if (!this.player)
         return;
-      return await this.player.getVolume();
+      return this.player.getVolume();
     }
     setVolume(volume) {
       if (!this.player)
@@ -909,7 +909,6 @@
       playerElement.setAttribute("playsinline", "");
       if (this.params.loop)
         playerElement.setAttribute("loop", "");
-      console.log(this.type, this.params.autoplay, this.params["always-play"], this.isIntersecting, this.params.autoplay && (this.params["always-play"] || this.isIntersecting));
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting))
         playerElement.setAttribute("autoplay", "");
       if (this.muted)
