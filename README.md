@@ -122,7 +122,7 @@ You can programmatically control the video playing in the background regardless 
 ```javascript
     // true if the video is playing, false if the video is not playing
     console.log(firstInstance.playing);
-    
+
     // true if video is muted, false if video is not muted
     console.log(firstInstance.muted);
 
@@ -419,6 +419,24 @@ Method | Accepts | Description
 * **index** - the index of all the instances of the video backgrounds. It is an object with keys being the UID of the element and values being the instance object.
 * **intersectionObserver** - the instance of the `IntersectionObserver` that is used to track the intersecting video backgrounds.
 * **resizeObserver** - the instance of the `ResizeObserver` that is used to track the resize events of the video backgrounds. If the `ResizeObserver` is not supported, the factory instance will fallback to the `window` resize event.
+
+## Browser Support
+
+Minimum supported browsers are both desktop and mobile:
+* Chrome 49+
+* Firefox 44+
+* Safari 10+
+* Opera 18+
+* Edge 14+
+
+Recommended browsers are both desktop and mobile:
+* Chrome 51+
+* Firefox 55+
+* Safari 12.1+
+* Opera 38+
+* Edge 17+
+
+Tested with [BrowserStack](https://www.browserstack.com). 
 
 ## Development
 
