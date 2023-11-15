@@ -4,7 +4,7 @@
 
 > Create video backgrounds from a YouTube, Vimeo or video file links.
 
-** ⚠️ Development moved to [stamat/video-backgrounds](https://github.com/stamat/video-backgrounds).** Support will still be provided for this repo.
+** ⚠️ Future development will be moved to [stamat/video-backgrounds](https://github.com/stamat/video-backgrounds).** Support will still be provided for this repo.
 
 [DEMO HERE ➡️](http://stamat.github.io/youtube-background/)
 
@@ -475,7 +475,7 @@ The code is structured like this:
 * **lib/vimeo-background.js** - It contains the `VimeoBackground` class that is used to create and control Vimeo video backgrounds. Inherits from `SuperVideoBackground`.
 * **lib/video-background.js** - It contains the `VideoBackground` class that is used to create and control HTML5 video backgrounds. Inherits from `SuperVideoBackground`.
 * **lib/buttons.js** - It contains the play and pause automatic buttons and their functionality that are added to the video backgrounds. I seriously don't know why I created this in the first place.
-* **lib/controls.js** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle` which tune onto the video events and use the common API, they are not bundled with the script, but are available as a standalone modules.
+* **lib/controls.js** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle` which tune onto the video events and use the common API, they are not bundled with the script, but are available as a standalone module exports.
 
 Tu summarize, because YouTube, Vimeo and HTML5 Video API's are different - we need a way to generalize these APIs and provide a common interface for all of them. Due to a lot of common code we have the `SuperVideoBackground` class that is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
 
