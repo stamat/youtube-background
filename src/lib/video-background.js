@@ -148,6 +148,7 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   seekTo(seconds) {
+    if (!this.player) return;
     if (this.player.hasOwnProperty('fastSeek')) {
       this.player.fastSeek(seconds);
       return;

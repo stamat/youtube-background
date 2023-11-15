@@ -137,6 +137,7 @@ export class VimeoBackground extends SuperVideoBackground {
     this.currentTime = event.seconds;
     this.percentComplete = this.timeToPercentage(event.seconds);
     this.dispatchEvent('video-background-time-update');
+    this.setDuration(event.duration);
 
     if (this.duration && event.seconds >= this.duration) {
       this.onVideoEnded();
@@ -148,20 +149,21 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   onVideoPlay(event) {
+    this.setDuration(event.duration);
+
     if (!this.initialPlay) {
       this.initialPlay = true;
       this.playerElement.style.opacity = 1;
-    }
 
-    this.setDuration(event.duration);
+      //Hotfixing an issue that it automatically starts playing after buffering on the first load, sometimes, not always, for an unknown reason
+      if (!(this.params.autoplay && (this.params['always-play'] || this.isIntersecting))) {
+        return this.player.pause();
+      }
+    }
 
     const seconds = event.seconds;
-    if (self.params['start-at'] && seconds < self.params['start-at']) {
-      self.seekTo(self.params['start-at']);
-    }
-
-    if (self.duration && seconds >= self.duration) {
-      self.seekTo(self.params['start-at']);
+    if (this.params['start-at'] && seconds < this.params['start-at']) {
+      this.seekTo(this.params['start-at']);
     }
 
     this.updateState('playing');
@@ -178,6 +180,7 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   seekTo(time) {
+    if (!this.player) return;
     this.player.setCurrentTime(time);
   }
 

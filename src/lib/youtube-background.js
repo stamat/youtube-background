@@ -190,6 +190,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   seekTo(seconds, allowSeekAhead = true) {
+    if (!this.player) return;
     this.player.seekTo(seconds, allowSeekAhead);
   }
 
@@ -214,6 +215,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   pause() {
+    if (!this.player) return;
     this.playing = false;
     this.player.pauseVideo();
   }
