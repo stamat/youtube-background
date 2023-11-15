@@ -169,6 +169,10 @@ export class VimeoBackground extends SuperVideoBackground {
       this.seekTo(this.params['start-at']);
     }
 
+    if (this.duration && seconds >= this.duration) {
+      this.seekTo(this.params['start-at']);
+    }
+
     this.updateState('playing');
     this.dispatchEvent('video-background-play');
   }

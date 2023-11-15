@@ -120,6 +120,15 @@ export class VideoBackground extends SuperVideoBackground {
       this.initialPlay = true;
       this.playerElement.style.opacity = 1;
     }
+    
+    const seconds = this.player.currentTime;
+    if (this.params['start-at'] && seconds <= this.params['start-at']) {
+      this.seekTo(this.params['start-at']);
+    }
+
+    if (this.duration && seconds >= this.duration) {
+      this.seekTo(this.params['start-at']);
+    }
 
     this.updateState('playing');
     this.dispatchEvent('video-background-play');
@@ -169,19 +178,8 @@ export class VideoBackground extends SuperVideoBackground {
 
   play() {
     if (!this.player) return;
-  
-    const seconds = this.player.currentTime;
-    
-    if (this.params['start-at'] && seconds <= this.params['start-at']) {
-      this.seekTo(this.params['start-at']);
-    }
-
-    if (this.duration && seconds >= this.duration) {
-      this.seekTo(this.params['start-at']);
-    }
-  
     this.playing = true;
-  
+
     this.player.play();
   }
 

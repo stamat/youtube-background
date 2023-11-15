@@ -158,23 +158,39 @@ export class YoutubeBackground extends SuperVideoBackground {
       this.player.playVideo();
     }
 
-    if (this.currentState === 'playing') {
-      if (!this.initialPlay) {
-        this.initialPlay = true;
-        this.playerElement.style.opacity = 1;
-      }
-      
-      if (!this.duration) {
-        this.setDuration(this.player.getDuration());
-      }
-      this.dispatchEvent('video-background-play');
-      this.startTimeUpdateTimer();
-    } else {
-      this.dispatchEvent('video-background-pause');
-      this.stopTimeUpdateTimer();
-    }
+    if (this.currentState === 'playing') this.onVideoPlay();
+    
+    if (this.currentState === 'paused') this.onVideoPause();
 
     this.dispatchEvent('video-background-state-change');
+  }
+
+  onVideoPlay() {
+    if (!this.initialPlay) {
+      this.initialPlay = true;
+      this.playerElement.style.opacity = 1;
+    }
+
+    const seconds = this.player.getCurrentTime();
+    if (this.params['start-at'] && seconds < this.params['start-at'] ) {
+      this.seekTo(this.params['start-at']);
+    }
+
+    if (this.duration && seconds >= this.duration) {
+      this.seekTo(this.params['start-at']);
+    }
+
+    if (!this.duration) {
+      this.setDuration(this.player.getDuration());
+    }
+
+    this.dispatchEvent('video-background-play');
+    this.startTimeUpdateTimer();
+  }
+
+  onVideoPause() {
+    this.dispatchEvent('video-background-pause');
+    this.stopTimeUpdateTimer();
   }
 
   onVideoEnded() {
@@ -209,9 +225,6 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (!this.player) return;
     this.playing = true;
   
-    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
-      this.seekTo(this.params['start-at']);
-    }
     this.player.playVideo();
   }
 
