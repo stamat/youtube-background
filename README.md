@@ -4,7 +4,7 @@
 
 > Create video backgrounds from a YouTube, Vimeo or video file links.
 
-** ⚠️ Future development will be moved to [stamat/video-backgrounds](https://github.com/stamat/video-backgrounds).** Support will still be provided for this repo.
+**⚠️ Future development will be moved to [stamat/video-backgrounds](https://github.com/stamat/video-backgrounds).** Support will still be provided for this repo.
 
 [DEMO HERE ➡️](http://stamat.github.io/youtube-background/)
 
