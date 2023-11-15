@@ -185,6 +185,7 @@ export class VimeoBackground extends SuperVideoBackground {
   seekTo(time) {
     if (!this.player) return;
     this.player.setCurrentTime(time);
+    this.dispatchEvent('video-background-seeked');
   }
 
   softPause() {

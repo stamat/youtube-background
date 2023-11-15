@@ -154,6 +154,7 @@ export class VideoBackground extends SuperVideoBackground {
       return;
     }
     this.player.currentTime = seconds;
+    this.dispatchEvent('video-background-seeked');
   }
 
   softPause() {

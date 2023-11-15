@@ -192,6 +192,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   seekTo(seconds, allowSeekAhead = true) {
     if (!this.player) return;
     this.player.seekTo(seconds, allowSeekAhead);
+    this.dispatchEvent('video-background-seeked');
   }
 
   softPause() {
