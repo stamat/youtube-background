@@ -59,7 +59,7 @@ export class VimeoBackground extends SuperVideoBackground {
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       src += '&autoplay=1';
     }
-  
+
     if (this.params.loop) {
       src += '&loop=1&autopause=0';
     }
@@ -154,6 +154,9 @@ export class VimeoBackground extends SuperVideoBackground {
     if (!this.initialPlay) {
       this.initialPlay = true;
       this.playerElement.style.opacity = 1;
+
+      // gotta set loop manually, cause for some reason it's true by default
+      this.player.setLoop(this.params.loop);
 
       //Hotfixing an issue that it automatically starts playing after buffering on the first load, sometimes, not always, for an unknown reason
       if (!(this.params.autoplay && (this.params['always-play'] || this.isIntersecting))) {
