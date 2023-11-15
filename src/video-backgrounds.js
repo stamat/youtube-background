@@ -238,3 +238,70 @@ export class VideoBackgrounds {
     }
   }
 }
+
+export class VideoBackgroundGroup {
+  constructor(selector, factoryInstance) {
+    this.elements = selector;
+    if (this.elements instanceof Element) this.elements = [this.elements];
+    if (typeof this.elements === 'string') this.elements = document.querySelectorAll(selector);
+    if (!this.elements || !this.elements.length) return;
+
+    this.factoryInstance = factoryInstance;
+    this.current = 0;
+    this.stack = [];
+    this.currentInstance = null;
+
+    for (let i = 0; i < this.elements.length; i++) {
+      const element = this.elements[i];
+      if (!element.hasAttribute('data-vbg-uid')) this.factoryInstance.add(element);
+      const instance = this.factoryInstance.get(element);
+      if (instance.params.loop) instance.params.loop = false;
+      if (i === 0) {
+        this.currentInstance = instance;
+      }
+      this.stack.push(element);
+      element.addEventListener('video-background-ended', this.onVideoEnded.bind(this));
+    }
+  }
+
+  getNext() {
+    this.current++;
+    if (this.current >= this.stack.length) { 
+      this.current = 0;
+    }
+    this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
+    return this.stack[this.current];
+  }
+
+  getPrev() {
+    this.current--;
+    if (this.current < 0) this.current = 0;
+    this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
+    return this.stack[this.current];
+  }
+
+  onVideoEnded(event) {
+    console.log(this.current, 'ended')
+    const instance = event.detail;
+    const current = instance.element;
+    const next = this.getNext();
+    current.style.display = 'none';
+    next.style.display = 'block';
+    this.currentInstance.play();
+    console.log(this.factoryInstance);
+  }
+
+  next() {
+    console.log(this.current, 'next')
+    this.currentInstance.seek(100);
+  }
+
+  prev() {
+    this.currentInstance.seek(0);
+    const current = this.currentInstance.element;
+    const prev = this.getPrev();
+    current.style.display = 'none';
+    prev.style.display = 'block';
+    this.currentInstance.play();
+  }
+}

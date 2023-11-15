@@ -102,6 +102,11 @@
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+  function fixed(number, digits) {
+    if (!digits)
+      return parseInt(number);
+    return parseFloat(number.toFixed(digits));
+  }
   function percentage(num, total) {
     if (!num || !total || Number.isNaN(num) || Number.isNaN(total))
       return 0;
@@ -280,10 +285,13 @@
         return 0;
       if (percentage2 > 100)
         return this.duration;
-      if (percentage2 < 0)
+      if (percentage2 <= 0)
         return 0;
       const duration = this.duration - this.params["start-at"];
       let time = percentage2 * duration / 100;
+      time = fixed(time, 3);
+      if (time > duration)
+        time = duration;
       if (this.params["start-at"])
         time += this.params["start-at"];
       return time;
@@ -582,28 +590,39 @@
     }
     onVideoStateChange(event) {
       this.currentState = this.convertState(event.data);
-      if (this.currentState === "ended") {
+      if (this.currentState === "ended")
         this.onVideoEnded();
-      }
       if (this.currentState === "notstarted" && this.params.autoplay) {
         this.seekTo(this.params["start-at"]);
         this.player.playVideo();
       }
-      if (this.currentState === "playing") {
-        if (!this.initialPlay) {
-          this.initialPlay = true;
-          this.playerElement.style.opacity = 1;
-        }
-        if (!this.duration) {
-          this.setDuration(this.player.getDuration());
-        }
-        this.dispatchEvent("video-background-play");
-        this.startTimeUpdateTimer();
-      } else {
-        this.dispatchEvent("video-background-pause");
-        this.stopTimeUpdateTimer();
-      }
+      if (this.currentState === "playing")
+        this.onVideoPlay();
+      if (this.currentState === "paused")
+        this.onVideoPause();
       this.dispatchEvent("video-background-state-change");
+    }
+    onVideoPlay() {
+      if (!this.initialPlay) {
+        this.initialPlay = true;
+        this.playerElement.style.opacity = 1;
+      }
+      const seconds = this.player.getCurrentTime();
+      if (this.params["start-at"] && seconds < this.params["start-at"]) {
+        this.seekTo(this.params["start-at"]);
+      }
+      if (this.duration && seconds >= this.duration) {
+        this.seekTo(this.params["start-at"]);
+      }
+      if (!this.duration) {
+        this.setDuration(this.player.getDuration());
+      }
+      this.dispatchEvent("video-background-play");
+      this.startTimeUpdateTimer();
+    }
+    onVideoPause() {
+      this.dispatchEvent("video-background-pause");
+      this.stopTimeUpdateTimer();
     }
     onVideoEnded() {
       this.dispatchEvent("video-background-ended");
@@ -616,7 +635,10 @@
       this.seekTo(this.percentageToTime(percentage2), true);
     }
     seekTo(seconds, allowSeekAhead = true) {
+      if (!this.player)
+        return;
       this.player.seekTo(seconds, allowSeekAhead);
+      this.dispatchEvent("video-background-seeked");
     }
     softPause() {
       if (!this.playing || !this.player)
@@ -632,12 +654,11 @@
       if (!this.player)
         return;
       this.playing = true;
-      if (this.params["start-at"] && this.player.getCurrentTime() < this.params["start-at"]) {
-        this.seekTo(this.params["start-at"]);
-      }
       this.player.playVideo();
     }
     pause() {
+      if (!this.player)
+        return;
       this.playing = false;
       this.player.pauseVideo();
     }
@@ -790,6 +811,7 @@
       this.currentTime = event.seconds;
       this.percentComplete = this.timeToPercentage(event.seconds);
       this.dispatchEvent("video-background-time-update");
+      this.setDuration(event.duration);
       if (this.duration && event.seconds >= this.duration) {
         this.onVideoEnded();
       }
@@ -798,17 +820,21 @@
       this.updateState("buffering");
     }
     onVideoPlay(event) {
+      this.setDuration(event.duration);
       if (!this.initialPlay) {
         this.initialPlay = true;
         this.playerElement.style.opacity = 1;
+        this.player.setLoop(this.params.loop);
+        if (!(this.params.autoplay && (this.params["always-play"] || this.isIntersecting))) {
+          return this.player.pause();
+        }
       }
-      this.setDuration(event.duration);
       const seconds = event.seconds;
-      if (self.params["start-at"] && seconds < self.params["start-at"]) {
-        self.seekTo(self.params["start-at"]);
+      if (this.params["start-at"] && seconds < this.params["start-at"]) {
+        this.seekTo(this.params["start-at"]);
       }
-      if (self.duration && seconds >= self.duration) {
-        self.seekTo(self.params["start-at"]);
+      if (this.duration && seconds >= this.duration) {
+        this.seekTo(this.params["start-at"]);
       }
       this.updateState("playing");
       this.dispatchEvent("video-background-play");
@@ -821,7 +847,10 @@
       this.seekTo(this.percentageToTime(percentage2));
     }
     seekTo(time) {
+      if (!this.player)
+        return;
       this.player.setCurrentTime(time);
+      this.dispatchEvent("video-background-seeked");
     }
     softPause() {
       if (!this.playing || !this.player)
@@ -984,6 +1013,13 @@
         this.initialPlay = true;
         this.playerElement.style.opacity = 1;
       }
+      const seconds = this.player.currentTime;
+      if (this.params["start-at"] && seconds <= this.params["start-at"]) {
+        this.seekTo(this.params["start-at"]);
+      }
+      if (this.duration && seconds >= this.duration) {
+        this.seekTo(this.params["start-at"]);
+      }
       this.updateState("playing");
       this.dispatchEvent("video-background-play");
     }
@@ -1006,11 +1042,14 @@
       this.seekTo(this.percentageToTime(percentage2));
     }
     seekTo(seconds) {
+      if (!this.player)
+        return;
       if (this.player.hasOwnProperty("fastSeek")) {
         this.player.fastSeek(seconds);
         return;
       }
       this.player.currentTime = seconds;
+      this.dispatchEvent("video-background-seeked");
     }
     softPause() {
       if (!this.playing || !this.player)
@@ -1025,13 +1064,6 @@
     play() {
       if (!this.player)
         return;
-      const seconds = this.player.currentTime;
-      if (this.params["start-at"] && seconds <= this.params["start-at"]) {
-        this.seekTo(this.params["start-at"]);
-      }
-      if (this.duration && seconds >= this.duration) {
-        this.seekTo(this.params["start-at"]);
-      }
       this.playing = true;
       this.player.play();
     }
@@ -1082,24 +1114,24 @@
       if (typeof this.elements === "string")
         this.elements = document.querySelectorAll(selector);
       this.index = {};
-      const self2 = this;
+      const self = this;
       this.intersectionObserver = null;
       if ("IntersectionObserver" in window) {
         this.intersectionObserver = new IntersectionObserver(function(entries) {
           entries.forEach(function(entry) {
             const uid = entry.target.getAttribute("data-vbg-uid");
-            if (uid && self2.index.hasOwnProperty(uid) && entry.isIntersecting) {
-              self2.index[uid].isIntersecting = true;
+            if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
+              self.index[uid].isIntersecting = true;
               try {
-                if (self2.index[uid].player && self2.index[uid].params.autoplay)
-                  self2.index[uid].softPlay();
+                if (self.index[uid].player && self.index[uid].params.autoplay)
+                  self.index[uid].softPlay();
               } catch (e) {
               }
             } else {
-              self2.index[uid].isIntersecting = false;
+              self.index[uid].isIntersecting = false;
               try {
-                if (self2.index[uid].player)
-                  self2.index[uid].softPause();
+                if (self.index[uid].player)
+                  self.index[uid].softPause();
               } catch (e) {
               }
             }
@@ -1111,15 +1143,15 @@
         this.resizeObserver = new ResizeObserver(function(entries) {
           entries.forEach(function(entry) {
             const uid = entry.target.getAttribute("data-vbg-uid");
-            if (uid && self2.index.hasOwnProperty(uid)) {
-              window.requestAnimationFrame(() => self2.index[uid].resize());
+            if (uid && self.index.hasOwnProperty(uid)) {
+              window.requestAnimationFrame(() => self.index[uid].resize());
             }
           });
         });
       } else {
         window.addEventListener("resize", function() {
-          for (let k in self2.index) {
-            window.requestAnimationFrame(() => self2.index[k].resize(self2.index[k].playerElement));
+          for (let k in self.index) {
+            window.requestAnimationFrame(() => self.index[k].resize(self.index[k].playerElement));
           }
         });
       }
@@ -1248,11 +1280,11 @@
       }
     }
     initPlayers(callback) {
-      const self2 = this;
+      const self = this;
       window.onYouTubeIframeAPIReady = function() {
-        for (let k in self2.index) {
-          if (self2.index[k] instanceof YoutubeBackground) {
-            self2.index[k].initYTPlayer();
+        for (let k in self.index) {
+          if (self.index[k] instanceof YoutubeBackground) {
+            self.index[k].initYTPlayer();
           }
         }
         if (callback) {
@@ -1263,9 +1295,9 @@
         window.onYouTubeIframeAPIReady();
       }
       window.onVimeoIframeAPIReady = function() {
-        for (let k in self2.index) {
-          if (self2.index[k] instanceof VimeoBackground) {
-            self2.index[k].initVimeoPlayer();
+        for (let k in self.index) {
+          if (self.index[k] instanceof VimeoBackground) {
+            self.index[k].initVimeoPlayer();
           }
         }
         if (callback) {
@@ -1275,6 +1307,71 @@
       if (window.hasOwnProperty("Vimeo") && window.Vimeo.hasOwnProperty("Player")) {
         window.onVimeoIframeAPIReady();
       }
+    }
+  };
+  var VideoBackgroundGroup = class {
+    constructor(selector, factoryInstance) {
+      this.elements = selector;
+      if (this.elements instanceof Element)
+        this.elements = [this.elements];
+      if (typeof this.elements === "string")
+        this.elements = document.querySelectorAll(selector);
+      if (!this.elements || !this.elements.length)
+        return;
+      this.factoryInstance = factoryInstance;
+      this.current = 0;
+      this.stack = [];
+      this.currentInstance = null;
+      for (let i = 0; i < this.elements.length; i++) {
+        const element = this.elements[i];
+        if (!element.hasAttribute("data-vbg-uid"))
+          this.factoryInstance.add(element);
+        const instance = this.factoryInstance.get(element);
+        if (instance.params.loop)
+          instance.params.loop = false;
+        if (i === 0) {
+          this.currentInstance = instance;
+        }
+        this.stack.push(element);
+        element.addEventListener("video-background-ended", this.onVideoEnded.bind(this));
+      }
+    }
+    getNext() {
+      this.current++;
+      if (this.current >= this.stack.length) {
+        this.current = 0;
+      }
+      this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
+      return this.stack[this.current];
+    }
+    getPrev() {
+      this.current--;
+      if (this.current < 0)
+        this.current = 0;
+      this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
+      return this.stack[this.current];
+    }
+    onVideoEnded(event) {
+      console.log(this.current, "ended");
+      const instance = event.detail;
+      const current = instance.element;
+      const next = this.getNext();
+      current.style.display = "none";
+      next.style.display = "block";
+      this.currentInstance.play();
+      console.log(this.factoryInstance);
+    }
+    next() {
+      console.log(this.current, "next");
+      this.currentInstance.seek(100);
+    }
+    prev() {
+      this.currentInstance.seek(0);
+      const current = this.currentInstance.element;
+      const prev = this.getPrev();
+      current.style.display = "none";
+      prev.style.display = "block";
+      this.currentInstance.play();
     }
   };
 
@@ -1293,5 +1390,6 @@
     })(jQuery);
   }
   window.VideoBackgrounds = VideoBackgrounds;
+  window.VideoBackgroundGroup = VideoBackgroundGroup;
 })();
 //# sourceMappingURL=jquery.youtube-background.js.map

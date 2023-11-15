@@ -149,9 +149,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   onVideoStateChange(event) {
     this.currentState = this.convertState(event.data);
 
-    if (this.currentState === 'ended') {
-      this.onVideoEnded();
-    }
+    if (this.currentState === 'ended') this.onVideoEnded();
   
     if (this.currentState === 'notstarted' && this.params.autoplay) {
       this.seekTo(this.params['start-at']);
