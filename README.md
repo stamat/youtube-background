@@ -4,6 +4,8 @@
 
 > Create video backgrounds from a YouTube, Vimeo or video file links.
 
+** ⚠️ Development moved to [stamat/video-backgrounds](https://github.com/stamat/video-backgrounds).** Support will still be provided for this repo.
+
 [DEMO HERE ➡️](http://stamat.github.io/youtube-background/)
 
 This project started as a simple 100 liner jQuery plugin for YouTube video backgrounds. The idea behind it was to have a straightforward minimal way to add a YouTube video as a background for a div, or any other HTML element. It was intended to be used on hero and banner elements mostly. You would add a data attribute `data-vbg` to the element, and the script would take care of the rest, no CSS required.
@@ -33,10 +35,6 @@ This project started as a simple 100 liner jQuery plugin for YouTube video backg
 Since it's creation it has evolved to support Vimeo and video files as well. Numerous features were added out of necessity on other projects or by community requests.
 
 After numerous iterations and is now a fully fledged ES module that can be used with or without jQuery. It is also available as a standalone script.
-
-P.S.
-
-The future development of this project will most probably be moved to a new repo and going towards a custom element implementation (this is a maybe, I kinda like the factory class) and completely excluding jQuery. The goal will be to stay focused on the primary use case but to provide an extensive API for possible extensions.
 
 ## Features
 
@@ -387,6 +385,8 @@ Method | Accepts | Description
 **getVolume** | - | Get the video volume. From 0 to 1. 0 is muted, 1 is full volume. 0.5 is half volume. Vimeo instance will return a promise that resolves to the volume value.
 **seek** | int | Seek the video to a specific percentage complete. From 0 to 100. 0 is the start of the video, 100 is the end of the video.
 **seekTo** | int | Seek the video to a specific time in seconds. From 0 to the duration of the video in seconds.
+**setStartAt** | int | Set Start At seconds. From 0 to the duration of the video in seconds.
+**setEndAt** | int | Set End At seconds. From 0 to the duration of the video in seconds.
 
 ## Instance variables
 * **playing** - boolean, true if the video is playing, false if the video is not playing. Hard playing state, doesn't change on video being paused via IntersectionObserver.
@@ -475,6 +475,7 @@ The code is structured like this:
 * **lib/vimeo-background.js** - It contains the `VimeoBackground` class that is used to create and control Vimeo video backgrounds. Inherits from `SuperVideoBackground`.
 * **lib/video-background.js** - It contains the `VideoBackground` class that is used to create and control HTML5 video backgrounds. Inherits from `SuperVideoBackground`.
 * **lib/buttons.js** - It contains the play and pause automatic buttons and their functionality that are added to the video backgrounds. I seriously don't know why I created this in the first place.
+* **lib/controls.js** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle` which tune onto the video events and use the common API, they are not bundled with the script, but are available as a standalone modules.
 
 Tu summarize, because YouTube, Vimeo and HTML5 Video API's are different - we need a way to generalize these APIs and provide a common interface for all of them. Due to a lot of common code we have the `SuperVideoBackground` class that is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
 
