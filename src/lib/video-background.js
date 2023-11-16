@@ -99,10 +99,6 @@ export class VideoBackground extends SuperVideoBackground {
 
   onVideoCanPlay() {
     this.setDuration(this.player.duration);
-
-    if (this.params['start-at'] && this.params.autoplay) {
-      this.seekTo(this.params['start-at']);
-    }
   }
 
   onVideoTimeUpdate() {
