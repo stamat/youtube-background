@@ -110,7 +110,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.percentComplete = this.timeToPercentage(this.player.currentTime);
     this.dispatchEvent('video-background-time-update');
 
-    if (this.currentTime >= this.duration) {
+    if (this.params['end-at'] && this.currentTime >= this.duration) {
       this.onVideoEnded();
     }
   }
