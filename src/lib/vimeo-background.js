@@ -59,7 +59,7 @@ export class VimeoBackground extends SuperVideoBackground {
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       src += '&autoplay=1';
     }
-  
+
     if (this.params.loop) {
       src += '&loop=1&autopause=0';
     }
@@ -137,8 +137,9 @@ export class VimeoBackground extends SuperVideoBackground {
     this.currentTime = event.seconds;
     this.percentComplete = this.timeToPercentage(event.seconds);
     this.dispatchEvent('video-background-time-update');
+    this.setDuration(event.duration);
 
-    if (this.duration && event.seconds >= this.duration) {
+    if (this.params['end-at'] && this.duration && event.seconds >= this.duration) {
       this.onVideoEnded();
     }
   }
@@ -148,20 +149,28 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   onVideoPlay(event) {
+    this.setDuration(event.duration);
+
     if (!this.initialPlay) {
       this.initialPlay = true;
       this.playerElement.style.opacity = 1;
-    }
 
-    this.setDuration(event.duration);
+      // gotta set loop manually, cause for some reason it's true by default
+      this.player.setLoop(this.params.loop);
+
+      //Hotfixing an issue that it automatically starts playing after buffering on the first load, sometimes, not always, for an unknown reason
+      if (!(this.params.autoplay && (this.params['always-play'] || this.isIntersecting))) {
+        return this.player.pause();
+      }
+    }
 
     const seconds = event.seconds;
-    if (self.params['start-at'] && seconds < self.params['start-at']) {
-      self.seekTo(self.params['start-at']);
+    if (this.params['start-at'] && seconds < this.params['start-at']) {
+      this.seekTo(this.params['start-at']);
     }
 
-    if (self.duration && seconds >= self.duration) {
-      self.seekTo(self.params['start-at']);
+    if (this.duration && seconds >= this.duration) {
+      this.seekTo(this.params['start-at']);
     }
 
     this.updateState('playing');
@@ -178,7 +187,9 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   seekTo(time) {
+    if (!this.player) return;
     this.player.setCurrentTime(time);
+    this.dispatchEvent('video-background-seeked');
   }
 
   softPause() {

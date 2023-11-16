@@ -99,10 +99,6 @@ export class VideoBackground extends SuperVideoBackground {
 
   onVideoCanPlay() {
     this.setDuration(this.player.duration);
-
-    if (this.params['start-at'] && this.params.autoplay) {
-      this.seekTo(this.params['start-at']);
-    }
   }
 
   onVideoTimeUpdate() {
@@ -110,7 +106,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.percentComplete = this.timeToPercentage(this.player.currentTime);
     this.dispatchEvent('video-background-time-update');
 
-    if (this.currentTime >= this.duration) {
+    if (this.params['end-at'] && this.currentTime >= this.duration) {
       this.onVideoEnded();
     }
   }
@@ -119,6 +115,15 @@ export class VideoBackground extends SuperVideoBackground {
     if (!this.initialPlay) {
       this.initialPlay = true;
       this.playerElement.style.opacity = 1;
+    }
+    
+    const seconds = this.player.currentTime;
+    if (this.params['start-at'] && seconds <= this.params['start-at']) {
+      this.seekTo(this.params['start-at']);
+    }
+
+    if (this.duration && seconds >= this.duration) {
+      this.seekTo(this.params['start-at']);
     }
 
     this.updateState('playing');
@@ -148,11 +153,13 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   seekTo(seconds) {
+    if (!this.player) return;
     if (this.player.hasOwnProperty('fastSeek')) {
       this.player.fastSeek(seconds);
       return;
     }
     this.player.currentTime = seconds;
+    this.dispatchEvent('video-background-seeked');
   }
 
   softPause() {
@@ -167,19 +174,8 @@ export class VideoBackground extends SuperVideoBackground {
 
   play() {
     if (!this.player) return;
-  
-    const seconds = this.player.currentTime;
-    
-    if (this.params['start-at'] && seconds <= this.params['start-at']) {
-      this.seekTo(this.params['start-at']);
-    }
-
-    if (this.duration && seconds >= this.duration) {
-      this.seekTo(this.params['start-at']);
-    }
-  
     this.playing = true;
-  
+
     this.player.play();
   }
 

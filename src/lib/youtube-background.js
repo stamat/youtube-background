@@ -125,10 +125,12 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (ctime === this.currentTime) return;
     this.currentTime = ctime;
     this.percentComplete = this.timeToPercentage(this.currentTime);
-    if (this.duration && this.currentTime >= this.duration) {
+    if (this.params['end-at'] && this.duration && this.currentTime >= this.duration) {
       this.currentState = 'ended';
       this.dispatchEvent('video-background-state-change');
       this.onVideoEnded();
+      this.stopTimeUpdateTimer();
+      return;
     }
     this.dispatchEvent('video-background-time-update');
   }
@@ -149,38 +151,52 @@ export class YoutubeBackground extends SuperVideoBackground {
   onVideoStateChange(event) {
     this.currentState = this.convertState(event.data);
 
-    if (this.currentState === 'ended') {
-      this.onVideoEnded();
-    }
+    if (this.currentState === 'ended') this.onVideoEnded();
   
     if (this.currentState === 'notstarted' && this.params.autoplay) {
       this.seekTo(this.params['start-at']);
       this.player.playVideo();
     }
 
-    if (this.currentState === 'playing') {
-      if (!this.initialPlay) {
-        this.initialPlay = true;
-        this.playerElement.style.opacity = 1;
-      }
-      
-      if (!this.duration) {
-        this.setDuration(this.player.getDuration());
-      }
-      this.dispatchEvent('video-background-play');
-      this.startTimeUpdateTimer();
-    } else {
-      this.dispatchEvent('video-background-pause');
-      this.stopTimeUpdateTimer();
-    }
+    if (this.currentState === 'playing') this.onVideoPlay();
+    
+    if (this.currentState === 'paused') this.onVideoPause();
 
     this.dispatchEvent('video-background-state-change');
+  }
+
+  onVideoPlay() {
+    if (!this.initialPlay) {
+      this.initialPlay = true;
+      this.playerElement.style.opacity = 1;
+    }
+
+    const seconds = this.player.getCurrentTime();
+    if (this.params['start-at'] && seconds < this.params['start-at'] ) {
+      this.seekTo(this.params['start-at']);
+    }
+
+    if (this.duration && seconds >= this.duration) {
+      this.seekTo(this.params['start-at']);
+    }
+
+    if (!this.duration) {
+      this.setDuration(this.player.getDuration());
+    }
+
+    this.dispatchEvent('video-background-play');
+    this.startTimeUpdateTimer();
+  }
+
+  onVideoPause() {
+    this.dispatchEvent('video-background-pause');
+    this.stopTimeUpdateTimer();
   }
 
   onVideoEnded() {
     this.dispatchEvent('video-background-ended');
 
-    if (!this.params.loop) return this.player.pause();
+    if (!this.params.loop) return this.pause();
     this.seekTo(this.params['start-at']);
     this.player.playVideo();
   }
@@ -190,7 +206,9 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   seekTo(seconds, allowSeekAhead = true) {
+    if (!this.player) return;
     this.player.seekTo(seconds, allowSeekAhead);
+    this.dispatchEvent('video-background-seeked');
   }
 
   softPause() {
@@ -207,13 +225,11 @@ export class YoutubeBackground extends SuperVideoBackground {
     if (!this.player) return;
     this.playing = true;
   
-    if (this.params['start-at'] && this.player.getCurrentTime() < this.params['start-at'] ) {
-      this.seekTo(this.params['start-at']);
-    }
     this.player.playVideo();
   }
 
   pause() {
+    if (!this.player) return;
     this.playing = false;
     this.player.pauseVideo();
   }

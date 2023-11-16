@@ -1,5 +1,5 @@
 import { generateActionButton } from './buttons.js';
-import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage } from 'book-of-spells';
+import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed } from 'book-of-spells';
 
 export class SuperVideoBackground {
   constructor(elem, params, id, uid, type) {
@@ -109,11 +109,13 @@ export class SuperVideoBackground {
   }
 
   percentageToTime(percentage) {
-    if (!this.duration) return 0;
+    if (!this.duration) return this.params['start-at'] || 0;
     if (percentage > 100) return this.duration;
-    if (percentage < 0) return 0;
+    if (percentage <= 0) return this.params['start-at'] || 0;
     const duration = this.duration - this.params['start-at']; // normalize
     let time = percentage * duration / 100;
+    time = fixed(time, 3)
+    if (time > duration) time = duration;
     if (this.params['start-at']) time += this.params['start-at']; // normalize
     return time;
   }
