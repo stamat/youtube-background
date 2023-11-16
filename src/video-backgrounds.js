@@ -239,6 +239,63 @@ export class VideoBackgrounds {
   }
 }
 
+export class SeekBar {
+  constructor(seekBarElem, vbgInstance) {
+    this.lock = false;
+    if (!seekBarElem) return;
+    this.seekBarElem = seekBarElem;
+    this.progressElem = this.seekBarElem.querySelector('.js-seek-bar-progress');
+    this.inputElem = this.seekBarElem.querySelector('.js-seek-bar');
+    this.targetSelector = this.seekBarElem.getAttribute('data-target');
+    if (!this.targetSelector) return;
+    this.targetElem = document.querySelector(this.targetSelector);
+    if (!this.targetElem) return;
+
+    if (vbgInstance) this.vbgInstance = vbgInstance;
+    
+    this.targetElem.addEventListener('video-background-time-update', this.onTimeUpdate.bind(this));
+    this.targetElem.addEventListener('video-background-play', this.onReady.bind(this));
+    this.targetElem.addEventListener('video-background-ready', this.onReady.bind(this));
+    this.targetElem.addEventListener('video-background-destroyed', this.onDestroyed.bind(this));
+
+    this.inputElem.addEventListener('input', this.onInput.bind(this));
+    this.inputElem.addEventListener('change', this.onChange.bind(this));
+  }
+
+  onReady(event) {
+    this.vbgInstance = event.detail;
+  }
+
+  onTimeUpdate(event) {
+    if (!this.vbgInstance) this.vbgInstance = event.detail;
+    if (!this.lock) requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
+  }
+
+  onDestroyed(event) {
+    this.vbgInstance = null;
+    requestAnimationFrame(() => this.setProgress(0));
+  }
+
+  onInput(event) {
+    this.lock = true;
+    requestAnimationFrame(() => this.setProgress(event.target.value));
+  }
+
+  onChange(event) {
+    this.lock = false;
+    requestAnimationFrame(() => this.setProgress(event.target.value));
+    if (this.vbgInstance) {
+        this.vbgInstance.seek(event.target.value);
+        if (this.vbgInstance.playerElement && this.vbgInstance.playerElement.style.opacity === 0) this.vbgInstance.playerElement.style.opacity = 1;
+    }
+  }
+
+  setProgress(value) {
+      if (this.progressElem) this.progressElem.value = value;
+      if (this.inputElem) this.inputElem.value = value;
+  }
+}
+
 export class VideoBackgroundGroup {
   constructor(selector, factoryInstance) {
     this.elements = selector;
@@ -247,61 +304,59 @@ export class VideoBackgroundGroup {
     if (!this.elements || !this.elements.length) return;
 
     this.factoryInstance = factoryInstance;
-    this.current = 0;
     this.stack = [];
-    this.currentInstance = null;
 
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
       if (!element.hasAttribute('data-vbg-uid')) this.factoryInstance.add(element);
-      const instance = this.factoryInstance.get(element);
-      if (instance.params.loop) instance.params.loop = false;
-      if (i === 0) {
-        this.currentInstance = instance;
-      }
       this.stack.push(element);
+      if (i === 0) {
+        this.current = 0;
+        this.currentElement = element;
+        this.currentInstance = this.factoryInstance.get(element);
+      }
       element.addEventListener('video-background-ended', this.onVideoEnded.bind(this));
     }
   }
 
-  getNext() {
-    this.current++;
-    if (this.current >= this.stack.length) { 
-      this.current = 0;
-    }
-    this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
-    return this.stack[this.current];
+  onVideoSeeked(event) {
+    console.log('seeked', event.detail)
   }
 
-  getPrev() {
-    this.current--;
-    if (this.current < 0) this.current = 0;
+  setCurrent(index) {
+    console.log('index', index, this.current)
+    if (index >= this.stack.length) index = 0;
+    if (index < 0) index = this.stack.length - 1;
+    this.current = index;
+    console.log('set current', this.current)
     this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
-    return this.stack[this.current];
+    this.currentElement = this.stack[this.current];
+
+    
+    for (let i = 0; i < this.stack.length; i++) {
+      this.stack[i].style.display = i === this.current ? 'block' : 'none';
+      const instance = this.factoryInstance.get(this.stack[i]);
+      if (i === this.current) {
+        instance.seek(0);
+        instance.play();
+      }
+    }
+
+    return this.currentElement;
   }
 
   onVideoEnded(event) {
-    console.log(this.current, 'ended')
-    const instance = event.detail;
-    const current = instance.element;
-    const next = this.getNext();
-    current.style.display = 'none';
-    next.style.display = 'block';
-    this.currentInstance.play();
-    console.log(this.factoryInstance);
+    console.error('ended', event.detail.element.getAttribute('id'))
+    if (event.detail.element !== this.currentElement) return;
+    this.next()
   }
 
   next() {
-    console.log(this.current, 'next')
-    this.currentInstance.seek(100);
+    console.log('next')
+    this.setCurrent(this.current + 1);
   }
 
   prev() {
-    this.currentInstance.seek(0);
-    const current = this.currentInstance.element;
-    const prev = this.getPrev();
-    current.style.display = 'none';
-    prev.style.display = 'block';
-    this.currentInstance.play();
+    this.setCurrent(this.current - 1);
   }
 }
