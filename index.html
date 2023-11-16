@@ -413,7 +413,7 @@
                     for (let j = 0; j < elements.length; j++) {
                         elements[j].addEventListener('video-background-state-change', function(event) {
                             const id = event.target.getAttribute('id');
-                            console.error(id, event.detail.type, event.detail.currentState);
+                            console.log(id, event.detail.type, event.detail.currentState);
                         });
 
                         elements[j].addEventListener('video-background-ready', function(event) {
