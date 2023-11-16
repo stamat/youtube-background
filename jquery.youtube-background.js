@@ -282,11 +282,11 @@
     }
     percentageToTime(percentage2) {
       if (!this.duration)
-        return 0;
+        return this.params["start-at"] || 0;
       if (percentage2 > 100)
         return this.duration;
       if (percentage2 <= 0)
-        return 0;
+        return this.params["start-at"] || 0;
       const duration = this.duration - this.params["start-at"];
       let time = percentage2 * duration / 100;
       time = fixed(time, 3);
@@ -998,9 +998,6 @@
     }
     onVideoCanPlay() {
       this.setDuration(this.player.duration);
-      if (this.params["start-at"] && this.params.autoplay) {
-        this.seekTo(this.params["start-at"]);
-      }
     }
     onVideoTimeUpdate() {
       this.currentTime = this.player.currentTime;
@@ -1312,21 +1309,21 @@
     }
   };
   var SeekBar = class {
-    constructor(seekBarElem, vbgInstance) {
+    constructor(element, vbgInstance) {
       this.lock = false;
-      if (!seekBarElem)
+      if (!element)
         return;
-      this.seekBarElem = seekBarElem;
-      this.progressElem = this.seekBarElem.querySelector(".js-seek-bar-progress");
-      this.inputElem = this.seekBarElem.querySelector(".js-seek-bar");
-      this.targetSelector = this.seekBarElem.getAttribute("data-target");
+      this.element = element;
+      this.progressElem = this.element.querySelector(".js-seek-bar-progress");
+      this.inputElem = this.element.querySelector(".js-seek-bar");
+      this.targetSelector = this.element.getAttribute("data-target");
       if (!this.targetSelector)
         return;
       this.targetElem = document.querySelector(this.targetSelector);
       if (!this.targetElem)
         return;
       if (vbgInstance)
-        this.vbgInstance = vbgInstance;
+        this.setVBGInstance(vbgInstance);
       this.targetElem.addEventListener("video-background-time-update", this.onTimeUpdate.bind(this));
       this.targetElem.addEventListener("video-background-play", this.onReady.bind(this));
       this.targetElem.addEventListener("video-background-ready", this.onReady.bind(this));
@@ -1334,12 +1331,17 @@
       this.inputElem.addEventListener("input", this.onInput.bind(this));
       this.inputElem.addEventListener("change", this.onChange.bind(this));
     }
+    setVBGInstance(vbgInstance) {
+      if (this.vbgInstance)
+        return;
+      this.vbgInstance = vbgInstance;
+      this.element.setAttribute("data-target-uid", vbgInstance.uid);
+    }
     onReady(event) {
-      this.vbgInstance = event.detail;
+      this.setVBGInstance(event.detail);
     }
     onTimeUpdate(event) {
-      if (!this.vbgInstance)
-        this.vbgInstance = event.detail;
+      this.setVBGInstance(event.detail);
       if (!this.lock)
         requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
     }
@@ -1378,50 +1380,93 @@
         return;
       this.factoryInstance = factoryInstance;
       this.stack = [];
+      this.map = /* @__PURE__ */ new Map();
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         if (!element.hasAttribute("data-vbg-uid"))
           this.factoryInstance.add(element);
         this.stack.push(element);
+        this.map.set(element, i);
         if (i === 0) {
           this.current = 0;
           this.currentElement = element;
           this.currentInstance = this.factoryInstance.get(element);
         }
         element.addEventListener("video-background-ended", this.onVideoEnded.bind(this));
+        element.addEventListener("video-background-seeked", this.onVideoSeeked.bind(this));
+        element.addEventListener("video-background-pause", this.onVideoPause.bind(this));
       }
     }
-    onVideoSeeked(event) {
-      console.log("seeked", event.detail);
+    onVideoPause(event) {
+      const stackIndex = this.map.get(event.detail.element);
+      if (stackIndex === this.current)
+        return;
+      this.levelSeekBars();
     }
-    setCurrent(index) {
-      console.log("index", index, this.current);
+    levelSeekBars() {
+      for (let i = 0; i < this.stack.length; i++) {
+        if (i === this.current)
+          continue;
+        const seekBarElem = this.getSeekBar(this.factoryInstance.get(this.stack[i]));
+        if (!seekBarElem)
+          continue;
+        if (i < this.current) {
+          requestAnimationFrame(() => this.setProgress(seekBarElem, 100));
+        } else {
+          requestAnimationFrame(() => this.setProgress(seekBarElem, 0));
+        }
+      }
+    }
+    getSeekBar(currentInstance) {
+      if (!currentInstance)
+        return;
+      const uid = currentInstance.uid;
+      const element = document.querySelector(`.js-seek-bar-wrap[data-target-uid="${uid}"]`);
+      if (!element)
+        return;
+      return element;
+    }
+    setProgress(seekBarElem, value) {
+      if (!seekBarElem)
+        return;
+      const progressElem = seekBarElem.querySelector(".js-seek-bar-progress");
+      const inputElem = seekBarElem.querySelector(".js-seek-bar");
+      if (progressElem)
+        progressElem.value = value;
+      if (inputElem)
+        inputElem.value = value;
+    }
+    onVideoSeeked(event) {
+      const current = this.map.get(event.detail.element);
+      if (this.current !== current)
+        this.setCurrent(current, true);
+    }
+    setCurrent(index, seek) {
+      const previous = this.current;
       if (index >= this.stack.length)
         index = 0;
       if (index < 0)
         index = this.stack.length - 1;
       this.current = index;
-      console.log("set current", this.current);
       this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
       this.currentElement = this.stack[this.current];
-      for (let i = 0; i < this.stack.length; i++) {
-        this.stack[i].style.display = i === this.current ? "block" : "none";
-        const instance = this.factoryInstance.get(this.stack[i]);
-        if (i === this.current) {
-          instance.seek(0);
-          instance.play();
-        }
+      this.stack[previous].style.display = "none";
+      this.currentElement.style.display = "block";
+      if (!seek) {
+        const seekBarElem = this.getSeekBar(this.currentInstance);
+        if (seekBarElem)
+          this.setProgress(seekBarElem, 0);
+        this.currentInstance.seek(0);
       }
-      return this.currentElement;
+      if (!this.currentInstance.playing)
+        this.currentInstance.play();
     }
     onVideoEnded(event) {
-      console.error("ended", event.detail.element.getAttribute("id"));
       if (event.detail.element !== this.currentElement)
         return;
       this.next();
     }
     next() {
-      console.log("next");
       this.setCurrent(this.current + 1);
     }
     prev() {

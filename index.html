@@ -203,11 +203,11 @@
                 opacity: 0;
             }
 
-            .seek-bar-wrapper:hover ::-webkit-slider-thumb {
+            .seek-bar-wrapper:hover .seek-bar:not([disabled])::-webkit-slider-thumb {
                 opacity: 1;
             }
 
-            .seek-bar-wrapper:hover ::-moz-range-thumb {
+            .seek-bar-wrapper:hover .seek-bar:not([disabled])::-moz-range-thumb {
                 opacity: 1;
             }
         </style>
@@ -218,6 +218,33 @@
     <body>
         <div class="container">
             <main>
+                <div class="example-marquee vbg-group">
+                    <div id="vbg12" data-vbg-loop="false" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                    <div id="vbg13" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                    <div id="vbg14" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                    <div class="content">
+                        <div class="inner">
+                            <h1>Group!</h1>
+                            <button class="group-prev">Prev</button><button class="group-next">Next</button>
+
+                            <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
+                                <div data-target="#vbg12" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                                </div>
+                                <div data-target="#vbg13" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                                </div>
+                                <div data-target="#vbg14" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="example-marquee">
                     <div id="vbg" data-vbg-mobile="true" data-vbg-load-background="true" data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
                     <div class="content">
@@ -344,7 +371,7 @@
                         </div>
                     </div>
                 </div>
-
+<!--
                 <div class="example-marquee vbg-group">
                     <div id="vbg9" data-vbg-loop="false" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
                     <div id="vbg10" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
@@ -355,15 +382,15 @@
                             <button class="group-prev">Prev</button><button class="group-next">Next</button>
 
                             <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
-                                <div data-target="#vbg9" class="seek-bar-wrapper" style="width: 100%; margin: 0 4px;">
+                                <div data-target="#vbg9" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
                                     <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
                                     <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
                                 </div>
-                                <div data-target="#vbg10" class="seek-bar-wrapper" style="width: 100%; margin: 0 4px;">
+                                <div data-target="#vbg10" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
                                     <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
                                     <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
                                 </div>
-                                <div data-target="#vbg11" class="seek-bar-wrapper" style="width: 100%; margin: 0 4px;">
+                                <div data-target="#vbg11" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
                                     <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
                                     <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
                                 </div>
@@ -371,6 +398,7 @@
                         </div>
                     </div>
                 </div>
+-->
             </main>
         </div>
         <script src="http://localhost:35729/livereload.js?snipver=1"></script>
