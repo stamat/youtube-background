@@ -416,6 +416,13 @@
     dispatchEvent(name) {
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
     }
+    shouldPlay() {
+      if (this.params["always-play"] && this.currentState !== "playing")
+        return true;
+      if (this.isIntersecting && this.params.autoplay && this.currentState !== "playing")
+        return true;
+      return false;
+    }
     mobileLowBatteryAutoplayHack() {
       if (!this.params["force-on-low-battery"])
         return;

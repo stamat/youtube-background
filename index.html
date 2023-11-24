@@ -817,6 +817,21 @@
             for (let i = 0; i < muteToggle.length; i++) {
                 new MuteToggle(muteToggle[i]);
             }
+
+            document.addEventListener('visibilitychange', function() {
+                console.log('visibilitychange', document.hidden);
+                if (!document.hidden) {
+                    console.log(window.VIDEO_BACKGROUNDS)
+                    for (let k in window.VIDEO_BACKGROUNDS.index) {
+                        const instance = window.VIDEO_BACKGROUNDS.index[k];
+                        if (instance.shouldPlay()) {
+                            console.log('shouldPlay', instance);
+                            console.log(instance.isIntersecting, instance.params.autoplay, instance.currentState, instance.params['always-play']);
+                            instance.softPlay();
+                        }
+                    }
+                }
+            });
         </script>
     </body>
 </html>
