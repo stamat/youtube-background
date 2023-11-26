@@ -67,6 +67,20 @@ export class VideoBackgrounds {
       const element = this.elements[i];
       this.add(element, params);
     }
+
+    document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
+  }
+
+  onVisibilityChange() {
+    if (document.hidden) return;
+
+    for (let k in this.index) {
+      const instance = this.index[k];
+      console.log(instance);
+      if (instance.shouldPlay()) {
+        instance.softPlay();
+      }
+    }
   }
 
   add(element, params) {

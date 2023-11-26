@@ -233,7 +233,7 @@
         this.params["play-button"] = this.params.pause;
       }
       this.params.resolution_mod = parseResolutionString(this.params.resolution);
-      this.playing = this.params.autoplay;
+      this.playing = false;
       this.muted = this.params.muted;
       this.volume = this.params.volume;
       this.currentTime = this.params["start-at"] || 0;
@@ -249,7 +249,7 @@
           name: "playing",
           className: "play-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: !this.playing,
+          initialState: !this.params.autoplay,
           stateClassName: "paused",
           condition_parameter: "autoplay",
           stateChildClassNames: ["fa-pause-circle", "fa-play-circle"],
@@ -650,12 +650,12 @@
       this.dispatchEvent("video-background-seeked");
     }
     softPause() {
-      if (!this.playing || !this.player)
+      if (!this.playing || !this.player || this.currentState === "paused")
         return;
       this.player.pauseVideo();
     }
     softPlay() {
-      if (!this.playing || !this.player)
+      if (!this.player || this.currentState === "playing")
         return;
       this.player.playVideo();
     }
@@ -862,12 +862,12 @@
       this.dispatchEvent("video-background-seeked");
     }
     softPause() {
-      if (!this.playing || !this.player)
+      if (!this.playing || !this.player || this.currentState === "paused")
         return;
       this.player.pause();
     }
     softPlay() {
-      if (!this.playing || !this.player)
+      if (!this.player || this.currentState === "playing")
         return;
       this.player.play();
     }
@@ -1058,12 +1058,12 @@
       this.dispatchEvent("video-background-seeked");
     }
     softPause() {
-      if (!this.playing || !this.player)
+      if (!this.playing || !this.player || this.currentState === "paused")
         return;
       this.player.pause();
     }
     softPlay() {
-      if (!this.playing || !this.player)
+      if (!this.player || this.currentState === "playing")
         return;
       this.player.play();
     }
@@ -1167,6 +1167,18 @@
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         this.add(element, params);
+      }
+      document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
+    }
+    onVisibilityChange() {
+      if (document.hidden)
+        return;
+      for (let k in this.index) {
+        const instance = this.index[k];
+        console.log(instance);
+        if (instance.shouldPlay()) {
+          instance.softPlay();
+        }
       }
     }
     add(element, params) {

@@ -193,12 +193,12 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   softPause() {
-    if (!this.playing || !this.player) return;
+    if (!this.playing || !this.player || this.currentState === 'paused') return;
     this.player.pause();
   }
 
   softPlay() {
-    if (!this.playing || !this.player) return;
+    if (!this.player || this.currentState === 'playing') return;
     this.player.play();
   }
 

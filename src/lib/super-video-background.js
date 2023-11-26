@@ -58,7 +58,7 @@ export class SuperVideoBackground {
     }
 
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
-    this.playing = this.params.autoplay;
+    this.playing = false;
     this.muted = this.params.muted;
 
     this.volume = this.params.volume;
@@ -77,7 +77,7 @@ export class SuperVideoBackground {
         name: 'playing',
         className: 'play-toggle',
         innerHtml: '<i class="fa"></i>',
-        initialState: !this.playing,
+        initialState: !this.params.autoplay,
         stateClassName: 'paused',
         condition_parameter: 'autoplay',
         stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
