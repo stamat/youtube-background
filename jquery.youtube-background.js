@@ -417,6 +417,8 @@
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
     }
     shouldPlay() {
+      if (this.currentState === "ended" && !this.params.loop)
+        return false;
       if (this.params["always-play"] && this.currentState !== "playing")
         return true;
       if (this.isIntersecting && this.params.autoplay && this.currentState !== "playing")
@@ -511,10 +513,14 @@
         events: {
           "onReady": this.onVideoPlayerReady.bind(this),
           "onStateChange": this.onVideoStateChange.bind(this)
+          // 'onError': this.onVideoError.bind(this)
         }
       });
       if (this.volume !== 1 && !this.muted)
         this.setVolume(this.volume);
+    }
+    onVideoError(event) {
+      console.error(event);
     }
     injectScript() {
       if (window.hasOwnProperty("YT") || document.querySelector('script[src="https://www.youtube.com/player_api"]'))
@@ -740,6 +746,9 @@
       this.player.on("timeupdate", this.onVideoTimeUpdate.bind(this));
       if (this.volume !== 1 && !this.muted)
         this.setVolume(this.volume);
+    }
+    onVideoError(event) {
+      console.error(event);
     }
     generatePlayerElement() {
       const playerElement = document.createElement("iframe");
@@ -1175,7 +1184,6 @@
         return;
       for (let k in this.index) {
         const instance = this.index[k];
-        console.log(instance);
         if (instance.shouldPlay()) {
           instance.softPlay();
         }

@@ -255,6 +255,7 @@ export class SuperVideoBackground {
   }
 
   shouldPlay() {
+    if (this.currentState === 'ended' && !this.params.loop) return false;
     if (this.params['always-play'] && this.currentState !== 'playing') return true;
     if (this.isIntersecting && this.params.autoplay && this.currentState !== 'playing') return true;
     return false;

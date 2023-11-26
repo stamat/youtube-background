@@ -36,8 +36,13 @@ export class VimeoBackground extends SuperVideoBackground {
     this.player.on('pause', this.onVideoPause.bind(this));
     this.player.on('bufferstart', this.onVideoBuffering.bind(this));
     this.player.on('timeupdate', this.onVideoTimeUpdate.bind(this));
+    // this.player.on('error', this.onVideoError.bind(this));
 
     if (this.volume !== 1 && !this.muted) this.setVolume(this.volume);
+  }
+
+  onVideoError(event) {
+    console.error(event);
   }
 
   generatePlayerElement() {

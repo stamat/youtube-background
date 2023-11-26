@@ -76,7 +76,6 @@ export class VideoBackgrounds {
 
     for (let k in this.index) {
       const instance = this.index[k];
-      console.log(instance);
       if (instance.shouldPlay()) {
         instance.softPlay();
       }
