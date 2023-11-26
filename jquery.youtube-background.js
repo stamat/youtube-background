@@ -1,4 +1,4 @@
-/* youtube-background v1.1.2 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.1.1 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // src/lib/buttons.js
   function buttonOn(buttonObj) {
@@ -636,8 +636,8 @@
       this.startTimeUpdateTimer();
     }
     onVideoPause() {
-      this.dispatchEvent("video-background-pause");
       this.stopTimeUpdateTimer();
+      this.dispatchEvent("video-background-pause");
     }
     onVideoEnded() {
       this.dispatchEvent("video-background-ended");
@@ -658,6 +658,7 @@
     softPause() {
       if (!this.playing || !this.player || this.currentState === "paused")
         return;
+      this.stopTimeUpdateTimer();
       this.player.pauseVideo();
     }
     softPlay() {
@@ -675,6 +676,7 @@
       if (!this.player)
         return;
       this.playing = false;
+      this.stopTimeUpdateTimer();
       this.player.pauseVideo();
     }
     unmute() {

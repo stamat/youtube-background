@@ -194,8 +194,8 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   onVideoPause() {
-    this.dispatchEvent('video-background-pause');
     this.stopTimeUpdateTimer();
+    this.dispatchEvent('video-background-pause');
   }
 
   onVideoEnded() {
@@ -218,6 +218,7 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   softPause() {
     if (!this.playing || !this.player || this.currentState === 'paused') return;
+    this.stopTimeUpdateTimer();
     this.player.pauseVideo();
   }
 
@@ -236,6 +237,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   pause() {
     if (!this.player) return;
     this.playing = false;
+    this.stopTimeUpdateTimer();
     this.player.pauseVideo();
   }
 
