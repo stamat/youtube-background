@@ -219,13 +219,14 @@
         <div class="container">
             <main>
                 <div class="example-marquee vbg-group">
-                    <div id="vbg12" data-vbg-loop="false" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                    <div id="vbg12" data-vbg-loop="false" data-vbg="https://www.youtube.com/watch?v=yFMaEIHIrGw" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
                     <div id="vbg13" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
                     <div id="vbg14" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
                     <div class="content">
                         <div class="inner">
                             <h1>Group!</h1>
-                            <button class="group-prev">Prev</button><button class="group-next">Next</button>
+                            <button class="group-prev">Prev</button><button class="group-play">Play</button><button class="group-pause">Pause</button><button class="group-next">Next</button><br>
+                            <button class="group-mute">Mute</button><button class="group-unmute">Unmute</button>
 
                             <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
                                 <div data-target="#vbg12" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
@@ -432,6 +433,10 @@
 
                     const groupPrev = group.querySelector('.group-prev');
                     const groupNext = group.querySelector('.group-next');
+                    const groupPlay = group.querySelector('.group-play');
+                    const groupPause = group.querySelector('.group-pause');
+                    const groupMute = group.querySelector('.group-mute');
+                    const groupUnmute = group.querySelector('.group-unmute');
 
                     groupPrev.addEventListener('click', function() {
                         vbgroup.prev();
@@ -439,6 +444,22 @@
 
                     groupNext.addEventListener('click', function() {
                         vbgroup.next();
+                    })
+
+                    groupPlay.addEventListener('click', function() {
+                        vbgroup.play();
+                    })
+
+                    groupPause.addEventListener('click', function() {
+                        vbgroup.pause();
+                    })
+
+                    groupMute.addEventListener('click', function() {
+                        vbgroup.mute();
+                    })
+
+                    groupUnmute.addEventListener('click', function() {
+                        vbgroup.unmute();
                     })
                 }
             });
@@ -576,39 +597,37 @@
                     this.map = new Map();
 
                     for (let i = 0; i < this.elements.length; i++) {
-                    const element = this.elements[i];
-                    if (!element.hasAttribute('data-vbg-uid')) this.factoryInstance.add(element);
-                    this.stack.push(element);
-                    this.map.set(element, i);
-                    
-                    if (i === 0) {
-                        this.current = 0;
-                        this.currentElement = element;
-                        this.currentInstance = this.factoryInstance.get(element);
-                    }
-                    element.addEventListener('video-background-ended', this.onVideoEnded.bind(this));
-                    element.addEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
-                    element.addEventListener('video-background-pause', this.onVideoPause.bind(this));
+                        const element = this.elements[i];
+                        if (!element.hasAttribute('data-vbg-uid')) this.factoryInstance.add(element);
+                        this.stack.push(element);
+                        this.map.set(element, i);
+                        
+                        if (i === 0) {
+                            this.current = 0;
+                            this.currentElement = element;
+                            this.currentInstance = this.factoryInstance.get(element);
+                        }
+                        element.addEventListener('video-background-ended', this.onVideoEnded.bind(this));
+                        element.addEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
+                        element.addEventListener('video-background-pause', this.onVideoPause.bind(this));
                     }
                 }
 
                 onVideoPause(event) {
                     const stackIndex = this.map.get(event.detail.element);
                     if (stackIndex === this.current) return;
-
-                    this.levelSeekBars();
                 }
 
                 levelSeekBars() {
                     for (let i = 0; i < this.stack.length; i++) {
-                    if (i === this.current) continue;
-                    const seekBarElem = this.getSeekBar(this.factoryInstance.get(this.stack[i]));
-                    if (!seekBarElem) continue;
-                    if (i < this.current) {
-                        requestAnimationFrame(() => this.setProgress(seekBarElem, 100));
-                    } else {
-                        requestAnimationFrame(() => this.setProgress(seekBarElem, 0));
-                    }
+                        if (i === this.current) continue;
+                        const seekBarElem = this.getSeekBar(this.factoryInstance.get(this.stack[i]));
+                        if (!seekBarElem) continue;
+                        if (i < this.current) {
+                            this.setProgress(seekBarElem, 100);
+                        } else {
+                            this.setProgress(seekBarElem, 0);
+                        }
                     }
                 }
 
@@ -637,19 +656,24 @@
                     const previous = this.current;
                     if (index >= this.stack.length) index = 0;
                     if (index < 0) index = this.stack.length - 1;
+                    const previousInstance = this.factoryInstance.get(this.stack[previous]);
                     this.current = index;
                     this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
                     this.currentElement = this.stack[this.current];
                     
                     this.stack[previous].style.display = 'none';
                     this.currentElement.style.display = 'block';
+
                     if (!seek) {
-                    const seekBarElem = this.getSeekBar(this.currentInstance);
-                    if (seekBarElem) this.setProgress(seekBarElem, 0);
-                    this.currentInstance.seek(0);
+                        const seekBarElem = this.getSeekBar(this.currentInstance);
+                        if (seekBarElem) this.setProgress(seekBarElem, 0);
+                        this.currentInstance.seek(0);
                     }
 
-                    if (!this.currentInstance.playing) this.currentInstance.play();
+                    if (this.currentInstance.currentState !== 'playing') this.currentInstance.play();
+                    if (previousInstance && previousInstance.currentState !== 'paused') previousInstance.pause();
+
+                    setTimeout(this.levelSeekBars.bind(this), 100);
                 }
 
                 onVideoEnded(event) {
@@ -663,6 +687,30 @@
 
                 prev() {
                     this.setCurrent(this.current - 1);
+                }
+
+                unmute() {
+                    for (let i = 0; i < this.stack.length; i++) {
+                        const instance = this.factoryInstance.get(this.stack[i]);
+                        if (!instance) continue;
+                        instance.unmute();
+                    }
+                }
+
+                mute() {
+                    for (let i = 0; i < this.stack.length; i++) {
+                        const instance = this.factoryInstance.get(this.stack[i]);
+                        if (!instance) continue;
+                        instance.mute();
+                    }
+                }
+
+                pause() {
+                    this.currentInstance.pause();
+                }
+
+                play() {
+                    this.currentInstance.play();
                 }
             }
 
