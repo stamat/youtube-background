@@ -2,11 +2,12 @@ import { generateActionButton } from './buttons.js';
 import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed } from 'book-of-spells';
 
 export class SuperVideoBackground {
-  constructor(elem, params, id, uid, type) {
+  constructor(elem, params, id, uid, type, factoryInstance) {
     if (!id) return;
     this.is_mobile = isMobile();
     this.type = type;
     this.id = id;
+    this.factoryInstance = factoryInstance;
 
     this.element = elem;
     this.playerElement = null;

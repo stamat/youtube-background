@@ -102,15 +102,15 @@ export class VideoBackgrounds {
   
     switch (vid_data.type) {
       case 'YOUTUBE':
-        const yb = new YoutubeBackground(element, params, vid_data.id, uid);
+        const yb = new YoutubeBackground(element, params, vid_data.id, uid, this);
         this.index[uid] = yb;
         break;
       case 'VIMEO':
-        const vm = new VimeoBackground(element, params, vid_data.id, uid);
+        const vm = new VimeoBackground(element, params, vid_data.id, uid, this);
         this.index[uid] = vm;
         break;
       case 'VIDEO':
-        const vid = new VideoBackground(element, params, vid_data, uid);
+        const vid = new VideoBackground(element, params, vid_data, uid, this);
         this.index[uid] = vid;
         break;
     }

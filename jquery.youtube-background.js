@@ -1,4 +1,4 @@
-/* youtube-background v1.1.1 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.1.2 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // src/lib/buttons.js
   function buttonOn(buttonObj) {
@@ -185,12 +185,13 @@
 
   // src/lib/super-video-background.js
   var SuperVideoBackground = class {
-    constructor(elem, params, id, uid, type) {
+    constructor(elem, params, id, uid, type, factoryInstance) {
       if (!id)
         return;
       this.is_mobile = isMobile();
       this.type = type;
       this.id = id;
+      this.factoryInstance = factoryInstance;
       this.element = elem;
       this.playerElement = null;
       this.uid = uid;
@@ -473,8 +474,8 @@
 
   // src/lib/youtube-background.js
   var YoutubeBackground = class extends SuperVideoBackground {
-    constructor(elem, params, id, uid) {
-      super(elem, params, id, uid, "youtube");
+    constructor(elem, params, id, uid, factoryInstance) {
+      super(elem, params, id, uid, "youtube", factoryInstance);
       if (!id)
         return;
       if (this.is_mobile && !this.params.mobile)
@@ -713,8 +714,8 @@
 
   // src/lib/vimeo-background.js
   var VimeoBackground = class extends SuperVideoBackground {
-    constructor(elem, params, id, uid) {
-      super(elem, params, id, uid, "vimeo");
+    constructor(elem, params, id, uid, factoryInstance) {
+      super(elem, params, id, uid, "vimeo", factoryInstance);
       if (!id)
         return;
       if (this.is_mobile && !this.params.mobile)
@@ -928,8 +929,8 @@
 
   // src/lib/video-background.js
   var VideoBackground = class extends SuperVideoBackground {
-    constructor(elem, params, vid_data, uid) {
-      super(elem, params, vid_data.link, uid, "video");
+    constructor(elem, params, vid_data, uid, factoryInstance) {
+      super(elem, params, vid_data.link, uid, "video", factoryInstance);
       if (!vid_data || !vid_data.link)
         return;
       if (this.is_mobile && !this.params.mobile)
@@ -1210,15 +1211,15 @@
         return;
       switch (vid_data.type) {
         case "YOUTUBE":
-          const yb = new YoutubeBackground(element, params, vid_data.id, uid);
+          const yb = new YoutubeBackground(element, params, vid_data.id, uid, this);
           this.index[uid] = yb;
           break;
         case "VIMEO":
-          const vm = new VimeoBackground(element, params, vid_data.id, uid);
+          const vm = new VimeoBackground(element, params, vid_data.id, uid, this);
           this.index[uid] = vm;
           break;
         case "VIDEO":
-          const vid = new VideoBackground(element, params, vid_data, uid);
+          const vid = new VideoBackground(element, params, vid_data, uid, this);
           this.index[uid] = vid;
           break;
       }

@@ -2,8 +2,8 @@ import { SuperVideoBackground } from './super-video-background.js';
 import { RE_VIDEO } from 'book-of-spells';
 
 export class VideoBackground extends SuperVideoBackground {
-  constructor(elem, params, vid_data, uid) {
-    super(elem, params, vid_data.link, uid, 'video');
+  constructor(elem, params, vid_data, uid, factoryInstance) {
+    super(elem, params, vid_data.link, uid, 'video', factoryInstance);
     if (!vid_data || !vid_data.link) return;
     if (this.is_mobile && !this.params.mobile) return;
 

@@ -2,8 +2,8 @@ import { SuperVideoBackground } from './super-video-background.js';
 import { RE_VIMEO } from 'book-of-spells';
 
 export class VimeoBackground extends SuperVideoBackground {
-  constructor(elem, params, id, uid) {
-    super(elem, params, id, uid, 'vimeo');
+  constructor(elem, params, id, uid, factoryInstance) {
+    super(elem, params, id, uid, 'vimeo', factoryInstance);
     if (!id) return;
     if (this.is_mobile && !this.params.mobile) return;
     this.injectScript();
