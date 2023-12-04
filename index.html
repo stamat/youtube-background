@@ -218,30 +218,32 @@
     <body>
         <div class="container">
             <main>
-                <div class="example-marquee vbg-group">
-                    <div id="vbg12" data-vbg-loop="false" data-vbg="https://www.youtube.com/watch?v=yFMaEIHIrGw" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    <div id="vbg13" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    <div id="vbg14" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                <div class="example-marquee vbg-group js-vbg-group">
+                    <div id="vbg12" data-vbg-loop="false" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                    <div id="vbg13" data-vbg-autoplay="false" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                    <div id="vbg14" data-vbg-autoplay="false" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+                    
                     <div class="content">
                         <div class="inner">
                             <h1>Group!</h1>
                             <button class="group-prev">Prev</button><button class="group-play">Play</button><button class="group-pause">Pause</button><button class="group-next">Next</button><br>
-                            <button class="group-mute">Mute</button><button class="group-unmute">Unmute</button>
+                            <button class="group-mute">Mute</button><button class="group-unmute">Unmute</button><br>
+                            <button class="group-fullscreen">Fullscreen</button>
+                        </div>
+                    </div>
 
-                            <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
-                                <div data-target="#vbg12" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                                </div>
-                                <div data-target="#vbg13" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                                </div>
-                                <div data-target="#vbg14" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                                </div>
-                            </div>
+                    <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
+                        <div data-target="#vbg12" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                            <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                            <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                        </div>
+                        <div data-target="#vbg13" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                            <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                            <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                        </div>
+                        <div data-target="#vbg14" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                            <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                            <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
                         </div>
                     </div>
                 </div>
@@ -428,8 +430,7 @@
 
                 for (let i = 0; i < groups.length; i++) {
                     const group = groups[i];
-                    const elements = group.querySelectorAll('[data-vbg]');
-                    const vbgroup = new VideoBackgroundGroup(elements, window.VIDEO_BACKGROUNDS);
+                    const vbgroup = new VideoBackgroundGroup('.js-vbg-group');
 
                     const groupPrev = group.querySelector('.group-prev');
                     const groupNext = group.querySelector('.group-next');
@@ -437,6 +438,7 @@
                     const groupPause = group.querySelector('.group-pause');
                     const groupMute = group.querySelector('.group-mute');
                     const groupUnmute = group.querySelector('.group-unmute');
+                    const groupFullscreen = group.querySelector('.group-fullscreen');
 
                     groupPrev.addEventListener('click', function() {
                         vbgroup.prev();
@@ -460,6 +462,11 @@
 
                     groupUnmute.addEventListener('click', function() {
                         vbgroup.unmute();
+                    })
+
+                    groupFullscreen.addEventListener('click', function() {
+                        console.log(vbgroup.currentElement.closest('.js-vbg-group'));
+                        vbgroup.currentElement.closest('.js-vbg-group').webkitRequestFullscreen();
                     })
                 }
             });
@@ -527,11 +534,12 @@
                     this.lock = false;
                     if (!element) return;
                     this.element = element;
+                    if (this.element.hasAttribute('data-target-uid')) return;
                     this.progressElem = this.element.querySelector('.js-seek-bar-progress');
                     this.inputElem = this.element.querySelector('.js-seek-bar');
                     this.targetSelector = this.element.getAttribute('data-target');
-                    if (!this.targetSelector) return;
-                    this.targetElem = document.querySelector(this.targetSelector);
+                    if (this.targetSelector) this.targetElem = document.querySelector(this.targetSelector);
+                    if (!this.targetSelector && vbgInstance) this.targetElem = vbgInstance.element;
                     if (!this.targetElem) return;
 
                     if (vbgInstance) this.setVBGInstance(vbgInstance);
@@ -586,34 +594,52 @@
             }
 
             class VideoBackgroundGroup {
-                constructor(selector, factoryInstance) {
-                    this.elements = selector;
-                    if (this.elements instanceof Element) this.elements = [this.elements];
-                    if (typeof this.elements === 'string') this.elements = document.querySelectorAll(selector);
-                    if (!this.elements || !this.elements.length) return;
+                constructor(selector, videoBackgroundSelector, videoBackgroundFactoryInstance) {
+                    this.element = selector;
+                    if (typeof this.element === 'string') this.element = document.querySelector(selector);
+                    if (!this.element) return;
+                    this.elements = this.element.querySelectorAll(videoBackgroundSelector || '[data-vbg]');
+                    if (!this.elements.length) return;
 
-                    this.factoryInstance = factoryInstance;
+                    this.videoBackgroundFactoryInstance = videoBackgroundFactoryInstance;
                     this.stack = [];
                     this.map = new Map();
 
                     for (let i = 0; i < this.elements.length; i++) {
                         const element = this.elements[i];
-                        if (!element.hasAttribute('data-vbg-uid')) this.factoryInstance.add(element);
+                        if (!element.hasAttribute('data-vbg-uid') && this.videoBackgroundFactoryInstance) this.videoBackgroundFactoryInstance.add(element);
                         this.stack.push(element);
                         this.map.set(element, i);
                         
                         if (i === 0) {
                             this.current = 0;
                             this.currentElement = element;
-                            this.currentInstance = this.factoryInstance.get(element);
+                            if (this.videoBackgroundFactoryInstance) this.currentInstance = this.videoBackgroundFactoryInstance.get(element);
                         }
                         element.addEventListener('video-background-ended', this.onVideoEnded.bind(this));
                         element.addEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
                         element.addEventListener('video-background-pause', this.onVideoPause.bind(this));
+                        element.addEventListener('video-background-ready', this.onVideoReady.bind(this));
+                        element.addEventListener('video-background-state-change', this.setVideoBackgroundFactoryInstance.bind(this));
+                        element.addEventListener('video-background-time-update', this.setVideoBackgroundFactoryInstance.bind(this));
                     }
                 }
 
-                onVideoPause(event) {
+                setVideoBackgroundFactoryInstance(event) {
+                    if (this.videoBackgroundFactoryInstance) return;
+                    this.videoBackgroundFactoryInstance = event.detail.factoryInstance;
+                    if (!this.currentInstance) this.currentInstance = this.videoBackgroundFactoryInstance.get(this.currentElement);
+                }
+
+                onVideoReady(event) {
+                    if (this.stack[this.current] !== event.detail.element) return;
+                    this.setVideoBackgroundFactoryInstance(event);
+                    console.log('ready', event.detail.element, event.detail.currentState);
+                    if (event.detail.currentState !== 'playing') event.detail.play();
+                }
+
+                onVideoPause(event) {;
+                    this.setVideoBackgroundFactoryInstance(event);
                     const stackIndex = this.map.get(event.detail.element);
                     if (stackIndex === this.current) return;
                 }
@@ -621,7 +647,7 @@
                 levelSeekBars() {
                     for (let i = 0; i < this.stack.length; i++) {
                         if (i === this.current) continue;
-                        const seekBarElem = this.getSeekBar(this.factoryInstance.get(this.stack[i]));
+                        const seekBarElem = this.getSeekBar(this.videoBackgroundFactoryInstance.get(this.stack[i]));
                         if (!seekBarElem) continue;
                         if (i < this.current) {
                             this.setProgress(seekBarElem, 100);
@@ -656,9 +682,9 @@
                     const previous = this.current;
                     if (index >= this.stack.length) index = 0;
                     if (index < 0) index = this.stack.length - 1;
-                    const previousInstance = this.factoryInstance.get(this.stack[previous]);
+                    const previousInstance = this.videoBackgroundFactoryInstance.get(this.stack[previous]);
                     this.current = index;
-                    this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
+                    this.currentInstance = this.videoBackgroundFactoryInstance.get(this.stack[this.current]);
                     this.currentElement = this.stack[this.current];
                     
                     this.stack[previous].style.display = 'none';
@@ -670,47 +696,64 @@
                         this.currentInstance.seek(0);
                     }
 
-                    if (this.currentInstance.currentState !== 'playing') this.currentInstance.play();
+                    setTimeout(() => {
+                        if (this.currentInstance.currentState !== 'playing') this.currentInstance.play();
+                    }, 100);
                     if (previousInstance && previousInstance.currentState !== 'paused') previousInstance.pause();
 
                     setTimeout(this.levelSeekBars.bind(this), 100);
+
+                    if (index >= this.stack.length) this.dispatchEvent('video-background-group-forward-rewind');
+                    if (index < 0) this.dispatchEvent('video-background-group-backward-rewind');
+                }
+
+                dispatchEvent(name) {
+                    this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
                 }
 
                 onVideoEnded(event) {
                     if (event.detail.element !== this.currentElement) return;
-                    this.next()
+                    this.next();
                 }
 
                 next() {
                     this.setCurrent(this.current + 1);
+                    this.dispatchEvent('video-background-group-next');
                 }
 
                 prev() {
                     this.setCurrent(this.current - 1);
+                    this.dispatchEvent('video-background-group-previous');
                 }
 
                 unmute() {
                     for (let i = 0; i < this.stack.length; i++) {
-                        const instance = this.factoryInstance.get(this.stack[i]);
+                        const instance = this.videoBackgroundFactoryInstance.get(this.stack[i]);
                         if (!instance) continue;
                         instance.unmute();
                     }
+
+                    this.dispatchEvent('video-background-group-umnute');
                 }
 
                 mute() {
                     for (let i = 0; i < this.stack.length; i++) {
-                        const instance = this.factoryInstance.get(this.stack[i]);
+                        const instance = this.videoBackgroundFactoryInstance.get(this.stack[i]);
                         if (!instance) continue;
                         instance.mute();
                     }
+
+                    this.dispatchEvent('video-background-group-mute');
                 }
 
                 pause() {
                     this.currentInstance.pause();
+                    this.dispatchEvent('video-background-group-previous');
                 }
 
                 play() {
                     this.currentInstance.play();
+                    this.dispatchEvent('video-background-group-previous');
                 }
             }
 
@@ -818,8 +861,8 @@
                 onReady(event) {
                     this.vbgInstance = event.detail;
                     if (this.vbgInstance.params.muted) {
-                    this.active = true;
-                    this.element.setAttribute('aria-checked', this.active);
+                        this.active = true;
+                        this.element.setAttribute('aria-checked', this.active);
                     }
                 }
 
