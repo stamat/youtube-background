@@ -8,6 +8,16 @@
       "format": "iife",
       "target": "es2019"
     }
+  },
+  {
+    "in": "src/experimental.js",
+    "out": "youtube-background-experimental.js",
+    "options": {
+      "sourcemap": true,
+      "minify": true,
+      "format": "iife",
+      "target": "es2019"
+    }
   }],
   "banner": "/* {{ name }} v{{ version }} | {{ homepage }} | {{ license }} License */",
   "serve" : {

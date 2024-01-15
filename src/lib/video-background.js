@@ -163,7 +163,7 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   softPause() {
-    if (!this.playing || !this.player || this.currentState === 'paused') return;
+    if (!this.player || this.currentState === 'paused') return;
     this.player.pause();
   }
 

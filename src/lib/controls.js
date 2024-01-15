@@ -4,11 +4,12 @@ export class SeekBar {
     this.lock = false;
     if (!element) return;
     this.element = element;
+    if (this.element.hasAttribute('data-target-uid')) return;
     this.progressElem = this.element.querySelector('.js-seek-bar-progress');
     this.inputElem = this.element.querySelector('.js-seek-bar');
     this.targetSelector = this.element.getAttribute('data-target');
-    if (!this.targetSelector) return;
-    this.targetElem = document.querySelector(this.targetSelector);
+    if (this.targetSelector) this.targetElem = document.querySelector(this.targetSelector);
+    if (!this.targetSelector && vbgInstance) this.targetElem = vbgInstance.element;
     if (!this.targetElem) return;
 
     if (vbgInstance) this.setVBGInstance(vbgInstance);
@@ -51,61 +52,77 @@ export class SeekBar {
     this.lock = false;
     requestAnimationFrame(() => this.setProgress(event.target.value));
     if (this.vbgInstance) {
-        this.vbgInstance.seek(event.target.value);
-        if (this.vbgInstance.playerElement && this.vbgInstance.playerElement.style.opacity === 0) this.vbgInstance.playerElement.style.opacity = 1;
+      this.vbgInstance.seek(event.target.value);
+      if (this.vbgInstance.playerElement && this.vbgInstance.playerElement.style.opacity === 0) this.vbgInstance.playerElement.style.opacity = 1;
     }
-  }
+}
 
   setProgress(value) {
-      if (this.progressElem) this.progressElem.value = value;
-      if (this.inputElem) this.inputElem.value = value;
+    if (this.progressElem) this.progressElem.value = value;
+    if (this.inputElem) this.inputElem.value = value;
   }
 }
 
-class VideoBackgroundGroup {
-  constructor(selector, factoryInstance) {
-    this.elements = selector;
-    if (this.elements instanceof Element) this.elements = [this.elements];
-    if (typeof this.elements === 'string') this.elements = document.querySelectorAll(selector);
-    if (!this.elements || !this.elements.length) return;
+export class VideoBackgroundGroup {
+  constructor(selector, videoBackgroundSelector, videoBackgroundFactoryInstance) {
+    this.element = selector;
+    if (typeof this.element === 'string') this.element = document.querySelector(selector);
+    if (!this.element) return;
+    this.elements = this.element.querySelectorAll(videoBackgroundSelector || '[data-vbg]');
+    if (!this.elements.length) return;
 
-    this.factoryInstance = factoryInstance;
+    this.videoBackgroundFactoryInstance = videoBackgroundFactoryInstance;
     this.stack = [];
     this.map = new Map();
 
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
-      if (!element.hasAttribute('data-vbg-uid')) this.factoryInstance.add(element);
+      if (!element.hasAttribute('data-vbg-uid') && this.videoBackgroundFactoryInstance) this.videoBackgroundFactoryInstance.add(element);
       this.stack.push(element);
       this.map.set(element, i);
       
       if (i === 0) {
         this.current = 0;
         this.currentElement = element;
-        this.currentInstance = this.factoryInstance.get(element);
+        if (this.videoBackgroundFactoryInstance) this.currentInstance = this.videoBackgroundFactoryInstance.get(element);
       }
       element.addEventListener('video-background-ended', this.onVideoEnded.bind(this));
       element.addEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
       element.addEventListener('video-background-pause', this.onVideoPause.bind(this));
+      element.addEventListener('video-background-ready', this.onVideoReady.bind(this));
+      element.addEventListener('video-background-state-change', this.setVideoBackgroundFactoryInstance.bind(this));
+      element.addEventListener('video-background-time-update', this.setVideoBackgroundFactoryInstance.bind(this));
     }
   }
 
-  onVideoPause(event) {
+  setVideoBackgroundFactoryInstance(event) {
+    if (this.videoBackgroundFactoryInstance) return;
+    this.videoBackgroundFactoryInstance = event.detail.factoryInstance;
+    if (!this.currentInstance) this.currentInstance = this.videoBackgroundFactoryInstance.get(this.currentElement);
+  }
+
+  onVideoReady(event) {
+    if (this.stack[this.current] !== event.detail.element) return;
+    this.setVideoBackgroundFactoryInstance(event);
+    console.log('ready', event.detail.element, event.detail.currentState);
+    if (event.detail.currentState !== 'playing') event.detail.play();
+  }
+
+  onVideoPause(event) {;
+    this.setVideoBackgroundFactoryInstance(event);
     const stackIndex = this.map.get(event.detail.element);
     if (stackIndex === this.current) return;
-
-    this.levelSeekBars();
   }
 
   levelSeekBars() {
     for (let i = 0; i < this.stack.length; i++) {
       if (i === this.current) continue;
-      const seekBarElem = this.getSeekBar(this.factoryInstance.get(this.stack[i]));
+      const seekBarElem = this.getSeekBar(this.videoBackgroundFactoryInstance.get(this.stack[i]));
       if (!seekBarElem) continue;
       if (i < this.current) {
-        requestAnimationFrame(() => this.setProgress(seekBarElem, 100));
+        this.setProgress(seekBarElem, 100);
       } else {
-        requestAnimationFrame(() => this.setProgress(seekBarElem, 0));
+        this.setProgress(seekBarElem, 0);
       }
     }
   }
@@ -135,65 +152,111 @@ class VideoBackgroundGroup {
     const previous = this.current;
     if (index >= this.stack.length) index = 0;
     if (index < 0) index = this.stack.length - 1;
+    const previousInstance = this.videoBackgroundFactoryInstance.get(this.stack[previous]);
     this.current = index;
-    this.currentInstance = this.factoryInstance.get(this.stack[this.current]);
+    this.currentInstance = this.videoBackgroundFactoryInstance.get(this.stack[this.current]);
     this.currentElement = this.stack[this.current];
     
     this.stack[previous].style.display = 'none';
     this.currentElement.style.display = 'block';
+
     if (!seek) {
-      const seekBarElem = this.getSeekBar(this.currentInstance);
-      if (seekBarElem) this.setProgress(seekBarElem, 0);
-      this.currentInstance.seek(0);
+        const seekBarElem = this.getSeekBar(this.currentInstance);
+        if (seekBarElem) this.setProgress(seekBarElem, 0);
+        this.currentInstance.seek(0);
     }
 
-    if (!this.currentInstance.playing) this.currentInstance.play();
+    setTimeout(() => {
+        if (this.currentInstance.currentState !== 'playing') this.currentInstance.play();
+    }, 100);
+    if (previousInstance && previousInstance.currentState !== 'paused') previousInstance.pause();
+
+    setTimeout(this.levelSeekBars.bind(this), 100);
+
+    if (index >= this.stack.length) this.dispatchEvent('video-background-group-forward-rewind');
+    if (index < 0) this.dispatchEvent('video-background-group-backward-rewind');
+  }
+
+  dispatchEvent(name) {
+    this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
   }
 
   onVideoEnded(event) {
     if (event.detail.element !== this.currentElement) return;
-    this.next()
+    this.next();
   }
 
   next() {
     this.setCurrent(this.current + 1);
+    this.dispatchEvent('video-background-group-next');
   }
 
   prev() {
     this.setCurrent(this.current - 1);
+    this.dispatchEvent('video-background-group-previous');
+  }
+
+  unmute() {
+    for (let i = 0; i < this.stack.length; i++) {
+      const instance = this.videoBackgroundFactoryInstance.get(this.stack[i]);
+      if (!instance) continue;
+      instance.unmute();
+    }
+
+    this.dispatchEvent('video-background-group-umnute');
+  }
+
+  mute() {
+    for (let i = 0; i < this.stack.length; i++) {
+      const instance = this.videoBackgroundFactoryInstance.get(this.stack[i]);
+      if (!instance) continue;
+      instance.mute();
+    }
+
+    this.dispatchEvent('video-background-group-mute');
+  }
+
+  pause() {
+    this.currentInstance.pause();
+    this.dispatchEvent('video-background-group-previous');
+  }
+
+  play() {
+    this.currentInstance.play();
+    this.dispatchEvent('video-background-group-previous');
   }
 }
 
 export class PlayToggle {
   constructor(playToggleElem, vbgInstance) {
-      if (!playToggleElem) return;
-      
-      this.element = playToggleElem;
-      this.targetSelector = this.element.getAttribute('data-target');
+    if (!playToggleElem) return;
+    
+    this.element = playToggleElem;
+    this.targetSelector = this.element.getAttribute('data-target');
 
-      if (!this.targetSelector) return;
-      this.active = false;
+    if (!this.targetSelector) return;
+    this.active = false;
 
-      if (this.element.hasAttribute('aria-checked')) {
-        this.active = this.element.getAttribute('aria-checked') === 'true';
-      } else {
-        this.element.setAttribute('aria-checked', this.active);
-      }
+    if (this.element.hasAttribute('aria-checked')) {
+      this.active = this.element.getAttribute('aria-checked') === 'true';
+    } else {
+      this.element.setAttribute('aria-checked', this.active);
+    }
 
-      this.element.setAttribute('role', 'switch');
+    this.element.setAttribute('role', 'switch');
 
-      this.targetElem = document.querySelector(this.targetSelector);
-      if (!this.targetElem) return;
+    this.targetElem = document.querySelector(this.targetSelector);
+    if (!this.targetElem) return;
 
-      if (vbgInstance) this.vbgInstance = vbgInstance;
+    if (vbgInstance) this.vbgInstance = vbgInstance;
 
-      this.targetElem.addEventListener('video-background-ready', this.onReady.bind(this));
-      this.targetElem.addEventListener('video-background-state-change', this.onStateChange.bind(this));
-      this.targetElem.addEventListener('video-background-play', this.onPlay.bind(this));
-      this.targetElem.addEventListener('video-background-pause', this.onPause.bind(this));
-      this.targetElem.addEventListener('video-background-destroyed', this.onDestroyed.bind(this));
+    this.targetElem.addEventListener('video-background-ready', this.onReady.bind(this));
+    this.targetElem.addEventListener('video-background-state-change', this.onStateChange.bind(this));
+    this.targetElem.addEventListener('video-background-play', this.onPlay.bind(this));
+    this.targetElem.addEventListener('video-background-pause', this.onPause.bind(this));
+    this.targetElem.addEventListener('video-background-destroyed', this.onDestroyed.bind(this));
 
-      this.element.addEventListener('click', this.onClick.bind(this));
+    this.element.addEventListener('click', this.onClick.bind(this));
   }
 
   onReady(event) {
@@ -245,9 +308,9 @@ export class MuteToggle {
       this.active = false;
 
       if (this.element.hasAttribute('aria-checked')) {
-        this.active = this.element.getAttribute('aria-checked') === 'true';
+          this.active = this.element.getAttribute('aria-checked') === 'true';
       } else {
-        this.element.setAttribute('aria-checked', this.active);
+          this.element.setAttribute('aria-checked', this.active);
       }
 
       this.element.setAttribute('role', 'switch');

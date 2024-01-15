@@ -657,7 +657,7 @@
       this.dispatchEvent("video-background-seeked");
     }
     softPause() {
-      if (!this.playing || !this.player || this.currentState === "paused")
+      if (!this.player || this.currentState === "paused")
         return;
       this.stopTimeUpdateTimer();
       this.player.pauseVideo();
@@ -874,7 +874,7 @@
       this.dispatchEvent("video-background-seeked");
     }
     softPause() {
-      if (!this.playing || !this.player || this.currentState === "paused")
+      if (!this.player || this.currentState === "paused")
         return;
       this.player.pause();
     }
@@ -1070,7 +1070,7 @@
       this.dispatchEvent("video-background-seeked");
     }
     softPause() {
-      if (!this.playing || !this.player || this.currentState === "paused")
+      if (!this.player || this.currentState === "paused")
         return;
       this.player.pause();
     }
