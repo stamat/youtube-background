@@ -1,549 +1,357 @@
 <!doctype html>
 <html class="no-js" lang="">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title>📺 Youtube Background</title>
-        <meta name="description" content="Simple script for embedding YouTube videos as cover background">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>📺 Youtube Background</title>
+    <meta name="description" content="Simple script for embedding YouTube videos as cover background">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link href="https://fonts.googleapis.com/css?family=Lato:400,700&display=swap" rel="stylesheet">
-		<script src="https://kit.fontawesome.com/228006f19a.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/228006f19a.js" crossorigin="anonymous"></script>
 
-        <style>
-            html, body {
-                font-family: 'Lato', sans-serif;
-                color: #1d1d1d;
-                padding: 0px;
-                margin: 0px;
-            }
+    <link href="style.css" rel="stylesheet">
 
-            .example-marquee {
-                position: relative;
-            }
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.youtube-background.js?v=1.1.2"></script>
+    <script type="text/javascript" src="youtube-background-experimental.js?v=1.1.2"></script>
+  </head>
+  <body>
+    <div class="container">
+      <main>
+        <div class="example-marquee vbg-group js-vbg-group">
+          <div id="vbg12" data-vbg-loop="false" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+          <div id="vbg13" data-vbg-autoplay="false" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+          <div id="vbg14" data-vbg-autoplay="false" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+          
+          <div class="content">
+            <div class="inner">
+              <h1>Group!</h1>
+              <button class="group-prev">Prev</button><button class="group-play">Play</button><button class="group-pause">Pause</button><button class="group-next">Next</button><br>
+              <button class="group-mute">Mute</button><button class="group-unmute">Unmute</button><br>
+              <button class="group-fullscreen">Fullscreen</button>
+            </div>
+          </div>
 
-            .content {
-                display: table;
-                width: 100%;
-                min-height: 100vh;
-                z-index: 1;
-                position: relative;
-            }
-
-            .content .inner {
-                display: table-cell;
-                vertical-align: middle;
-                text-align: center;
-                padding-left: 16px;
-                padding-right: 16px;
-            }
-
-            .content .inner h1,
-            .content .inner h2 {
-              color: white;
-              text-shadow: 0px 1px 3px rgba(0,0,0,0.5);
-            }
-
-            .content .inner h1 {
-              font-size: 62px;
-            }
-
-			.video-background-controls button {
-				font-size: 32px;
-				display: inline-block;
-				padding: 0px;
-				margin: 0px;
-				height: 32px;
-				width: 32px;
-				border-radius: 16px;
-				line-height: 32px;
-				border: none;
-				background: none;
-				appearance: none;
-				color: white;
-				filter: drop-shadow(0px 0px 1px black);
-				cursor: pointer;
-				opacity: 1;
-				transition: all 250ms ease-in-out;
-				margin-left: 10px;
-			}
-
-			.video-background-controls button:hover {
-				opacity: 0.5;
-			}
-
-            :root {
-                --seek-bar-thumb-color: #fff;
-                --seek-bar-progress-background: #fff;
-                --seek-bar-background: rgba(255, 255, 255, 0.4);
-            }
-
-            .seek-bar-wrapper {
-                height: 6px;
-                background: var(--seek-bar-background);
-                position: relative;
-            }
-
-            .seek-bar-progress {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-                overflow: hidden;
-                background: transparent !important;
-                border: 0;
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                left: 0;
-                z-index: 1;
-            }
-
-            .seek-bar-progress::-webkit-progress-bar {
-                background: transparent;
-            }
-
-            .seek-bar-progress::-webkit-progress-value {
-                background: var(--seek-bar-progress-background);
-            }
-
-            .seek-bar-progress::-moz-progress-bar {
-                background: var(--seek-bar-progress-background);
-            }
-
-            .seek-bar {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-                position: relative;
-                top: calc(50% - 10px);
-                z-index: 1;
-                display: block;
-                width: 100%;
-                height: 20px;
-                margin: 0;
-                cursor: pointer;
-                background: transparent;
-            }
-
-            .seek-bar {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-                position: relative;
-                top: calc(50% - 10px);
-                z-index: 1;
-                display: block;
-                width: 100%;
-                height: 20px;
-                margin: 0;
-                cursor: pointer;
-                background: transparent;
-            }
-
-            .seek-bar::-webkit-slider-runnable-track {
-                -webkit-appearance: none;
-                appearance: none;
-                height: 6px;
-                cursor: pointer;
-                background: transparent;
-                border: 0;
-                border-radius: 0;
-            }
-
-            .seek-bar::-moz-range-track {
-                -moz-appearance: none;
-                appearance: none;
-                width: 100%;
-                height: 6px;
-                cursor: pointer;
-                background: transparent;
-                border: 0;
-                border-radius: 0;
-            }
-
-            .seek-bar::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                appearance: none;
-                width: 12px;
-                height: 12px;
-                margin-top: 3px;
-                cursor: pointer;
-                background: var(--seek-bar-thumb-color);
-                border: 0;
-                border-radius: 8px;
-                transform: translateY(-50%);
-                transition: opacity 0.4s ease-in-out;
-            }
-
-            .seek-bar::-moz-range-progress {
-                margin-top: 0;
-                background: transparent;
-                border: 0;
-            }
-
-            .seek-bar::-moz-range-thumb {
-                -moz-appearance: none;
-                appearance: none;
-                width: 16px;
-                height: 16px;
-                margin-top: 0;
-                cursor: pointer;
-                background: var(--seek-bar-thumb-color);
-                border: 0;
-                border-radius: 8px;
-                transition: opacity 0.4s ease-in-out;
-            }
-
-            .seek-bar-wrapper ::-webkit-slider-thumb {
-                opacity: 0;
-            }
-
-            .seek-bar-wrapper ::-moz-range-thumb {
-                opacity: 0;
-            }
-
-            .seek-bar-wrapper:hover .seek-bar:not([disabled])::-webkit-slider-thumb {
-                opacity: 1;
-            }
-
-            .seek-bar-wrapper:hover .seek-bar:not([disabled])::-moz-range-thumb {
-                opacity: 1;
-            }
-        </style>
-
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-        <script type="text/javascript" src="jquery.youtube-background.js?v=1.1.2"></script>
-        <script type="text/javascript" src="youtube-background-experimental.js?v=1.1.2"></script>
-    </head>
-    <body>
-        <div class="container">
-            <main>
-                <div class="example-marquee vbg-group js-vbg-group">
-                    <div id="vbg12" data-vbg-loop="false" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    <div id="vbg13" data-vbg-autoplay="false" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    <div id="vbg14" data-vbg-autoplay="false" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    
-                    <div class="content">
-                        <div class="inner">
-                            <h1>Group!</h1>
-                            <button class="group-prev">Prev</button><button class="group-play">Play</button><button class="group-pause">Pause</button><button class="group-next">Next</button><br>
-                            <button class="group-mute">Mute</button><button class="group-unmute">Unmute</button><br>
-                            <button class="group-fullscreen">Fullscreen</button>
-                        </div>
-                    </div>
-
-                    <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
-                        <div data-target="#vbg12" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                            <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                            <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                        </div>
-                        <div data-target="#vbg13" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                            <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                            <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                        </div>
-                        <div data-target="#vbg14" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                            <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                            <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="example-marquee">
-                    <div id="vbg" data-vbg-mobile="true" data-vbg-load-background="true" data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>Cake in a frying pan? Impossible!</h1>
-                            <button class="vbg-destroy" data-selector="#vbg">Destroy</button>
-                            <button class="vbg-initialize" data-selector="#vbg" data-src="https://www.youtube.com/watch?v=LC5rEhxGqT4">Initialize</button>
-
-                            <div data-target="#vbg" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-				<div class="example-marquee">
-                    <div id="vbg1" data-vbg-play-button="true" data-vbg-start-at="10" data-vbg-end-at="16" data-vbg="https://www.youtube.com/watch?v=MgDZBqTuUuE" data-vbg-load-background="true"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>Click the button to pause.</h1>
-                            <h2>P.S. it also starts 10s into the video to skip the video intro and ends 16s into the video for shorter loops</h2>
-
-                            <div data-target="#vbg1" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="example-marquee">
-                    <div id="vbg2" data-vbg-end-at="1.25" data-vbg-mute-button="true" data-vbg-play-button="true" data-vbg-resolution="4:3" data-vbg="https://www.youtube.com/watch?v=27mt_xpeZTw"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>Mute / Unmute.</h1>
-                            <button class="src-change-button" data-src="https://www.youtube.com/watch?v=UIyoNvInzCI">Change Source</button>
-
-                            <div data-target="#vbg2" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-				<div class="example-marquee">
-                    <div id="vbg3" data-vbg-mute-button="true" data-vbg-play-button="true" data-vbg-resolution="4:3" data-vbg-volume="0.15" data-vbg="https://www.youtube.com/watch?v=DLzxrzFCyOs
-					"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>Mute / Unmute.</h1>
-                            <button class="toggle-play-button" data-target="#vbg3">Toggle Play</button>
-                            <button class="toggle-mute-button" data-target="#vbg3">Toggle Mute</button>
-
-                            <div data-target="#vbg3" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="example-marquee">
-                    <div id="vbg4" data-vbg="https://vimeo.com/137250145" data-vbg-play-button="true" data-vbg-mute-button="true"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>VIMEO!</h1>
-                            <button class="src-change-button" data-src="https://vimeo.com/64289386">Change Source</button>
-
-                            <div data-target="#vbg4" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="example-marquee">
-                    <div id="vbg5" data-vbg-resolution="4:1" data-vbg="https://vimeo.com/101926580" data-vbg-play-button="true" data-vbg-mute-button="true" data-vbg-always-play="true" data-vbg-volume="0.15" data-vbg-load-background="true"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>VIMEO!</h1>
-
-                            <div data-target="#vbg5" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="example-marquee">
-                    <div id="vbg6" data-vbg="https://vimeo.com/1084537" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg-play-button="true" data-vbg-mute-button="true" data-vbg-poster="https://i.imgur.com/9lF2ewQ.png"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>VIMEO CONTROLS!</h1>
-
-                            <div data-target="#vbg6" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="example-marquee">
-                    <div id="vbg7" data-vbg="https://download.samplelib.com/mp4/sample-5s.mp4" data-vbg-play-button="true" data-vbg-mute-button="true"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>HTML5 VIDEO!</h1>
-                            <button class="src-change-button" data-src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">Change Source</button>
-
-                            <div data-target="#vbg7" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="example-marquee">
-                    <div id="vbg8" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" data-vbg-play-button="true" data-vbg-mute-button="true"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>HTML5 VIDEO!</h1>
-
-                            <div data-target="#vbg8" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
-                                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-<!--
-                <div class="example-marquee vbg-group">
-                    <div id="vbg9" data-vbg-loop="false" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    <div id="vbg10" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    <div id="vbg11" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-                    <div class="content">
-                        <div class="inner">
-                            <h1>Group!</h1>
-                            <button class="group-prev">Prev</button><button class="group-next">Next</button>
-
-                            <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
-                                <div data-target="#vbg9" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                                </div>
-                                <div data-target="#vbg10" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                                </div>
-                                <div data-target="#vbg11" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
-                                    <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
-                                    <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
--->
-            </main>
+          <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
+            <div data-target="#vbg12" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+              <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+              <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+            </div>
+            <div data-target="#vbg13" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+              <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+              <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+            </div>
+            <div data-target="#vbg14" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+              <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+              <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+            </div>
+          </div>
         </div>
-        <script src="http://localhost:35729/livereload.js?snipver=1"></script>
-        <script type="text/javascript">
-            jQuery(document).ready(function() {
-      			
-                const groups = document.querySelectorAll('.vbg-group');
-                for (let i = 0; i < groups.length; i++) {
-                    const group = groups[i];
-                    const elements = group.querySelectorAll('[data-vbg]');
 
-                    for (let j = 0; j < elements.length; j++) {
-                        elements[j].addEventListener('video-background-state-change', function(event) {
-                            const id = event.target.getAttribute('id');
-                            console.log(id, event.detail.type, event.detail.currentState);
-                        });
+        <div class="example-marquee">
+          <div id="vbg" data-vbg-mobile="true" data-vbg-load-background="true" data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>Cake in a frying pan? Impossible!</h1>
+              <button class="vbg-destroy" data-selector="#vbg">Destroy</button>
+              <button class="vbg-initialize" data-selector="#vbg" data-src="https://www.youtube.com/watch?v=LC5rEhxGqT4">Initialize</button>
 
-                        elements[j].addEventListener('video-background-ready', function(event) {
-                            const id = event.target.getAttribute('id');
-                            console.log('ready', id, event.detail.type, event.detail.currentState);
-                        });
-                    }
-                }
+              <div data-target="#vbg" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
 
-                jQuery('[data-vbg]').youtube_background();
+        <div class="example-marquee">
+          <div id="vbg1" data-vbg-play-button="true" data-vbg-start-at="10" data-vbg-end-at="16" data-vbg="https://www.youtube.com/watch?v=MgDZBqTuUuE" data-vbg-load-background="true"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>Click the button to pause.</h1>
+              <h2>P.S. it also starts 10s into the video to skip the video intro and ends 16s into the video for shorter loops</h2>
 
-                for (let i = 0; i < groups.length; i++) {
-                    const group = groups[i];
-                    const vbgroup = new VideoBackgroundGroup('.js-vbg-group');
+              <div data-target="#vbg1" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
 
-                    const groupPrev = group.querySelector('.group-prev');
-                    const groupNext = group.querySelector('.group-next');
-                    const groupPlay = group.querySelector('.group-play');
-                    const groupPause = group.querySelector('.group-pause');
-                    const groupMute = group.querySelector('.group-mute');
-                    const groupUnmute = group.querySelector('.group-unmute');
-                    const groupFullscreen = group.querySelector('.group-fullscreen');
+        <div class="example-marquee">
+          <div id="vbg2" data-vbg-end-at="1.25" data-vbg-mute-button="true" data-vbg-play-button="true" data-vbg-resolution="4:3" data-vbg="https://www.youtube.com/watch?v=27mt_xpeZTw"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>Mute / Unmute.</h1>
+              <button class="src-change-button" data-src="https://www.youtube.com/watch?v=UIyoNvInzCI">Change Source</button>
 
-                    groupPrev.addEventListener('click', function() {
-                        vbgroup.prev();
-                    }) 
+              <div data-target="#vbg2" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
 
-                    groupNext.addEventListener('click', function() {
-                        vbgroup.next();
-                    })
+        <div class="example-marquee">
+          <div id="vbg3" data-vbg-mute-button="true" data-vbg-play-button="true" data-vbg-resolution="4:3" data-vbg-volume="0.15" data-vbg="https://www.youtube.com/watch?v=DLzxrzFCyOs
+"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>Mute / Unmute.</h1>
+              <button class="toggle-play-button" data-target="#vbg3">Toggle Play</button>
+              <button class="toggle-mute-button" data-target="#vbg3">Toggle Mute</button>
 
-                    groupPlay.addEventListener('click', function() {
-                        vbgroup.play();
-                    })
+              <div data-target="#vbg3" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                  <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                  <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
 
-                    groupPause.addEventListener('click', function() {
-                        vbgroup.pause();
-                    })
+        <div class="example-marquee">
+          <div id="vbg4" data-vbg="https://vimeo.com/137250145" data-vbg-play-button="true" data-vbg-mute-button="true"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>VIMEO!</h1>
+              <button class="src-change-button" data-src="https://vimeo.com/64289386">Change Source</button>
 
-                    groupMute.addEventListener('click', function() {
-                        vbgroup.mute();
-                    })
+              <div data-target="#vbg4" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
 
-                    groupUnmute.addEventListener('click', function() {
-                        vbgroup.unmute();
-                    })
+        <div class="example-marquee">
+          <div id="vbg5" data-vbg-resolution="4:1" data-vbg="https://vimeo.com/101926580" data-vbg-play-button="true" data-vbg-mute-button="true" data-vbg-always-play="true" data-vbg-volume="0.15" data-vbg-load-background="true"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>VIMEO!</h1>
 
-                    groupFullscreen.addEventListener('click', function() {
-                        console.log(vbgroup.currentElement.closest('.js-vbg-group'));
-                        vbgroup.currentElement.closest('.js-vbg-group').webkitRequestFullscreen();
-                    })
-                }
+              <div data-target="#vbg5" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-marquee">
+          <div id="vbg6" data-vbg="https://vimeo.com/1084537" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg-play-button="true" data-vbg-mute-button="true" data-vbg-poster="https://i.imgur.com/9lF2ewQ.png"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>VIMEO CONTROLS!</h1>
+
+              <div data-target="#vbg6" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-marquee">
+          <div id="vbg7" data-vbg="https://download.samplelib.com/mp4/sample-5s.mp4" data-vbg-play-button="true" data-vbg-mute-button="true"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>HTML5 VIDEO!</h1>
+              <button class="src-change-button" data-src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">Change Source</button>
+
+              <div data-target="#vbg7" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-marquee">
+          <div id="vbg8" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" data-vbg-play-button="true" data-vbg-mute-button="true"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>HTML5 VIDEO!</h1>
+
+              <div data-target="#vbg8" class="seek-bar-wrapper" style="width: calc(100% - 32px); position: absolute; bottom: 16px; left: 16px;">
+                <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+              </div>
+            </div>
+          </div>
+        </div>
+<!--
+        <div class="example-marquee vbg-group">
+          <div id="vbg9" data-vbg-loop="false" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+          <div id="vbg10" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://vimeo.com/137250145" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+          <div id="vbg11" data-vbg-loop="false" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
+          <div class="content">
+            <div class="inner">
+              <h1>Group!</h1>
+              <button class="group-prev">Prev</button><button class="group-next">Next</button>
+
+              <div class="seek-bars" style="width: calc(100% - 24px); position: absolute; bottom: 16px; left: 12px; display: flex; flex-flow: row nowrap;">
+                <div data-target="#vbg9" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                  <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                  <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                </div>
+                <div data-target="#vbg10" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                  <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                  <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                </div>
+                <div data-target="#vbg11" class="seek-bar-wrapper js-seek-bar-wrap" style="width: 100%; margin: 0 4px;">
+                  <progress class="seek-bar-progress js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+                  <input type="range" value="0" min="0" max="100" step="any" aria-label="Seek" class="seek-bar js-seek-bar">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+-->
+      </main>
+    </div>
+    <script src="http://localhost:35729/livereload.js?snipver=1"></script>
+    <script type="text/javascript">
+      jQuery(document).ready(function() {
+      
+        const groups = document.querySelectorAll('.vbg-group');
+        for (let i = 0; i < groups.length; i++) {
+          const group = groups[i];
+          const elements = group.querySelectorAll('[data-vbg]');
+
+          for (let j = 0; j < elements.length; j++) {
+            elements[j].addEventListener('video-background-state-change', function(event) {
+              const id = event.target.getAttribute('id');
+              console.log(id, event.detail.type, event.detail.currentState);
             });
 
-            const vbgs = document.querySelectorAll('[data-vbg]');
-            for (let i = 0; i < vbgs.length; i++) {
-                //vbgs[i].addEventListener('video-background-state-change', function(event) {
-                    //const id = event.target.getAttribute('id');
-                    //console.log(id, event.detail.type, event.detail.currentState);
-                //});
+            elements[j].addEventListener('video-background-ready', function(event) {
+              const id = event.target.getAttribute('id');
+              console.log('ready', id, event.detail.type, event.detail.currentState);
+            });
+          }
+        }
 
-                /*
-                vbgs[i].addEventListener('video-background-time-update', function(event) {
-                    const id = event.target.getAttribute('id');
-                    console.log(id, event.detail.type, event.detail.percentComplete);
-                });
-                */
-            }
+        jQuery('[data-vbg]').youtube_background();
 
-            const srcChangeButtons = document.querySelectorAll('.src-change-button');
+        for (let i = 0; i < groups.length; i++) {
+          const group = groups[i];
+          const vbgroup = new VideoBackgroundGroup('.js-vbg-group');
 
-            for (let i = 0; i < srcChangeButtons.length; i++) {
-                srcChangeButtons[i].addEventListener('click', function(event) {
-                    const target = event.target;
-                    const src = target.getAttribute('data-src');
-                    const vbgElem = target.closest('.example-marquee').querySelector('[data-vbg]');
-                    if (!vbgElem) return;
-                    const uid = vbgElem.getAttribute('data-vbg-uid');
-                    if (!uid) return;
+          const groupPrev = group.querySelector('.group-prev');
+          const groupNext = group.querySelector('.group-next');
+          const groupPlay = group.querySelector('.group-play');
+          const groupPause = group.querySelector('.group-pause');
+          const groupMute = group.querySelector('.group-mute');
+          const groupUnmute = group.querySelector('.group-unmute');
+          const groupFullscreen = group.querySelector('.group-fullscreen');
 
-                    window.VIDEO_BACKGROUNDS.index[uid].setSource(src);
-                })
-            }
+          groupPrev.addEventListener('click', function() {
+            vbgroup.prev();
+          }) 
 
-            const destroyBtns = document.querySelectorAll('.vbg-destroy');
-            for (let i = 0; i < destroyBtns.length; i++) {
-                destroyBtns[i].addEventListener('click', function(event) {
-                    const target = event.target;
-                    const selector = target.getAttribute('data-selector');
-                    const vbgElem = document.querySelector(selector);
-                    window.VIDEO_BACKGROUNDS.destroy(vbgElem);
-                })
-            }
+          groupNext.addEventListener('click', function() {
+            vbgroup.next();
+          })
 
-            const initBtns = document.querySelectorAll('.vbg-initialize');
-            for (let i = 0; i < initBtns.length; i++) {
-                initBtns[i].addEventListener('click', function(event) {
-                    const target = event.target;
-                    const selector = target.getAttribute('data-selector');
-                    const src = target.getAttribute('data-src');
-                    const vbgElem = document.querySelector(selector);
+          groupPlay.addEventListener('click', function() {
+            vbgroup.play();
+          })
 
-                    if (!vbgElem) return;
-                    if (vbgElem.getAttribute('data-vbg-uid')) window.VIDEO_BACKGROUNDS.destroy(vbgElem);
+          groupPause.addEventListener('click', function() {
+            vbgroup.pause();
+          })
 
-                    if (src) {
-                        vbgElem.setAttribute('data-vbg', src);
-                    }
-                    window.VIDEO_BACKGROUNDS.add(vbgElem);
-                })
-            }
+          groupMute.addEventListener('click', function() {
+            vbgroup.mute();
+          })
 
-            const seekInputs = document.querySelectorAll('.seek-bar-wrapper');
-            for (let i = 0; i < seekInputs.length; i++) {
-                new SeekBar(seekInputs[i]);
-            }
+          groupUnmute.addEventListener('click', function() {
+            vbgroup.unmute();
+          })
 
-            const playToggle = document.querySelectorAll('.toggle-play-button');
-            for (let i = 0; i < playToggle.length; i++) {
-               new PlayToggle(playToggle[i]);
-            }
+          groupFullscreen.addEventListener('click', function() {
+            console.log(vbgroup.currentElement.closest('.js-vbg-group'));
+            vbgroup.currentElement.closest('.js-vbg-group').webkitRequestFullscreen();
+          })
+        }
+      });
 
-            const muteToggle = document.querySelectorAll('.toggle-mute-button');
-            for (let i = 0; i < muteToggle.length; i++) {
-                new MuteToggle(muteToggle[i]);
-            }
-        </script>
-    </body>
+      const vbgs = document.querySelectorAll('[data-vbg]');
+      //for (let i = 0; i < vbgs.length; i++) {
+        //vbgs[i].addEventListener('video-background-state-change', function(event) {
+          //const id = event.target.getAttribute('id');
+          //console.log(id, event.detail.type, event.detail.currentState);
+        //});
+
+        /*
+        vbgs[i].addEventListener('video-background-time-update', function(event) {
+          const id = event.target.getAttribute('id');
+          console.log(id, event.detail.type, event.detail.percentComplete);
+        });
+        */
+      //}
+
+      const srcChangeButtons = document.querySelectorAll('.src-change-button');
+
+      for (let i = 0; i < srcChangeButtons.length; i++) {
+        srcChangeButtons[i].addEventListener('click', function(event) {
+          const target = event.target;
+          const src = target.getAttribute('data-src');
+          const vbgElem = target.closest('.example-marquee').querySelector('[data-vbg]');
+          if (!vbgElem) return;
+          const uid = vbgElem.getAttribute('data-vbg-uid');
+          if (!uid) return;
+
+          window.VIDEO_BACKGROUNDS.index[uid].setSource(src);
+        })
+      }
+
+      const destroyBtns = document.querySelectorAll('.vbg-destroy');
+      for (let i = 0; i < destroyBtns.length; i++) {
+        destroyBtns[i].addEventListener('click', function(event) {
+          const target = event.target;
+          const selector = target.getAttribute('data-selector');
+          const vbgElem = document.querySelector(selector);
+          window.VIDEO_BACKGROUNDS.destroy(vbgElem);
+        })
+      }
+
+      const initBtns = document.querySelectorAll('.vbg-initialize');
+      for (let i = 0; i < initBtns.length; i++) {
+        initBtns[i].addEventListener('click', function(event) {
+          const target = event.target;
+          const selector = target.getAttribute('data-selector');
+          const src = target.getAttribute('data-src');
+          const vbgElem = document.querySelector(selector);
+
+          if (!vbgElem) return;
+          if (vbgElem.getAttribute('data-vbg-uid')) window.VIDEO_BACKGROUNDS.destroy(vbgElem);
+
+          if (src) {
+            vbgElem.setAttribute('data-vbg', src);
+          }
+          window.VIDEO_BACKGROUNDS.add(vbgElem);
+        })
+      }
+
+      const seekInputs = document.querySelectorAll('.seek-bar-wrapper');
+      for (let i = 0; i < seekInputs.length; i++) {
+        new SeekBar(seekInputs[i]);
+      }
+
+      const playToggle = document.querySelectorAll('.toggle-play-button');
+      for (let i = 0; i < playToggle.length; i++) {
+        new PlayToggle(playToggle[i]);
+      }
+
+      const muteToggle = document.querySelectorAll('.toggle-mute-button');
+      for (let i = 0; i < muteToggle.length; i++) {
+        new MuteToggle(muteToggle[i]);
+      }
+    </script>
+  </body>
 </html>
