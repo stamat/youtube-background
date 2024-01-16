@@ -24,7 +24,7 @@ export class VideoBackgrounds {
           if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
             self.index[uid].isIntersecting = true;
             try {
-              if (self.index[uid].player && self.index[uid].params.autoplay) self.index[uid].softPlay();
+              if (self.index[uid].player && !self.index[uid].paused) self.index[uid].softPlay();
             } catch (e) {
               // console.log(e);
             }

@@ -109,7 +109,6 @@
       if (this.stack[this.current] !== event.detail.element)
         return;
       this.setVideoBackgroundFactoryInstance(event);
-      console.log("ready", event.detail.element, event.detail.currentState);
       if (event.detail.currentState !== "playing")
         event.detail.play();
     }

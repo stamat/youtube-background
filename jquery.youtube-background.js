@@ -198,7 +198,7 @@
       this.element.setAttribute("data-vbg-uid", uid);
       this.buttons = {};
       this.isIntersecting = false;
-      this.playing = false;
+      this.paused = false;
       this.muted = false;
       this.currentState = "notstarted";
       this.initialPlay = false;
@@ -234,7 +234,6 @@
         this.params["play-button"] = this.params.pause;
       }
       this.params.resolution_mod = parseResolutionString(this.params.resolution);
-      this.playing = false;
       this.muted = this.params.muted;
       this.volume = this.params.volume;
       this.currentTime = this.params["start-at"] || 0;
@@ -250,9 +249,9 @@
           name: "playing",
           className: "play-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: !this.params.autoplay,
+          initialState: !this.paused,
           stateClassName: "paused",
-          condition_parameter: "autoplay",
+          condition_parameter: "paused",
           stateChildClassNames: ["fa-pause-circle", "fa-play-circle"],
           actions: ["play", "pause"]
         });
@@ -365,7 +364,7 @@
     }
     loadBackground(id) {
       if (!this.params["load-background"])
-        ;
+        return;
       if (!id)
         return;
       if (this.type === "youtube")
@@ -431,14 +430,15 @@
         return;
       if (!this.is_mobile && this.params.mobile)
         return;
-      document.addEventListener("touchstart", () => {
+      const forceAutoplay = function() {
         if (!this.initialPlay && this.params.autoplay && this.params.muted) {
           this.softPlay();
           if (!this.isIntersecting && !this.params["always-play"]) {
             this.softPause();
           }
         }
-      }, { once: true });
+      };
+      document.addEventListener("touchstart", forceAutoplay.bind(this), { once: true });
     }
     parseProperties(params, defaults, element, attr_prefix) {
       let res_params = {};
@@ -670,13 +670,13 @@
     play() {
       if (!this.player)
         return;
-      this.playing = true;
+      this.paused = false;
       this.player.playVideo();
     }
     pause() {
       if (!this.player)
         return;
-      this.playing = false;
+      this.paused = true;
       this.stopTimeUpdateTimer();
       this.player.pauseVideo();
     }
@@ -886,13 +886,13 @@
     play() {
       if (!this.player)
         return;
-      this.playing = true;
+      this.paused = false;
       this.player.play();
     }
     pause() {
       if (!this.player)
         return;
-      this.playing = false;
+      this.paused = true;
       this.player.pause();
     }
     unmute() {
@@ -1082,13 +1082,13 @@
     play() {
       if (!this.player)
         return;
-      this.playing = true;
+      this.paused = false;
       this.player.play();
     }
     pause() {
       if (!this.player)
         return;
-      this.playing = false;
+      this.paused = true;
       this.player.pause();
     }
     unmute() {
@@ -1141,7 +1141,7 @@
             if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
               self.index[uid].isIntersecting = true;
               try {
-                if (self.index[uid].player && self.index[uid].params.autoplay)
+                if (self.index[uid].player && !self.index[uid].paused)
                   self.index[uid].softPlay();
               } catch (e) {
               }

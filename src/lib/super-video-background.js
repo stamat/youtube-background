@@ -1,5 +1,5 @@
 import { generateActionButton } from './buttons.js';
-import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed } from 'book-of-spells';
+import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed, transformDashToCamelCase } from 'book-of-spells';
 
 export class SuperVideoBackground {
   constructor(elem, params, id, uid, type, factoryInstance) {
@@ -17,7 +17,7 @@ export class SuperVideoBackground {
     this.buttons = {};
     this.isIntersecting = false;
 
-    this.playing = false;
+    this.paused = false; // user requested pause. used for blocking intersection softPlay
     this.muted = false;
     this.currentState = 'notstarted';
 
@@ -59,7 +59,7 @@ export class SuperVideoBackground {
     }
 
     this.params.resolution_mod = parseResolutionString(this.params.resolution);
-    this.playing = false;
+
     this.muted = this.params.muted;
 
     this.volume = this.params.volume;
@@ -78,9 +78,9 @@ export class SuperVideoBackground {
         name: 'playing',
         className: 'play-toggle',
         innerHtml: '<i class="fa"></i>',
-        initialState: !this.params.autoplay,
+        initialState: !this.paused,
         stateClassName: 'paused',
-        condition_parameter: 'autoplay',
+        condition_parameter: 'paused',
         stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
         actions: ['play', 'pause']
       });
@@ -201,7 +201,7 @@ export class SuperVideoBackground {
   }
 
   loadBackground(id) {
-    if (!this.params['load-background']);
+    if (!this.params['load-background']) return;
     if (!id) return;
     if (this.type === 'youtube') this.element.style['background-image'] = `url(https://img.youtube.com/vi/${id}/hqdefault.jpg)`;
     if (this.type === 'vimeo') this.element.style['background-image'] = `url(https://vumbnail.com/${id}.jpg)`;
@@ -265,7 +265,8 @@ export class SuperVideoBackground {
   mobileLowBatteryAutoplayHack() {
     if (!this.params['force-on-low-battery']) return;
     if (!this.is_mobile && this.params.mobile) return;
-    document.addEventListener('touchstart', () => {
+
+    const forceAutoplay = function() {
       if (!this.initialPlay && this.params.autoplay && this.params.muted) {
         this.softPlay();
 
@@ -273,7 +274,9 @@ export class SuperVideoBackground {
           this.softPause();
         }
       }
-    }, { once: true });
+    }
+    
+    document.addEventListener('touchstart', forceAutoplay.bind(this), { once: true });
   }
 
   parseProperties(params, defaults, element, attr_prefix) {

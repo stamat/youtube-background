@@ -229,14 +229,14 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   play() {
     if (!this.player) return;
-    this.playing = true;
+    this.paused = false;
   
     this.player.playVideo();
   }
 
   pause() {
     if (!this.player) return;
-    this.playing = false;
+    this.paused = true;
     this.stopTimeUpdateTimer();
     this.player.pauseVideo();
   }
