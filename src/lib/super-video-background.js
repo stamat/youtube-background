@@ -1,5 +1,5 @@
 import { generateActionButton } from './buttons.js';
-import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed, transformDashToCamelCase } from 'book-of-spells';
+import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed } from 'book-of-spells';
 
 export class SuperVideoBackground {
   constructor(elem, params, id, uid, type, factoryInstance) {
@@ -167,7 +167,7 @@ export class SuperVideoBackground {
   
     if (this.params['load-background'] || this.params['poster']) {
       this.loadBackground(this.id);
-      if (this.params['poster']) wrapper_styles['background-image'] = this.params['poster'];
+      if (this.params['poster']) wrapper_styles['background-image'] = `url(${ this.params['poster'] })`;
       wrapper_styles['background-size'] = 'cover';
       wrapper_styles['background-repeat'] = 'no-repeat';
       wrapper_styles['background-position'] = 'center';

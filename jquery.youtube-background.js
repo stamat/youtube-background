@@ -337,7 +337,7 @@
       if (this.params["load-background"] || this.params["poster"]) {
         this.loadBackground(this.id);
         if (this.params["poster"])
-          wrapper_styles["background-image"] = this.params["poster"];
+          wrapper_styles["background-image"] = `url(${this.params["poster"]})`;
         wrapper_styles["background-size"] = "cover";
         wrapper_styles["background-repeat"] = "no-repeat";
         wrapper_styles["background-position"] = "center";
