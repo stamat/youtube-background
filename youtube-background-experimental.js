@@ -393,17 +393,22 @@
       return this.generateUID();
     }
     add(element) {
-      let id = this.getID(element);
-      if (!this.instances.hasOwnProperty(id)) {
-        id = this.generateUID();
-        element.setAttribute(this.uidAttribute, id);
-        if (this.callback && typeof this.callback === "function")
-          this.instances[id] = this.callback(element, id, this);
+      let id = element.getAttribute("id");
+      if (!id || this.instances.hasOwnProperty(id)) {
+        id = element.getAttribute(this.uidAttribute);
+        if (!id || this.instances.hasOwnProperty(id)) {
+          id = this.generateUID();
+          element.setAttribute(this.uidAttribute, id);
+        }
       }
+      if (this.callback && typeof this.callback === "function")
+        this.instances[id] = this.callback(element, id, this);
     }
     getID(element) {
       if (!element)
         return;
+      if (typeof element === "string")
+        return element;
       const id = element.getAttribute("id");
       if (id && this.instances.hasOwnProperty(id))
         return id;

@@ -408,18 +408,23 @@ class GeneralFactory {
   }
 
   add(element) {
-    let id = this.getID(element);
+    let id = element.getAttribute('id');
+    if (!id || this.instances.hasOwnProperty(id)) {
+      id = element.getAttribute(this.uidAttribute);
 
-    if (!this.instances.hasOwnProperty(id)) {
-      id = this.generateUID();
-      element.setAttribute(this.uidAttribute, id);
-      if (this.callback && typeof this.callback === 'function') 
-        this.instances[id] = this.callback(element, id, this);
+      if (!id || this.instances.hasOwnProperty(id)) {
+        id = this.generateUID();
+        element.setAttribute(this.uidAttribute, id);
+      }
     }
+
+    if (this.callback && typeof this.callback === 'function') 
+      this.instances[id] = this.callback(element, id, this);
   }
 
   getID(element) {
     if (!element) return;
+    if (typeof element === 'string') return element;
     const id = element.getAttribute('id');
     if (id && this.instances.hasOwnProperty(id)) return id;
     const uid = element.getAttribute(this.uidAttribute);
