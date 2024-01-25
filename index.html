@@ -216,11 +216,12 @@
     <script src="http://localhost:35729/livereload.js?snipver=1"></script>
     <script type="text/javascript">
       jQuery(document).ready(function() {
-      
-        const groups = document.querySelectorAll('.vbg-group');
-        for (let i = 0; i < groups.length; i++) {
-          const group = groups[i];
-          const elements = group.querySelectorAll('[data-vbg]');
+        
+        const groupElements = document.querySelectorAll('.js-vbg-group');
+
+        for (let i = 0; i < groupElements.length; i++) {
+          const groupElement = groupElements[i];
+          const elements = groupElement.querySelectorAll('[data-vbg]');
 
           for (let j = 0; j < elements.length; j++) {
             elements[j].addEventListener('video-background-state-change', function(event) {
@@ -237,9 +238,11 @@
 
         jQuery('[data-vbg]').youtube_background();
 
-        for (let i = 0; i < groups.length; i++) {
-          const group = groups[i];
-          const vbgroup = new VideoBackgroundGroup('.js-vbg-group');
+        const groups = new VideoBackgroundGroups(groupElements);
+
+        for (const i in groups.instances) {
+          const group = groups.instances[i].element;
+          const vbgroup = groups.instances[i];
 
           const groupPrev = group.querySelector('.group-prev');
           const groupNext = group.querySelector('.group-next');

@@ -1,4 +1,3 @@
-
 export class SeekBar {
   constructor(element, vbgInstance) {
     this.lock = false;
@@ -90,8 +89,8 @@ export class VideoBackgroundGroup {
       element.addEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
       element.addEventListener('video-background-pause', this.onVideoPause.bind(this));
       element.addEventListener('video-background-ready', this.onVideoReady.bind(this));
-      element.addEventListener('video-background-state-change', this.setVideoBackgroundFactoryInstance.bind(this));
-      element.addEventListener('video-background-time-update', this.setVideoBackgroundFactoryInstance.bind(this));
+      element.addEventListener('video-background-state-change', this.setVideoBackgroundFactoryInstance.bind(this), { once: true });
+      element.addEventListener('video-background-time-update', this.setVideoBackgroundFactoryInstance.bind(this), { once: true });
     }
   }
 
@@ -224,6 +223,18 @@ export class VideoBackgroundGroup {
   play() {
     this.currentInstance.play();
     this.dispatchEvent('video-background-group-previous');
+  }
+
+  destroy() {
+    for (let i = 0; i < this.elements.length; i++) {
+      const element = this.elements[i];
+      element.removeEventListener('video-background-ended', this.onVideoEnded.bind(this));
+      element.removeEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
+      element.removeEventListener('video-background-pause', this.onVideoPause.bind(this));
+      element.removeEventListener('video-background-ready', this.onVideoReady.bind(this));
+      element.removeEventListener('video-background-state-change', this.setVideoBackgroundFactoryInstance.bind(this));
+      element.removeEventListener('video-background-time-update', this.setVideoBackgroundFactoryInstance.bind(this));
+    }
   }
 }
 
@@ -361,5 +372,87 @@ export class MuteToggle {
     } else {
       this.vbgInstance.mute();
     }
+  }
+}
+
+class GeneralFactory {
+  constructor(selector, callback, uidAttribute = 'data-uid') {
+    this.instances = {};
+    this.selector = selector;
+    this.callback = callback;
+    this.uidAttribute = uidAttribute;
+
+    if (!callback || typeof callback !== 'function') return;
+
+    if (typeof this.selector === 'string') {
+      this.selector = document.querySelectorAll(this.selector);
+    } else {
+      if (this.selector instanceof Element) {
+        this.selector = [this.selector];
+      }
+    }
+
+    for (let i = 0; i < this.selector.length; i++) {
+      this.add(this.selector[i]);
+    }
+  }
+
+  basicUID() {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
+
+  generateUID() {
+    let tempuid = this.basicUID();
+    if (!this.instances.hasOwnProperty(tempuid)) return tempuid;
+    return this.generateUID();
+  }
+
+  add(element) {
+    let id = this.getID(element);
+
+    if (!this.instances.hasOwnProperty(id)) {
+      id = this.generateUID();
+      element.setAttribute(this.uidAttribute, id);
+      if (this.callback && typeof this.callback === 'function') 
+        this.instances[id] = this.callback(element, id, this);
+    }
+  }
+
+  getID(element) {
+    if (!element) return;
+    const id = element.getAttribute('id');
+    if (id && this.instances.hasOwnProperty(id)) return id;
+    const uid = element.getAttribute(this.uidAttribute);
+    if (uid && this.instances.hasOwnProperty(uid)) return uid;
+  }
+
+  get(element) {
+    if (!element) return;
+    const id = this.getID(element);
+    if (!id) return;
+    return this.instances[id];
+  }
+
+  destroy(element) {
+    if (!element) return;
+    const id = this.getID(element);
+    if (!id) return;
+    const instance = this.instances[id];
+    if (instance.hasOwnProperty('destroy') && typeof instance.destroy == 'function') this.instances[id].destroy();
+    delete this.instances[id];
+  }
+
+  destroyAll() {
+    for (const uid in this.instances) {
+      const instance = this.instances[uid];
+      if (instance.hasOwnProperty('destroy') && typeof instance.destroy == 'function') instance.destroy();
+      delete this.instances[uid];
+    }
+  }
+}
+
+export class VideoBackgroundGroups extends GeneralFactory {
+  constructor(selector = '.js-vbg-group', videoBackgroundSelector, videoBackgroundFactoryInstance) {
+    super(selector, (element, id, factoryInstance) => new VideoBackgroundGroup(element, videoBackgroundSelector, videoBackgroundFactoryInstance));
   }
 }
