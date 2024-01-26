@@ -379,21 +379,28 @@ class GeneralFactory {
   constructor(selector, callback, uidAttribute = 'data-uid') {
     this.instances = {};
     this.selector = selector;
+    this.elements = [];
     this.callback = callback;
     this.uidAttribute = uidAttribute;
 
     if (!callback || typeof callback !== 'function') return;
 
     if (typeof this.selector === 'string') {
-      this.selector = document.querySelectorAll(this.selector);
-    } else {
-      if (this.selector instanceof Element) {
-        this.selector = [this.selector];
-      }
+      this.elements = document.querySelectorAll(this.selector);
     }
 
-    for (let i = 0; i < this.selector.length; i++) {
-      this.add(this.selector[i]);
+    if (this.selector instanceof Element) {
+      this.elements = [this.selector];
+    }
+
+    if (this.selector instanceof NodeList) {
+      this.elements = this.selector;
+    }
+
+    for (let i = 0; i < this.elements.length; i++) {
+      this.add(this.elements[i]);
+
+      // TODO: maybe manage elements array?
     }
   }
 
