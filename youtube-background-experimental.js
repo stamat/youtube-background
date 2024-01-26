@@ -274,7 +274,7 @@
     onStateChange(event) {
       if (!this.vbgInstance)
         this.vbgInstance = event.detail;
-      this.active = this.vbgInstance.currentState === "playing";
+      this.active = this.vbgInstance.currentState === "playing" || this.vbgInstance.currentState === "buffering";
       this.element.setAttribute("aria-checked", this.active);
     }
     onPlay(event) {
