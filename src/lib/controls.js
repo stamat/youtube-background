@@ -375,6 +375,7 @@ export class MuteToggle {
   }
 }
 
+// TODO: this can be achieved with custom elements... Maybe it's finally time to use them?
 class GeneralFactory {
   constructor(selector, callback, uidAttribute = 'data-uid') {
     this.instances = {};
