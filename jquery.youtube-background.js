@@ -959,10 +959,14 @@
       playerElement.setAttribute("playsinline", "");
       if (this.params.loop)
         playerElement.setAttribute("loop", "");
-      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting))
+      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         playerElement.setAttribute("autoplay", "");
-      if (this.muted)
+        playerElement.autoplay = true;
+      }
+      if (this.muted) {
         playerElement.setAttribute("muted", "");
+        playerElement.muted = true;
+      }
       if (this.params["lazyloading"])
         playerElement.setAttribute("loading", "lazy");
       return playerElement;
