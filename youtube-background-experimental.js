@@ -109,8 +109,9 @@
       if (this.stack[this.current] !== event.detail.element)
         return;
       this.setVideoBackgroundFactoryInstance(event);
-      if (event.detail.currentState !== "playing")
-        event.detail.play();
+      const videoBackground = event.detail;
+      if (videoBackground.currentState !== "playing" && videoBackground.isIntersecting)
+        videoBackground.softPlay();
     }
     onVideoPause(event) {
       ;

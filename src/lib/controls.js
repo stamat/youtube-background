@@ -103,8 +103,8 @@ export class VideoBackgroundGroup {
   onVideoReady(event) {
     if (this.stack[this.current] !== event.detail.element) return;
     this.setVideoBackgroundFactoryInstance(event);
-    // console.log('ready', event.detail.element, event.detail.currentState);
-    if (event.detail.currentState !== 'playing') event.detail.play();
+    const videoBackground = event.detail;
+    if (videoBackground.currentState !== 'playing' && videoBackground.isIntersecting) videoBackground.softPlay();
   }
 
   onVideoPause(event) {;
