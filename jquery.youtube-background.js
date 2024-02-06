@@ -93,14 +93,19 @@
   function isString(o) {
     return typeof o === "string";
   }
-  function randomIntInclusive(min, max) {
+  function randomIntInclusive(min, max, safe = false) {
+    min = Number(min);
+    max = Number(max);
+    if (isNaN(min) || isNaN(max))
+      throw new TypeError("Both min and max must be numbers");
     if (min > max)
       [min, max] = [max, min];
     if (min === max)
       return min;
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    min = Math.round(min);
+    max = Math.round(max);
+    const rand = safe ? random() : Math.random();
+    return Math.floor(rand * (max - min + 1)) + min;
   }
   function fixed(number, digits) {
     if (!digits)
@@ -112,6 +117,19 @@
       return 0;
     return num / total * 100;
   }
+  function random() {
+    if (!crypto)
+      return Math.random();
+    if (crypto.getRandomValues)
+      return crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295;
+  }
+
+  // node_modules/book-of-spells/src/regex.mjs
+  var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+  var RE_VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
+  var RE_VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
+
+  // node_modules/book-of-spells/src/parsers.mjs
   function parseResolutionString(res) {
     const DEFAULT_RESOLUTION = 1.7777777778;
     if (!res || !res.length || /16[\:x\-\/]{1}9/i.test(res))
@@ -163,11 +181,6 @@
       }
     }
   }
-
-  // node_modules/book-of-spells/src/regex.mjs
-  var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-  var RE_VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
-  var RE_VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
 
   // node_modules/book-of-spells/src/browser.mjs
   function isUserAgentMobile(str) {
