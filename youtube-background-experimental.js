@@ -78,6 +78,11 @@
       this.videoBackgroundFactoryInstance = videoBackgroundFactoryInstance;
       this.stack = [];
       this.map = /* @__PURE__ */ new Map();
+      this.current = 0;
+      this.currentElement = null;
+      this.currentInstance = null;
+      this.playing = false;
+      this.muted = true;
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         if (!element.hasAttribute("data-vbg-uid") && this.videoBackgroundFactoryInstance)
@@ -110,8 +115,16 @@
         return;
       this.setVideoBackgroundFactoryInstance(event);
       const videoBackground = event.detail;
-      if (videoBackground.currentState !== "playing" && videoBackground.isIntersecting)
-        videoBackground.softPlay();
+      if (videoBackground.params.muted)
+        this.muted = true;
+      if (!videoBackground.isIntersecting)
+        return;
+      if (!videoBackground.params.autoplay)
+        return;
+      this.playing = true;
+      if (videoBackground.currentState === "playing")
+        return;
+      videoBackground.softPlay();
     }
     onVideoPause(event) {
       ;
@@ -211,6 +224,7 @@
           continue;
         instance.unmute();
       }
+      this.muted = false;
       this.dispatchEvent("video-background-group-umnute");
     }
     mute() {
@@ -220,14 +234,17 @@
           continue;
         instance.mute();
       }
+      this.muted = true;
       this.dispatchEvent("video-background-group-mute");
     }
     pause() {
       this.currentInstance.pause();
+      this.playing = false;
       this.dispatchEvent("video-background-group-previous");
     }
     play() {
       this.currentInstance.play();
+      this.playing = true;
       this.dispatchEvent("video-background-group-previous");
     }
     destroy() {
