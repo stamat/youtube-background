@@ -273,7 +273,7 @@ Noted properties can be added as html attributes as:
 * **data-vbg-play-button**
 * **data-vbg-mute-button**
 * **data-vbg-autoplay**
-* **data-vbg-mooted**
+* **data-vbg-muted**
 * **data-vbg-loop**
 * **data-vbg-mobile**
 * **data-vbg-offset**
