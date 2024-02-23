@@ -231,13 +231,13 @@ export class VideoBackgroundGroup {
   pause() {
     this.currentInstance.pause();
     this.playing = false;
-    this.dispatchEvent('video-background-group-previous');
+    this.dispatchEvent('video-background-group-pause');
   }
 
   play() {
     this.currentInstance.play();
     this.playing = true;
-    this.dispatchEvent('video-background-group-previous');
+    this.dispatchEvent('video-background-group-play');
   }
 
   destroy() {
