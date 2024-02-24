@@ -267,6 +267,7 @@ Property | Default | Accepts | Description
 **no-cookie** | true | boolean | Disable cookies. This will prevent **YouTube** and **Vimeo** from storing information and tracking you across the web. It is set to true by default.
 **force-on-low-battery** | false | boolean | When mobile device is on battery saver mode, the videos will not autoplay. This setting will force autoplay on battery saver mode on user first interaction. This setting is set to false by default. Be mindful of your users and their data plans, and their battery life.
 **lazyloading** | false | boolean | Lazyload the ifreame/video. This setting is set to false by default. Keep in mind that the script tracks the intersecting videos and pauses them when they are not visible for the reasons of improving the performance. Use lazyloading to minimize the data usage and improve performance even more.
+**title** | 'Video background' | string | Title of the video for accessibility purposes. This setting is set to 'Video background' by default. Though if used as a background `aria-hidden="true"` attribute should be used on it's parent element. Setting this to false or null will remove the title attribute.
 
 Noted properties can be added as html attributes as:
 

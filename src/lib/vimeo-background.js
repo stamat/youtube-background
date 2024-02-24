@@ -47,6 +47,7 @@ export class VimeoBackground extends SuperVideoBackground {
 
   generatePlayerElement() {
     const playerElement = document.createElement('iframe');
+    if (this.params.title) playerElement.setAttribute('title', this.params.title);
     playerElement.setAttribute('frameborder', 0);
     playerElement.setAttribute('allow', 'autoplay; mute');
     if (this.params['lazyloading']) playerElement.setAttribute('loading', 'lazy');
