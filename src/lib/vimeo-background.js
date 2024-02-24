@@ -3,8 +3,10 @@ import { RE_VIMEO } from 'book-of-spells';
 
 export class VimeoBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid, factoryInstance) {
-    super(elem, params, id, uid, 'vimeo', factoryInstance);
+    super(elem, params, id.id, uid, 'vimeo', factoryInstance);
     if (!id) return;
+    this.unlisted = id.unlisted;
+
     if (this.is_mobile && !this.params.mobile) return;
     this.injectScript();
 
@@ -55,8 +57,9 @@ export class VimeoBackground extends SuperVideoBackground {
     return playerElement;
   }
 
-  generateSrcURL(id) {
-    let src = 'https://player.vimeo.com/video/'+id+'?background=1&controls=0';
+  generateSrcURL(id, unlisted) {
+    unlisted = unlisted ? `h=${unlisted}&` : ''
+    let src = `https://player.vimeo.com/video/${id}?${unlisted}background=1&controls=0`;
   
     if (this.params.muted) {
       src += '&muted=1';
@@ -84,7 +87,7 @@ export class VimeoBackground extends SuperVideoBackground {
 
   injectPlayer() {
     this.playerElement = this.generatePlayerElement();
-    this.src = this.generateSrcURL(this.id);
+    this.src = this.generateSrcURL(this.id, this.unlisted);
     this.playerElement.src = this.src;
     this.playerElement.id = this.uid;
     

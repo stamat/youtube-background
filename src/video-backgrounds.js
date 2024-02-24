@@ -106,7 +106,7 @@ export class VideoBackgrounds {
         this.index[uid] = yb;
         break;
       case 'VIMEO':
-        const vm = new VimeoBackground(element, params, vid_data.id, uid, this);
+        const vm = new VimeoBackground(element, params, vid_data, uid, this);
         this.index[uid] = vm;
         break;
       case 'VIDEO':
@@ -153,12 +153,21 @@ export class VideoBackgrounds {
 
       if (pts && pts.length) {
         this.re[k].lastIndex = 0;
-        return {
+        const data = {
           id: pts[1],
           type: k,
           regex_pts: pts,
           link: link
         };
+        
+        if (k === 'VIMEO') {
+          const unlistedQueryRegex = /(\?|&)h=([^=&#?]+)/;
+          const unlistedPathRegex = /\/[^\/\:\.]+(\:|\/)([^:?\/]+)\s?$/;
+          const unlistedQuery = link.match(unlistedPathRegex) || link.match(unlistedQueryRegex);
+          if (unlistedQuery) data.unlisted = unlistedQuery[2];
+        }
+
+        return data;
       }
     }
   

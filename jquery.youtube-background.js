@@ -240,7 +240,8 @@
         "volume": 1,
         "no-cookie": true,
         "force-on-low-battery": false,
-        "lazyloading": false
+        "lazyloading": false,
+        "title": "Video background"
       };
       this.params = this.parseProperties(params, DEFAULTS, this.element, ["data-ytbg-", "data-vbg-"]);
       if (this.params.pause) {
@@ -546,6 +547,8 @@
     }
     generatePlayerElement() {
       const playerElement = document.createElement("iframe");
+      if (this.params.title)
+        playerElement.setAttribute("title", this.params.title);
       playerElement.setAttribute("frameborder", 0);
       playerElement.setAttribute("allow", "autoplay; mute");
       if (this.params["lazyloading"])
@@ -728,9 +731,10 @@
   // src/lib/vimeo-background.js
   var VimeoBackground = class extends SuperVideoBackground {
     constructor(elem, params, id, uid, factoryInstance) {
-      super(elem, params, id, uid, "vimeo", factoryInstance);
+      super(elem, params, id.id, uid, "vimeo", factoryInstance);
       if (!id)
         return;
+      this.unlisted = id.unlisted;
       if (this.is_mobile && !this.params.mobile)
         return;
       this.injectScript();
@@ -768,14 +772,17 @@
     }
     generatePlayerElement() {
       const playerElement = document.createElement("iframe");
+      if (this.params.title)
+        playerElement.setAttribute("title", this.params.title);
       playerElement.setAttribute("frameborder", 0);
       playerElement.setAttribute("allow", "autoplay; mute");
       if (this.params["lazyloading"])
         playerElement.setAttribute("loading", "lazy");
       return playerElement;
     }
-    generateSrcURL(id) {
-      let src = "https://player.vimeo.com/video/" + id + "?background=1&controls=0";
+    generateSrcURL(id, unlisted) {
+      unlisted = unlisted ? `h=${unlisted}&` : "";
+      let src = `https://player.vimeo.com/video/${id}?${unlisted}background=1&controls=0`;
       if (this.params.muted) {
         src += "&muted=1";
       }
@@ -795,7 +802,7 @@
     }
     injectPlayer() {
       this.playerElement = this.generatePlayerElement();
-      this.src = this.generateSrcURL(this.id);
+      this.src = this.generateSrcURL(this.id, this.unlisted);
       this.playerElement.src = this.src;
       this.playerElement.id = this.uid;
       this.stylePlayerElement(this.playerElement);
@@ -969,6 +976,8 @@
     }
     generatePlayerElement() {
       const playerElement = document.createElement("video");
+      if (this.params.title)
+        playerElement.setAttribute("title", this.params.title);
       playerElement.setAttribute("playsinline", "");
       if (this.params.loop)
         playerElement.setAttribute("loop", "");
@@ -1232,7 +1241,7 @@
           this.index[uid] = yb;
           break;
         case "VIMEO":
-          const vm = new VimeoBackground(element, params, vid_data.id, uid, this);
+          const vm = new VimeoBackground(element, params, vid_data, uid, this);
           this.index[uid] = vm;
           break;
         case "VIDEO":
@@ -1274,12 +1283,20 @@
         const pts = link.match(this.re[k]);
         if (pts && pts.length) {
           this.re[k].lastIndex = 0;
-          return {
+          const data = {
             id: pts[1],
             type: k,
             regex_pts: pts,
             link
           };
+          if (k === "VIMEO") {
+            const unlistedQueryRegex = /(\?|&)h=([^=&#?]+)/;
+            const unlistedPathRegex = /\/[^\/\:\.]+(\:|\/)([^:?\/]+)\s?$/;
+            const unlistedQuery = link.match(unlistedPathRegex) || link.match(unlistedQueryRegex);
+            if (unlistedQuery)
+              data.unlisted = unlistedQuery[2];
+          }
+          return data;
         }
       }
       return;
