@@ -18,12 +18,14 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   injectScript() {
-    if (window.hasOwnProperty('Vimeo') || document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')) return;
+    const src = 'https://player.vimeo.com/api/player.js';
+    if (window.hasOwnProperty('Vimeo') || document.querySelector(`script[src="${src}"]`)) return;
     const tag = document.createElement('script');
+    tag.async = true;
     if (window.hasOwnProperty('onVimeoIframeAPIReady') && typeof window.onVimeoIframeAPIReady === 'function') tag.addEventListener('load', () => {
       window.onVimeoIframeAPIReady();
     });
-    tag.src = 'https://player.vimeo.com/api/player.js';
+    tag.src = src;
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   }

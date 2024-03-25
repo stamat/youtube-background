@@ -538,10 +538,12 @@
       console.error(event);
     }
     injectScript() {
-      if (window.hasOwnProperty("YT") || document.querySelector('script[src="https://www.youtube.com/player_api"]'))
+      const src = "https://www.youtube.com/player_api";
+      if (window.hasOwnProperty("YT") || document.querySelector(`script[src="${src}"]`))
         return;
       const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/player_api";
+      tag.async = true;
+      tag.src = src;
       const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
@@ -743,14 +745,16 @@
       this.initVimeoPlayer();
     }
     injectScript() {
-      if (window.hasOwnProperty("Vimeo") || document.querySelector('script[src="https://player.vimeo.com/api/player.js"]'))
+      const src = "https://player.vimeo.com/api/player.js";
+      if (window.hasOwnProperty("Vimeo") || document.querySelector(`script[src="${src}"]`))
         return;
       const tag = document.createElement("script");
+      tag.async = true;
       if (window.hasOwnProperty("onVimeoIframeAPIReady") && typeof window.onVimeoIframeAPIReady === "function")
         tag.addEventListener("load", () => {
           window.onVimeoIframeAPIReady();
         });
-      tag.src = "https://player.vimeo.com/api/player.js";
+      tag.src = src;
       const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }

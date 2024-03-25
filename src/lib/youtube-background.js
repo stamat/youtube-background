@@ -61,9 +61,11 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   injectScript() {
-    if (window.hasOwnProperty('YT') || document.querySelector('script[src="https://www.youtube.com/player_api"]')) return
+    const src = 'https://www.youtube.com/player_api';
+    if (window.hasOwnProperty('YT') || document.querySelector(`script[src="${src}"]`)) return
     const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/player_api";
+    tag.async = true;
+    tag.src = src;
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   }
