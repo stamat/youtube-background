@@ -1,4 +1,4 @@
-/* youtube-background v1.1.6 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.1.7 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // src/lib/controls.js
   var SeekBar = class {
