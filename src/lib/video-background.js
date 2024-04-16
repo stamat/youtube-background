@@ -20,7 +20,9 @@ export class VideoBackground extends SuperVideoBackground {
       'ogg' : 'video/ogg',
       'avi' : 'video/avi',
       'mp4' : 'video/mp4',
-      'webm' : 'video/webm'
+      'webm' : 'video/webm',
+      'mov' : 'video/mov',
+      'm4v' : 'video/m4v'
     };
 
     this.mime = this.MIME_MAP[this.ext.toLowerCase()];
