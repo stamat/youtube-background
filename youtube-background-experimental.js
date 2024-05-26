@@ -268,10 +268,10 @@
       if (!this.targetSelector)
         return;
       this.active = false;
-      if (this.element.hasAttribute("aria-checked")) {
-        this.active = this.element.getAttribute("aria-checked") === "true";
+      if (this.element.hasAttribute("aria-pressed")) {
+        this.active = this.element.getAttribute("aria-pressed") === "true";
       } else {
-        this.element.setAttribute("aria-checked", this.active);
+        this.element.setAttribute("aria-pressed", this.active);
       }
       this.element.setAttribute("role", "switch");
       this.targetElem = document.querySelector(this.targetSelector);
@@ -293,24 +293,24 @@
       if (!this.vbgInstance)
         this.vbgInstance = event.detail;
       this.active = this.vbgInstance.currentState === "playing" || this.vbgInstance.currentState === "buffering";
-      this.element.setAttribute("aria-checked", this.active);
+      this.element.setAttribute("aria-pressed", this.active);
     }
     onPlay(event) {
       if (!this.vbgInstance)
         this.vbgInstance = event.detail;
       this.active = true;
-      this.element.setAttribute("aria-checked", this.active);
+      this.element.setAttribute("aria-pressed", this.active);
     }
     onPause(event) {
       if (!this.vbgInstance)
         this.vbgInstance = event.detail;
       this.active = false;
-      this.element.setAttribute("aria-checked", this.active);
+      this.element.setAttribute("aria-pressed", this.active);
     }
     onDestroyed(event) {
       this.vbgInstance = null;
       this.active = false;
-      this.element.setAttribute("aria-checked", this.active);
+      this.element.setAttribute("aria-pressed", this.active);
     }
     onClick(event) {
       if (!this.vbgInstance)
@@ -331,10 +331,10 @@
       if (!this.targetSelector)
         return;
       this.active = false;
-      if (this.element.hasAttribute("aria-checked")) {
-        this.active = this.element.getAttribute("aria-checked") === "true";
+      if (this.element.hasAttribute("aria-pressed")) {
+        this.active = this.element.getAttribute("aria-pressed") === "true";
       } else {
-        this.element.setAttribute("aria-checked", this.active);
+        this.element.setAttribute("aria-pressed", this.active);
       }
       this.element.setAttribute("role", "switch");
       this.targetElem = document.querySelector(this.targetSelector);
@@ -352,25 +352,25 @@
       this.vbgInstance = event.detail;
       if (this.vbgInstance.params.muted) {
         this.active = true;
-        this.element.setAttribute("aria-checked", this.active);
+        this.element.setAttribute("aria-pressed", this.active);
       }
     }
     onMute(event) {
       if (!this.vbgInstance)
         this.vbgInstance = event.detail;
       this.active = true;
-      this.element.setAttribute("aria-checked", this.active);
+      this.element.setAttribute("aria-pressed", this.active);
     }
     onUnmute(event) {
       if (!this.vbgInstance)
         this.vbgInstance = event.detail;
       this.active = false;
-      this.element.setAttribute("aria-checked", this.active);
+      this.element.setAttribute("aria-pressed", this.active);
     }
     onDestroyed(event) {
       this.vbgInstance = null;
       this.active = false;
-      this.element.setAttribute("aria-checked", this.active);
+      this.element.setAttribute("aria-pressed", this.active);
     }
     onClick(event) {
       if (!this.vbgInstance)

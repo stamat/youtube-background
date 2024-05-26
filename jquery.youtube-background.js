@@ -7,7 +7,7 @@
     buttonObj.element.classList.add(buttonObj.stateClassName);
     buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
     buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
-    buttonObj.element.setAttribute("aria-checked", false);
+    buttonObj.element.setAttribute("aria-pressed", false);
   }
   function buttonOff(buttonObj) {
     if (!buttonObj)
@@ -15,7 +15,7 @@
     buttonObj.element.classList.remove(buttonObj.stateClassName);
     buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[0]);
     buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[1]);
-    buttonObj.element.setAttribute("aria-checked", true);
+    buttonObj.element.setAttribute("aria-pressed", true);
   }
   function generateActionButton(obj, props) {
     const btn = document.createElement("button");
@@ -23,7 +23,7 @@
     btn.innerHTML = props.innerHtml;
     btn.setAttribute("role", "switch");
     btn.firstChild.classList.add(props.stateChildClassNames[0]);
-    btn.setAttribute("aria-checked", !props.initialState);
+    btn.setAttribute("aria-pressed", !props.initialState);
     props.element = btn;
     if (obj.params[props.condition_parameter] === props.initialState) {
       buttonOn(props);
@@ -971,7 +971,10 @@
         "ogg": "video/ogg",
         "avi": "video/avi",
         "mp4": "video/mp4",
-        "webm": "video/webm"
+        "webm": "video/webm",
+        "m4v": "video/x-m4v",
+        "mov": "video/quicktime",
+        "qt": "video/quicktime"
       };
       this.mime = this.MIME_MAP[this.ext.toLowerCase()];
       this.injectPlayer();
