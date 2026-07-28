@@ -224,8 +224,15 @@ export class VideoBackgrounds {
 
   initPlayers(callback) {
     const self = this;
-  
+
+    // these are global hooks the APIs call exactly once - chain whatever was
+    // already there so another instance, or the host page, still gets notified
+    const previousYouTubeReady = window.onYouTubeIframeAPIReady;
+    const previousVimeoReady = window.onVimeoIframeAPIReady;
+
     window.onYouTubeIframeAPIReady = function () {
+      if (typeof previousYouTubeReady === 'function') previousYouTubeReady();
+
       for (let k in self.index) {
         if (self.index[k] instanceof YoutubeBackground) {
           self.index[k].initYTPlayer();
@@ -242,6 +249,8 @@ export class VideoBackgrounds {
     }
   
     window.onVimeoIframeAPIReady = function () {
+      if (typeof previousVimeoReady === 'function') previousVimeoReady();
+
       for (let k in self.index) {
         if (self.index[k] instanceof VimeoBackground) {
           self.index[k].initVimeoPlayer();
