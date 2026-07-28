@@ -179,7 +179,9 @@ export class SuperVideoBackground {
         this.element.style[property] = wrapper_styles[property];
       }
   
-      if (!['absolute', 'fixed', 'relative', 'sticky'].indexOf(parent.style.position)) {
+      // only a statically positioned parent needs a containing block, and only
+      // the computed value can tell us that - the parent may be positioned by CSS
+      if (window.getComputedStyle(parent).position === 'static') {
         parent.style.position = 'relative';
       }
     }
