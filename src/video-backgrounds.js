@@ -4,6 +4,13 @@ import { VideoBackground, RE_VIDEO_FILE } from './lib/video-background.js';
 
 import { randomIntInclusive, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
 
+// probed in order, so the platform patterns get first refusal on a link
+const SOURCE_PATTERNS = {
+  YOUTUBE: RE_YOUTUBE,
+  VIMEO: RE_VIMEO,
+  VIDEO: RE_VIDEO_FILE
+};
+
 export class VideoBackgrounds {
   constructor(selector, params) {
     this.elements = selector;
@@ -141,16 +148,11 @@ export class VideoBackgrounds {
   getVidID(link) {
     if (!link) return;
 
-    this.re = {};
-    this.re.YOUTUBE = RE_YOUTUBE;
-    this.re.VIMEO = RE_VIMEO;
-    this.re.VIDEO = RE_VIDEO_FILE;
-    
-    for (let k in this.re) {
-      const pts = link.match(this.re[k]);
+    for (let k in SOURCE_PATTERNS) {
+      const pts = link.match(SOURCE_PATTERNS[k]);
 
       if (pts && pts.length) {
-        this.re[k].lastIndex = 0;
+        SOURCE_PATTERNS[k].lastIndex = 0;
         const data = {
           id: pts[1],
           type: k,
