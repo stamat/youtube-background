@@ -8,7 +8,6 @@ export class VideoBackground extends SuperVideoBackground {
     if (this.is_mobile && !this.params.mobile) return;
 
     this.src = vid_data.link;
-    this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
     this.uid = uid;
     this.element.setAttribute('data-vbg-uid', uid);
     this.player = null;
@@ -26,12 +25,17 @@ export class VideoBackground extends SuperVideoBackground {
       'qt' : 'video/quicktime',
     };
 
-    this.mime = this.MIME_MAP[this.ext.toLowerCase()];
+    this.setMimeType(vid_data.id);
 
     this.injectPlayer();
 
     this.mobileLowBatteryAutoplayHack();
     this.dispatchEvent('video-background-ready');
+  }
+
+  setMimeType(source) {
+    this.ext = /(?:\.([^.]+))?$/.exec(source)[1];
+    this.mime = this.ext ? this.MIME_MAP[this.ext.toLowerCase()] : undefined;
   }
 
   generatePlayerElement() {
@@ -74,7 +78,8 @@ export class VideoBackground extends SuperVideoBackground {
     this.element.appendChild(this.playerElement);
     const source = document.createElement('source');
     source.setAttribute('src', this.src);
-    source.setAttribute('type', this.mime);
+    // an unknown extension is better left to the browser to sniff than mislabelled
+    if (this.mime) source.setAttribute('type', this.mime);
     this.playerElement.appendChild(source);
     this.resize(this.playerElement);
   }
@@ -90,12 +95,11 @@ export class VideoBackground extends SuperVideoBackground {
     const pts = url.match(RE_VIDEO);
     if (!pts || !pts.length) return;
     this.id = pts[1];
-    this.ext = /(?:\.([^.]+))?$/.exec(this.id)[1];
-    this.mime = this.MIME_MAP[this.ext.toLowerCase()];
+    this.setMimeType(this.id);
     this.playerElement.innerHTML = '';
     const source = document.createElement('source');
     source.setAttribute('src', url);
-    source.setAttribute('type', this.mime);
+    if (this.mime) source.setAttribute('type', this.mime);
     this.playerElement.appendChild(source);
     this.src = url;
 
