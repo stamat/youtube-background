@@ -5,7 +5,9 @@ if (typeof jQuery == 'function') {
     $.fn.youtube_background = function (params) {
       const $this = $(this);
       if (window.hasOwnProperty('VIDEO_BACKGROUNDS')) {
-        window.VIDEO_BACKGROUNDS.add($this, params);
+        $this.each(function () {
+          window.VIDEO_BACKGROUNDS.add(this, params);
+        });
         return $this;
       }
       window.VIDEO_BACKGROUNDS = new VideoBackgrounds(this, params);
