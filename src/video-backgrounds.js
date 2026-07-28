@@ -20,21 +20,19 @@ export class VideoBackgrounds {
       this.intersectionObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           const uid = entry.target.getAttribute('data-vbg-uid');
-  
-          if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
-            self.index[uid].isIntersecting = true;
-            try {
-              if (self.index[uid].player && !self.index[uid].paused) self.index[uid].softPlay();
-            } catch (e) {
-              // console.log(e);
+          if (!uid || !self.index.hasOwnProperty(uid)) return;
+
+          const instance = self.index[uid];
+          instance.isIntersecting = entry.isIntersecting;
+
+          try {
+            if (entry.isIntersecting) {
+              if (instance.player && !instance.paused) instance.softPlay();
+            } else {
+              if (instance.player) instance.softPause();
             }
-          } else {
-            self.index[uid].isIntersecting = false;
-            try {
-              if (self.index[uid].player) self.index[uid].softPause();
-            } catch (e) {
-              // console.log(e);
-            }
+          } catch (e) {
+            // console.log(e);
           }
         });
       });
