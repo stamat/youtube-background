@@ -52,7 +52,7 @@ export class SeekBar {
     requestAnimationFrame(() => this.setProgress(event.target.value));
     if (this.vbgInstance) {
       this.vbgInstance.seek(event.target.value);
-      if (this.vbgInstance.playerElement && this.vbgInstance.playerElement.style.opacity === 0) this.vbgInstance.playerElement.style.opacity = 1;
+      if (this.vbgInstance.playerElement && parseFloat(this.vbgInstance.playerElement.style.opacity) === 0) this.vbgInstance.playerElement.style.opacity = 1;
     }
 }
 
