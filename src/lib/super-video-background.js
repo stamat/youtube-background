@@ -70,6 +70,8 @@ export class SuperVideoBackground {
     this.percentComplete = 0;
     if (this.params['start-at']) this.percentComplete = this.timeToPercentage(this.params['start-at']);
 
+    this.originalStyle = this.element.getAttribute('style');
+
     this.buildWrapperHTML();
 
     if (this.is_mobile && !this.params.mobile) return;
@@ -213,14 +215,19 @@ export class SuperVideoBackground {
   }
 
   destroy() {
-    this.playerElement.remove();
+    // no player element when the constructor bailed out early, ie. mobile: false
+    if (this.playerElement) this.playerElement.remove();
     this.element.classList.remove('youtube-background', 'video-background');
     this.element.removeAttribute('data-vbg-uid');
-    this.element.style = '';
 
-    if (this.params['play-button'] || this.params['mute-button']) {
-      this.controls_element.remove();
+    // hand back whatever inline styles the element came with, not a blank slate
+    if (this.originalStyle) {
+      this.element.setAttribute('style', this.originalStyle);
+    } else {
+      this.element.removeAttribute('style');
     }
+
+    if (this.controls_element) this.controls_element.remove();
 
     if (this.timeUpdateTimer) clearInterval(this.timeUpdateTimer);
     this.dispatchEvent('video-background-destroyed');
