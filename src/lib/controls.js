@@ -80,6 +80,18 @@ export class VideoBackgroundGroup {
     this.playing = false;
     this.muted = true;
 
+    // bind once and keep the references - destroy() can only remove listeners
+    // it can hand back the very same function object
+    const boundSetFactoryInstance = this.setVideoBackgroundFactoryInstance.bind(this);
+    this.listeners = [
+      ['video-background-ended', this.onVideoEnded.bind(this)],
+      ['video-background-seeked', this.onVideoSeeked.bind(this)],
+      ['video-background-pause', this.onVideoPause.bind(this)],
+      ['video-background-ready', this.onVideoReady.bind(this)],
+      ['video-background-state-change', boundSetFactoryInstance, { once: true }],
+      ['video-background-time-update', boundSetFactoryInstance, { once: true }]
+    ];
+
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
       if (!element.hasAttribute('data-vbg-uid') && this.videoBackgroundFactoryInstance) this.videoBackgroundFactoryInstance.add(element);
@@ -91,12 +103,10 @@ export class VideoBackgroundGroup {
         this.currentElement = element;
         if (this.videoBackgroundFactoryInstance) this.currentInstance = this.videoBackgroundFactoryInstance.get(element);
       }
-      element.addEventListener('video-background-ended', this.onVideoEnded.bind(this));
-      element.addEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
-      element.addEventListener('video-background-pause', this.onVideoPause.bind(this));
-      element.addEventListener('video-background-ready', this.onVideoReady.bind(this));
-      element.addEventListener('video-background-state-change', this.setVideoBackgroundFactoryInstance.bind(this), { once: true });
-      element.addEventListener('video-background-time-update', this.setVideoBackgroundFactoryInstance.bind(this), { once: true });
+      for (let j = 0; j < this.listeners.length; j++) {
+        const [eventName, handler, options] = this.listeners[j];
+        element.addEventListener(eventName, handler, options);
+      }
     }
   }
 
@@ -241,14 +251,14 @@ export class VideoBackgroundGroup {
   }
 
   destroy() {
+    if (!this.elements || !this.listeners) return;
+
     for (let i = 0; i < this.elements.length; i++) {
       const element = this.elements[i];
-      element.removeEventListener('video-background-ended', this.onVideoEnded.bind(this));
-      element.removeEventListener('video-background-seeked', this.onVideoSeeked.bind(this));
-      element.removeEventListener('video-background-pause', this.onVideoPause.bind(this));
-      element.removeEventListener('video-background-ready', this.onVideoReady.bind(this));
-      element.removeEventListener('video-background-state-change', this.setVideoBackgroundFactoryInstance.bind(this));
-      element.removeEventListener('video-background-time-update', this.setVideoBackgroundFactoryInstance.bind(this));
+      for (let j = 0; j < this.listeners.length; j++) {
+        const [eventName, handler] = this.listeners[j];
+        element.removeEventListener(eventName, handler);
+      }
     }
   }
 }
