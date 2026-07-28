@@ -95,9 +95,8 @@ export class YoutubeBackground extends SuperVideoBackground {
       src += '&autoplay=1';
     }
   
-    if (this.params.loop) {
-      src += '&loop=1';
-    }
+    // no &loop=1 here: the embed ignores it unless it is paired with a playlist
+    // parameter, and looping is driven from onVideoEnded() anyway so it honours start-at
 
     return src;
   }
