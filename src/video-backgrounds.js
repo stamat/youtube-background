@@ -141,7 +141,7 @@ export class VideoBackgrounds {
   }
 
   getVidID(link) {
-    if (link === undefined && link === null) return;
+    if (!link) return;
 
     this.re = {};
     this.re.YOUTUBE = RE_YOUTUBE;
