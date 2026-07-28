@@ -401,58 +401,46 @@ export class MuteToggle {
 }
 
 // TODO: this can be achieved with custom elements... Maybe it's finally time to use them?
-class GeneralFactory {
-  constructor(selector, callback, uidAttribute = 'data-uid') {
+export class VideoBackgroundGroups {
+  constructor(selector = '.js-vbg-group', videoBackgroundSelector, videoBackgroundFactoryInstance) {
     this.instances = {};
     this.selector = selector;
     this.elements = [];
-    this.callback = callback;
-    this.uidAttribute = uidAttribute;
+    this.videoBackgroundSelector = videoBackgroundSelector;
+    this.videoBackgroundFactoryInstance = videoBackgroundFactoryInstance;
 
-    if (!callback || typeof callback !== 'function') return;
-
-    if (typeof this.selector === 'string') {
-      this.elements = document.querySelectorAll(this.selector);
-    }
-
-    if (this.selector instanceof Element) {
-      this.elements = [this.selector];
-    }
-
-    if (this.selector instanceof NodeList) {
-      this.elements = this.selector;
-    }
+    if (typeof selector === 'string') this.elements = document.querySelectorAll(selector);
+    if (selector instanceof Element) this.elements = [selector];
+    if (selector instanceof NodeList) this.elements = selector;
 
     for (let i = 0; i < this.elements.length; i++) {
       this.add(this.elements[i]);
-
-      // TODO: maybe manage elements array?
     }
-  }
-
-  basicUID() {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
   generateUID() {
-    let tempuid = this.basicUID();
-    if (!this.instances.hasOwnProperty(tempuid)) return tempuid;
-    return this.generateUID();
+    let uid = Date.now().toString(36) + Math.random().toString(36).substring(2);
+    while (this.instances.hasOwnProperty(uid)) {
+      uid = Date.now().toString(36) + Math.random().toString(36).substring(2);
+    }
+    return uid;
   }
 
   add(element) {
+    if (!element) return;
+
     let id = element.getAttribute('id');
     if (!id || this.instances.hasOwnProperty(id)) {
-      id = element.getAttribute(this.uidAttribute);
+      id = element.getAttribute('data-uid');
 
       if (!id || this.instances.hasOwnProperty(id)) {
         id = this.generateUID();
-        element.setAttribute(this.uidAttribute, id);
+        element.setAttribute('data-uid', id);
       }
     }
 
-    if (this.callback && typeof this.callback === 'function') 
-      this.instances[id] = this.callback(element, id, this);
+    this.instances[id] = new VideoBackgroundGroup(element, this.videoBackgroundSelector, this.videoBackgroundFactoryInstance);
+    return this.instances[id];
   }
 
   getID(element) {
@@ -460,37 +448,26 @@ class GeneralFactory {
     if (typeof element === 'string') return element;
     const id = element.getAttribute('id');
     if (id && this.instances.hasOwnProperty(id)) return id;
-    const uid = element.getAttribute(this.uidAttribute);
+    const uid = element.getAttribute('data-uid');
     if (uid && this.instances.hasOwnProperty(uid)) return uid;
   }
 
   get(element) {
-    if (!element) return;
     const id = this.getID(element);
-    if (!id) return;
-    return this.instances[id];
+    if (id) return this.instances[id];
   }
 
   destroy(element) {
-    if (!element) return;
     const id = this.getID(element);
     if (!id) return;
-    const instance = this.instances[id];
-    if (instance.hasOwnProperty('destroy') && typeof instance.destroy == 'function') this.instances[id].destroy();
+    this.instances[id].destroy();
     delete this.instances[id];
   }
 
   destroyAll() {
-    for (const uid in this.instances) {
-      const instance = this.instances[uid];
-      if (instance.hasOwnProperty('destroy') && typeof instance.destroy == 'function') instance.destroy();
-      delete this.instances[uid];
+    for (const id in this.instances) {
+      this.instances[id].destroy();
+      delete this.instances[id];
     }
-  }
-}
-
-export class VideoBackgroundGroups extends GeneralFactory {
-  constructor(selector = '.js-vbg-group', videoBackgroundSelector, videoBackgroundFactoryInstance) {
-    super(selector, (element, id, factoryInstance) => new VideoBackgroundGroup(element, videoBackgroundSelector, videoBackgroundFactoryInstance));
   }
 }
