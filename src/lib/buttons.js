@@ -1,41 +1,30 @@
 
-function buttonOn(buttonObj) {
-  if (!buttonObj) return;
-  buttonObj.element.classList.add(buttonObj.stateClassName);
-  buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
-  buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
-  buttonObj.element.setAttribute('aria-pressed', false);
-}
+function setButtonState(buttonObj, active) {
+  if (!buttonObj || !buttonObj.element) return;
+  const element = buttonObj.element;
 
-function buttonOff(buttonObj) {
-  if (!buttonObj) return;
-  buttonObj.element.classList.remove(buttonObj.stateClassName);
-  buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[0]);
-  buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[1]);
-  buttonObj.element.setAttribute('aria-pressed', true);
+  element.classList.toggle(buttonObj.stateClassName, active);
+  element.firstChild.classList.toggle(buttonObj.stateChildClassNames[0], !active);
+  element.firstChild.classList.toggle(buttonObj.stateChildClassNames[1], active);
+
+  // pressed mirrors the state class: pressed play-toggle is paused, pressed mute-toggle is muted
+  element.setAttribute('aria-pressed', active);
+  if (buttonObj.stateLabels) element.setAttribute('aria-label', buttonObj.stateLabels[active ? 1 : 0]);
 }
 
 export function generateActionButton(obj, props) {
   const btn = document.createElement('button');
   btn.className = props.className;
   btn.innerHTML = props.innerHtml;
-  btn.setAttribute('role', 'switch');
-  btn.firstChild.classList.add(props.stateChildClassNames[0]);
-  btn.setAttribute('aria-pressed', !props.initialState);
+  btn.setAttribute('type', 'button');
   props.element = btn;
 
-  if (obj.params[props.condition_parameter] === props.initialState) {
-    buttonOn(props);
-  }
+  setButtonState(props, obj.params[props.condition_parameter] === props.initialState);
 
   btn.addEventListener('click', function(e) {
-    if (this.classList.contains(props.stateClassName)) {
-      buttonOff(props);
-      obj[props.actions[0]]();
-    } else {
-      buttonOn(props);
-      obj[props.actions[1]]();
-    }
+    const active = this.classList.contains(props.stateClassName);
+    setButtonState(props, !active);
+    obj[props.actions[active ? 0 : 1]]();
   });
 
   obj.buttons[props.name] = {

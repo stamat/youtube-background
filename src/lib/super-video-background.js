@@ -83,6 +83,7 @@ export class SuperVideoBackground {
         stateClassName: 'paused',
         condition_parameter: 'paused',
         stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
+        stateLabels: ['Pause', 'Play'],
         actions: ['play', 'pause']
       });
     }
@@ -96,6 +97,7 @@ export class SuperVideoBackground {
         stateClassName: 'muted',
         condition_parameter: 'muted',
         stateChildClassNames: ['fa-volume-up', 'fa-volume-mute'],
+        stateLabels: ['Mute', 'Unmute'],
         actions: ['unmute', 'mute']
       });
     }
