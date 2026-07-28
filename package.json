@@ -30,7 +30,8 @@
   },
   "scripts": {
     "dev": "poops",
-    "build": "poops -b"
+    "build": "poops -b",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test 'test/**/*.test.mjs'"
   },
   "dependencies": {
     "book-of-spells": "^1.0.18"
