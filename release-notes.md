@@ -70,6 +70,22 @@ Nothing in the public API changed, but three behaviours differ:
   came out right by accident.
 - **An unrecognised source type dereferenced an unassigned index entry.** The
   `switch` in `add()` had no `default`.
+- **`destroyAll()` destroyed nothing.** It passed each instance's `playerElement`
+  to `destroy()`, but `data-vbg-uid` only ever lands on the wrapper element, so
+  the lookup returned `null` and the call was a silent no-op.
+- **The factory leaked its global listeners.** `VideoBackgrounds` attached a
+  `visibilitychange` listener to `document`, plus a `resize` listener to `window`
+  when `ResizeObserver` is missing, and offered no way to remove either. See
+  `disconnect()` below.
+- **A factory built from an empty selector ignored tab visibility.** The
+  `visibilitychange` listener was attached after the constructor's early return,
+  so elements added later through `add()` were never resumed.
+
+### Added
+
+- **`VideoBackgrounds.disconnect()`** — full teardown. Destroys every instance,
+  disconnects both observers, and removes the global listeners the factory
+  registered. `destroyAll()` still only empties the index.
 
 ### Changed
 
@@ -92,6 +108,10 @@ Nothing in the public API changed, but three behaviours differ:
 - **ESLint** flat config on the recommended ruleset. `npm run lint`.
 - **CI** runs lint, tests and the build on every push and pull request, and fails
   if the checked-in build output is stale.
+- **The README** is reconciled with the code: a default export that never
+  existed, a wrong `mobile` default, an instance variable (`playing`) that does
+  not exist, a missing event and attribute, and a browser support table listing
+  browsers that cannot run the ES2019 bundles.
 - **The demo page** is generated from `src/markup/index.md` through
   `poops-docs-theme`, built into `site/`, and deployed to GitHub Pages by a
   workflow. It now documents the options, events and API alongside the live
