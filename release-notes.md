@@ -61,10 +61,10 @@ Nothing in the public API changed, but three behaviours differ:
   `type="undefined"` on the `<source>`. The type attribute is now omitted when the
   container is unknown, leaving the browser to sniff it.
 - **`.mov`, `.m4v` and `.qt` were undetectable.** `MIME_MAP` gained them in #67 but
-  detection still ran through book-of-spells' `RE_VIDEO`, which whitelists only
-  `mp4|ogg|ogv|ogm|webm|avi`. The pattern is now derived from `MIME_MAP` itself, so
-  the two cannot drift apart, and a trailing query string or hash no longer
-  prevents a match.
+  detection ran through book-of-spells' `RE_VIDEO`, which whitelisted only
+  `mp4|ogg|ogv|ogm|webm|avi`. Fixed upstream and picked up here by requiring
+  `book-of-spells@^1.3.1`; a test keeps `MIME_MAP` and `RE_VIDEO` from drifting
+  apart. A trailing query string or hash no longer prevents a match either.
 - **Button initial state read a parameter that does not exist.** The lookup went to
   `params['paused']`; the play button's starting state was `undefined` and only
   came out right by accident.
@@ -119,8 +119,7 @@ Nothing in the public API changed, but three behaviours differ:
 
 ### Upstream
 
-`book-of-spells` carries the same `RE_VIDEO` gap that hid `.mov` files here, and it
-affects every consumer. Fixed on the `fix/re-video-containers` branch of that repo
-(v1.3.1): QuickTime containers added, and a trailing query string or hash no longer
-blocks a match. This package does not depend on that release — it derives its own
-pattern from `MIME_MAP`.
+The `RE_VIDEO` gap that hid `.mov` files here came from `book-of-spells` and affected
+every consumer, so it was fixed there rather than worked around: v1.3.1 adds the
+QuickTime containers and stops a trailing query string or hash blocking a match.
+The dependency is bumped `^1.0.18` → `^1.3.1` and detection uses `RE_VIDEO` directly.

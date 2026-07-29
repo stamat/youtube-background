@@ -1,6 +1,7 @@
 import { VideoBackgrounds } from '../video-backgrounds.mjs'
-import { VideoBackground, MIME_MAP, RE_VIDEO_FILE } from '../lib/video-background.mjs'
+import { VideoBackground, MIME_MAP } from '../lib/video-background.mjs'
 import { SuperVideoBackground } from '../lib/super-video-background.mjs'
+import { RE_VIDEO } from 'book-of-spells'
 
 // These methods never touch `this` beyond plain data, so they can be exercised
 // off the prototype with a stub receiver - no player APIs, no fixtures.
@@ -31,6 +32,7 @@ describe('getVidID', () => {
     expect(getVidID('https://vimeo.com/123456789?h=abc123def').unlisted).toBe('abc123def')
   })
 
+  // guards MIME_MAP against drifting away from book-of-spells' RE_VIDEO
   test('matches every container MIME_MAP claims to support', () => {
     for (const ext in MIME_MAP) {
       const data = getVidID(`https://example.com/media/clip.${ext}`)
@@ -41,16 +43,16 @@ describe('getVidID', () => {
   })
 })
 
-describe('RE_VIDEO_FILE', () => {
+describe('RE_VIDEO', () => {
   test('tolerates query strings and hashes', () => {
-    expect('https://example.com/clip.mp4?v=2'.match(RE_VIDEO_FILE)[1]).toBe('clip.mp4')
-    expect('https://example.com/clip.webm#t=10'.match(RE_VIDEO_FILE)[1]).toBe('clip.webm')
-    expect('https://example.com/clip.MP4'.match(RE_VIDEO_FILE)[1]).toBe('clip.MP4')
+    expect('https://example.com/clip.mp4?v=2'.match(RE_VIDEO)[1]).toBe('clip.mp4')
+    expect('https://example.com/clip.webm#t=10'.match(RE_VIDEO)[1]).toBe('clip.webm')
+    expect('https://example.com/clip.MP4'.match(RE_VIDEO)[1]).toBe('clip.MP4')
   })
 
   test('ignores unknown containers and extensionless URLs', () => {
-    expect('https://example.com/clip.mkv'.match(RE_VIDEO_FILE)).toBeNull()
-    expect('https://example.com/no-extension'.match(RE_VIDEO_FILE)).toBeNull()
+    expect('https://example.com/clip.mkv'.match(RE_VIDEO)).toBeNull()
+    expect('https://example.com/no-extension'.match(RE_VIDEO)).toBeNull()
   })
 })
 

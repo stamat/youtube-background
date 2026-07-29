@@ -130,6 +130,7 @@
   // node_modules/book-of-spells/src/regex.mjs
   var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
   var RE_VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
+  var RE_VIDEO = /\/([^\/?#]+\.(?:mp4|m4v|ogg|ogv|ogm|webm|avi|mov|qt))(?:[?#][^\/]*)?\s*$/i;
 
   // node_modules/book-of-spells/src/parsers.mjs
   function parseResolutionString(res) {
@@ -846,7 +847,6 @@
     "mov": "video/quicktime",
     "qt": "video/quicktime"
   };
-  var RE_VIDEO_FILE = new RegExp(`\\/([^\\/?#]+\\.(?:${Object.keys(MIME_MAP).join("|")}))(?:[?#][^\\/]*)?\\s*$`, "i");
   var VideoBackground = class extends SuperVideoBackground {
     constructor(elem, params, vid_data, uid, factoryInstance) {
       super(elem, params, vid_data.link, uid, "video", factoryInstance);
@@ -910,7 +910,7 @@
     }
     /* ===== API ===== */
     setSource(url) {
-      const pts = url.match(RE_VIDEO_FILE);
+      const pts = url.match(RE_VIDEO);
       if (!pts || !pts.length) return;
       this.id = pts[1];
       this.setMimeType(this.id);
@@ -1028,7 +1028,7 @@
   var SOURCE_PATTERNS = {
     YOUTUBE: RE_YOUTUBE,
     VIMEO: RE_VIMEO,
-    VIDEO: RE_VIDEO_FILE
+    VIDEO: RE_VIDEO
   };
   var VideoBackgrounds = class {
     constructor(selector, params) {

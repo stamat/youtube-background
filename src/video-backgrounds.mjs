@@ -1,14 +1,14 @@
 import { YoutubeBackground } from './lib/youtube-background.mjs';
 import { VimeoBackground } from './lib/vimeo-background.mjs';
-import { VideoBackground, RE_VIDEO_FILE } from './lib/video-background.mjs';
+import { VideoBackground } from './lib/video-background.mjs';
 
-import { randomIntInclusive, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
+import { randomIntInclusive, RE_VIDEO, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
 
 // probed in order, so the platform patterns get first refusal on a link
 const SOURCE_PATTERNS = {
   YOUTUBE: RE_YOUTUBE,
   VIMEO: RE_VIMEO,
-  VIDEO: RE_VIDEO_FILE
+  VIDEO: RE_VIDEO
 };
 
 export class VideoBackgrounds {

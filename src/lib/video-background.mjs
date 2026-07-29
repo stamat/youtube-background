@@ -1,3 +1,5 @@
+import { RE_VIDEO } from 'book-of-spells';
+
 import { SuperVideoBackground } from './super-video-background.mjs';
 
 export const MIME_MAP = {
@@ -11,11 +13,6 @@ export const MIME_MAP = {
   'mov' : 'video/quicktime',
   'qt' : 'video/quicktime',
 };
-
-// RE_VIDEO in book-of-spells only whitelists mp4|ogg|ogv|ogm|webm|avi, so the
-// mov/m4v/qt entries above were never reachable. Derive the pattern from the map
-// itself so the two cannot disagree again, and allow a trailing query or hash.
-export const RE_VIDEO_FILE = new RegExp(`\\/([^\\/?#]+\\.(?:${ Object.keys(MIME_MAP).join('|') }))(?:[?#][^\\/]*)?\\s*$`, 'i');
 
 export class VideoBackground extends SuperVideoBackground {
   constructor(elem, params, vid_data, uid, factoryInstance) {
@@ -98,7 +95,7 @@ export class VideoBackground extends SuperVideoBackground {
   /* ===== API ===== */
 
   setSource(url) {
-    const pts = url.match(RE_VIDEO_FILE);
+    const pts = url.match(RE_VIDEO);
     if (!pts || !pts.length) return;
     this.id = pts[1];
     this.setMimeType(this.id);
