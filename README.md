@@ -84,7 +84,17 @@ There are two ways to use this script: vanilla implementation or as a jQuery plu
 ```
 
 ```javascript
-    import VideoBackgrounds from 'youtube-background'; // or if you are loading it from CDN as a standalone script, you can use the global variable `VideoBackgrounds`
+    import 'youtube-background'; // the bundle registers window.VideoBackgrounds
+
+    const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
+```
+
+The package entry is the prebuilt IIFE bundle: importing it is a side effect that
+registers the global, so there is no named or default export to destructure. To
+import the class itself, reach for the ES module source:
+
+```javascript
+    import { VideoBackgrounds } from 'youtube-background/src/video-backgrounds.mjs';
 
     const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
 ```
@@ -118,8 +128,11 @@ UID is assigned to all target elements as a `data-vbg-uid` attribute when the vi
 You can programmatically control the video playing in the background regardless of the provider and access all of it's properties via the instance object.
 
 ```javascript
-    // true if the video is playing, false if the video is not playing
-    console.log(firstInstance.playing);
+    // 'notstarted', 'ended', 'playing', 'paused' or 'buffering'
+    console.log(firstInstance.currentState);
+
+    // true if the video was paused through pause(), unaffected by scrolling out of view
+    console.log(firstInstance.paused);
 
     // true if video is muted, false if video is not muted
     console.log(firstInstance.muted);
@@ -203,7 +216,11 @@ In order to destroy the video background instance and revert the element to it's
     // or by providing the instance videoBackground.destroy(firstInstance);
 ```
 
-To destroy all the instances in the index you can use `destroyAll` function of the factory instance.
+To destroy all the instances in the index you can use `destroyAll` function of the factory instance. That empties the index but leaves the factory itself listening — if you are tearing the factory down for good, call `disconnect` instead, which also disconnects the observers and removes the `visibilitychange` and `resize` listeners.
+
+```javascript
+    videoBackgrounds.disconnect();
+```
 
 Factory instance also implements the `IntersectionObserver` out of the box to keep track of the visible video backgrounds in order to toggle their play/pause state and preserve the bandwidth and improve the performance. You can find the instance of the `IntersectionObserver` in the `intersectionObserver` property of the factory instance.
 
@@ -252,7 +269,7 @@ Property | Default | Accepts | Description
 **autoplay** | true | boolean | Autoplay loaded video
 **muted** | true | boolean | Load video muted
 **loop** | true | boolean | Loop loaded video
-**mobile** | false | boolean | Keep the youtube embed on mobile
+**mobile** | true | boolean | Keep the youtube embed on mobile
 **fit-box** | false | boolean | Set iframe to fit the container, meaning `width: 100%; height: 100%`
 **inline-styles** | true | boolean | Enable/disable inline styles from the iframe and wrapper. The default wrapper styles are: `background-size: cover;`, `background-repeat: no-repeat;` and `background-position: center;`; the default iframe styles are `top: 50%;`, `left: 50%;`, `transform: translateX(-50%) translateY(-50%);`, `position: absolute;`, and `opacity: 0;`
 **load-background** | false | boolean | Fetch background from youtube or vimeo **THIS DEFAULTS TO FALSE** since v1.0.18. It is recommended that you provide and host your own background photo preferably as an image element with `srcset` and `loading="lazy"` for performance reasons. Works only with **YouTube** and **Vimeo**.
@@ -290,6 +307,9 @@ Noted properties can be added as html attributes as:
 * **data-vbg-no-cookie**
 * **data-vbg-force-on-low-battery**
 * **data-vbg-lazyloading**
+* **data-vbg-title**
+
+Every one of them is also accepted under the legacy `data-ytbg-` prefix, kept from the days when this only did YouTube. `data-vbg-` wins where both are present.
 
 **⚠️ Note:** Attribute properties will override the properties passed on initialization. Always.
 
@@ -347,6 +367,7 @@ Noted properties can be added as html attributes as:
 * **video-background-play** - video starts playing
 * **video-background-pause** - video is paused
 * **video-background-ended** - video ended event. Keep in mind that if loop is set to true the video will start playing from the start after this event.
+* **video-background-seeked** - the video was seeked, either through `seek` / `seekTo` or by a seek bar.
 * **video-background-mute** - video sound is muted
 * **video-background-unmute** - video sound is unmuted
 * **video-background-volume-change** - video volume is changed. The volume is available from the instance variable `event.detail.volume`.
@@ -388,9 +409,12 @@ Method | Accepts | Description
 **seekTo** | int | Seek the video to a specific time in seconds. From 0 to the duration of the video in seconds.
 **setStartAt** | int | Set Start At seconds. From 0 to the duration of the video in seconds.
 **setEndAt** | int | Set End At seconds. From 0 to the duration of the video in seconds.
+**softPlay** | - | Play without clearing the `paused` flag. This is what the IntersectionObserver uses, so a video the visitor paused stays paused.
+**softPause** | - | Pause without setting the `paused` flag.
+**destroy** | - | Destroy this instance and revert its element to the pre-initialization state. Usually called through the factory's `destroy`.
 
 ## Instance variables
-* **playing** - boolean, true if the video is playing, false if the video is not playing. Hard playing state, doesn't change on video being paused via IntersectionObserver.
+* **paused** - boolean, true if the video was paused through `pause`. Hard paused state, unaffected by the video being paused via IntersectionObserver or a hidden tab.
 * **muted** - boolean, true if the video is muted, false if the video is not muted.
 * **isIntersecting** - boolean, true if the video is intersecting the viewport, false if the video is not intersecting the viewport.
 * **currentState** - the current state of the video. It can be: `notstarted`, `ended`, `playing`, `paused`, `buffering`.
@@ -410,6 +434,7 @@ Method | Accepts | Description
 **get** | element or UID | Get the instance of the video background by UID or element. Returns the instance object.
 **destroy** | element or instance | Destroy the video background instance and revert the element to it's pre-initialization state. Accepts either the element or the instance object.
 **destroyAll** | - | Destroy all the instances in the index.
+**disconnect** | - | Full teardown: destroys every instance, disconnects both observers and removes the global listeners the factory registered. Use it when the factory itself is going away, otherwise it keeps listening to `visibilitychange` for the lifetime of the page.
 **pauseAll** | - | Pause all the instances in the index.
 **playAll** | - | Play all the instances in the index.
 **muteAll** | - | Mute all the instances in the index.
@@ -423,19 +448,21 @@ Method | Accepts | Description
 
 ## Browser Support
 
-Minimum supported browsers are both desktop and mobile:
-* Chrome 49+
-* Firefox 44+
-* Safari 10+
-* Opera 18+
-* Edge 14+
+The bundles are built for **ES2019**, so that is the floor, desktop and mobile alike:
 
-Recommended browsers are both desktop and mobile:
-* Chrome 51+
-* Firefox 55+
-* Safari 12.1+
-* Opera 38+
-* Edge 17+
+* Chrome 66+
+* Firefox 58+
+* Safari 11.1+
+* Opera 53+
+* Edge 79+
+
+Recommended, for `ResizeObserver` and full `IntersectionObserver` support — without them the script still works, falling back to the `window` resize event and to always-play:
+
+* Chrome 64+
+* Firefox 69+
+* Safari 13.1+
+* Opera 51+
+* Edge 79+
 
 Tested with [BrowserStack](https://www.browserstack.com). 
 
@@ -465,18 +492,37 @@ To just build the code, without running the local server, run:
 npm run build
 ```
 
+The build produces the two bundles at the repo root and the demo page in `site/`, which is what gets deployed to GitHub Pages.
+
+To run the tests ([jest](https://jestjs.io), in `src/__tests__`):
+
+```
+npm test
+```
+
+To lint ([ESLint](https://eslint.org), flat config in `eslint.config.mjs`):
+
+```
+npm run lint
+```
+
+Both run in CI on every push and pull request, along with a check that the checked-in build output is not stale.
+
 ### Code
 
-The code is structured like this:
+Sources are ES modules with the `.mjs` extension — the package itself stays CommonJS so the published IIFE bundles remain `require()`-able.
 
-* **main.js** - the main entry point of the script. Used to initialize the jQuery plugin.
-* **video-backgrounds.js** - the main entry point of the ES6 module. It contains the factory class `VideoBackgrounds` that is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file.
-* **lib/super-video-background.js** - It contains the super class `SuperVideoBackground` with all of the common methods and properties for all of the video background types. This class is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
-* **lib/youtube-background.js** - It contains the `YouTubeBackground` class that is used to create and control YouTube video backgrounds.Inherits from `SuperVideoBackground`.
-* **lib/vimeo-background.js** - It contains the `VimeoBackground` class that is used to create and control Vimeo video backgrounds. Inherits from `SuperVideoBackground`.
-* **lib/video-background.js** - It contains the `VideoBackground` class that is used to create and control HTML5 video backgrounds. Inherits from `SuperVideoBackground`.
-* **lib/buttons.js** - It contains the play and pause automatic buttons and their functionality that are added to the video backgrounds. I seriously don't know why I created this in the first place.
-* **lib/controls.js** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle` which tune onto the video events and use the common API, they are not bundled with the script, but are available as a standalone module exports.
+* **main.mjs** - the main entry point of the script. Used to initialize the jQuery plugin.
+* **video-backgrounds.mjs** - the main entry point of the ES6 module. It contains the factory class `VideoBackgrounds` that is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file.
+* **experimental.mjs** - entry point of the second bundle, exposing the control classes below as globals.
+* **lib/super-video-background.mjs** - It contains the super class `SuperVideoBackground` with all of the common methods and properties for all of the video background types. This class is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
+* **lib/youtube-background.mjs** - It contains the `YouTubeBackground` class that is used to create and control YouTube video backgrounds. Inherits from `SuperVideoBackground`.
+* **lib/vimeo-background.mjs** - It contains the `VimeoBackground` class that is used to create and control Vimeo video backgrounds. Inherits from `SuperVideoBackground`.
+* **lib/video-background.mjs** - It contains the `VideoBackground` class that is used to create and control HTML5 video backgrounds. Inherits from `SuperVideoBackground`. It also owns `MIME_MAP` and the `RE_VIDEO_FILE` pattern derived from it, so the containers the script claims to support and the ones it detects cannot drift apart.
+* **lib/buttons.mjs** - It contains the play and pause automatic buttons and their functionality that are added to the video backgrounds. I seriously don't know why I created this in the first place.
+* **lib/controls.mjs** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle`, `VideoBackgroundGroup` and `VideoBackgroundGroups` which tune onto the video events and use the common API, they are not bundled with the main script, but are available through `youtube-background-experimental.js`.
+
+The demo page is generated, not hand-written: `src/markup/index.md` and `src/styles/prose.scss` are built through [poops-docs-theme](https://github.com/stamat/poops-docs-theme) into `site/`.
 
 Tu summarize, because YouTube, Vimeo and HTML5 Video API's are different - we need a way to generalize these APIs and provide a common interface for all of them. Due to a lot of common code we have the `SuperVideoBackground` class that is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
 
