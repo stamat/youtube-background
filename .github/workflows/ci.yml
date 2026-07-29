@@ -35,4 +35,4 @@ jobs:
         run: npm run build
 
       - name: Fail if the build output is out of date
-        run: git diff --exit-code -- '*.js' '*.js.map'
+        run: git diff --exit-code

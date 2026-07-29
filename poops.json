@@ -21,8 +21,28 @@
       }
     },
     {
+      "in": "src/main.mjs",
+      "out": "site/jquery.youtube-background.js",
+      "options": {
+        "minify": true,
+        "justMinified": true,
+        "format": "iife",
+        "target": "es2019"
+      }
+    },
+    {
+      "in": "src/experimental.mjs",
+      "out": "site/youtube-background-experimental.js",
+      "options": {
+        "minify": true,
+        "justMinified": true,
+        "format": "iife",
+        "target": "es2019"
+      }
+    },
+    {
       "in": "node_modules/poops-docs-theme/src/prose.ts",
-      "out": "js/prose.js",
+      "out": "site/js/prose.js",
       "options": {
         "minify": true,
         "justMinified": true,
@@ -33,7 +53,8 @@
   ],
   "banner": "/* {{ name }} v{{ version }} | {{ homepage }} | {{ license }} License */",
   "serve": {
-    "port": 4040
+    "port": 4040,
+    "base": "/site"
   },
   "livereload": true,
   "watch": [
@@ -45,7 +66,7 @@
   "styles": [
     {
       "in": "src/styles/prose.scss",
-      "out": "css/prose.css",
+      "out": "site/css/prose.css",
       "options": {
         "minify": true,
         "justMinified": true
@@ -54,7 +75,7 @@
   ],
   "markup": {
     "in": "src/markup",
-    "out": ".",
+    "out": "site",
     "site": {
       "title": "Youtube Background",
       "brand": "youtube-background",
