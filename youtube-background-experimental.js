@@ -4,22 +4,16 @@
   var SeekBar = class {
     constructor(element, vbgInstance) {
       this.lock = false;
-      if (!element)
-        return;
+      if (!element) return;
       this.element = element;
-      if (this.element.hasAttribute("data-target-uid"))
-        return;
+      if (this.element.hasAttribute("data-target-uid")) return;
       this.progressElem = this.element.querySelector(".js-seek-bar-progress");
       this.inputElem = this.element.querySelector(".js-seek-bar");
       this.targetSelector = this.element.getAttribute("data-target");
-      if (this.targetSelector)
-        this.targetElem = document.querySelector(this.targetSelector);
-      if (!this.targetSelector && vbgInstance)
-        this.targetElem = vbgInstance.element;
-      if (!this.targetElem)
-        return;
-      if (vbgInstance)
-        this.setVBGInstance(vbgInstance);
+      if (this.targetSelector) this.targetElem = document.querySelector(this.targetSelector);
+      if (!this.targetSelector && vbgInstance) this.targetElem = vbgInstance.element;
+      if (!this.targetElem) return;
+      if (vbgInstance) this.setVBGInstance(vbgInstance);
       this.targetElem.addEventListener("video-background-time-update", this.onTimeUpdate.bind(this));
       this.targetElem.addEventListener("video-background-play", this.onReady.bind(this));
       this.targetElem.addEventListener("video-background-ready", this.onReady.bind(this));
@@ -28,8 +22,7 @@
       this.inputElem.addEventListener("change", this.onChange.bind(this));
     }
     setVBGInstance(vbgInstance) {
-      if (this.vbgInstance)
-        return;
+      if (this.vbgInstance) return;
       this.vbgInstance = vbgInstance;
       this.element.setAttribute("data-target-uid", vbgInstance.uid);
     }
@@ -38,8 +31,7 @@
     }
     onTimeUpdate(event) {
       this.setVBGInstance(event.detail);
-      if (!this.lock)
-        requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
+      if (!this.lock) requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
     }
     onDestroyed() {
       this.vbgInstance = null;
@@ -54,27 +46,21 @@
       requestAnimationFrame(() => this.setProgress(event.target.value));
       if (this.vbgInstance) {
         this.vbgInstance.seek(event.target.value);
-        if (this.vbgInstance.playerElement && parseFloat(this.vbgInstance.playerElement.style.opacity) === 0)
-          this.vbgInstance.playerElement.style.opacity = 1;
+        if (this.vbgInstance.playerElement && parseFloat(this.vbgInstance.playerElement.style.opacity) === 0) this.vbgInstance.playerElement.style.opacity = 1;
       }
     }
     setProgress(value) {
-      if (this.progressElem)
-        this.progressElem.value = value;
-      if (this.inputElem)
-        this.inputElem.value = value;
+      if (this.progressElem) this.progressElem.value = value;
+      if (this.inputElem) this.inputElem.value = value;
     }
   };
   var VideoBackgroundGroup = class {
     constructor(selector, videoBackgroundSelector, videoBackgroundFactoryInstance) {
       this.element = selector;
-      if (typeof this.element === "string")
-        this.element = document.querySelector(selector);
-      if (!this.element)
-        return;
+      if (typeof this.element === "string") this.element = document.querySelector(selector);
+      if (!this.element) return;
       this.elements = this.element.querySelectorAll(videoBackgroundSelector || "[data-vbg]");
-      if (!this.elements.length)
-        return;
+      if (!this.elements.length) return;
       this.videoBackgroundFactoryInstance = videoBackgroundFactoryInstance;
       this.stack = [];
       this.map = /* @__PURE__ */ new Map();
@@ -94,15 +80,13 @@
       ];
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
-        if (!element.hasAttribute("data-vbg-uid") && this.videoBackgroundFactoryInstance)
-          this.videoBackgroundFactoryInstance.add(element);
+        if (!element.hasAttribute("data-vbg-uid") && this.videoBackgroundFactoryInstance) this.videoBackgroundFactoryInstance.add(element);
         this.stack.push(element);
         this.map.set(element, i);
         if (i === 0) {
           this.current = 0;
           this.currentElement = element;
-          if (this.videoBackgroundFactoryInstance)
-            this.currentInstance = this.videoBackgroundFactoryInstance.get(element);
+          if (this.videoBackgroundFactoryInstance) this.currentInstance = this.videoBackgroundFactoryInstance.get(element);
         }
         for (let j = 0; j < this.listeners.length; j++) {
           const [eventName, handler, options] = this.listeners[j];
@@ -111,42 +95,32 @@
       }
     }
     setVideoBackgroundFactoryInstance(event) {
-      if (this.videoBackgroundFactoryInstance)
-        return;
+      if (this.videoBackgroundFactoryInstance) return;
       this.videoBackgroundFactoryInstance = event.detail.factoryInstance;
-      if (!this.currentInstance)
-        this.currentInstance = this.videoBackgroundFactoryInstance.get(this.currentElement);
+      if (!this.currentInstance) this.currentInstance = this.videoBackgroundFactoryInstance.get(this.currentElement);
     }
     onVideoReady(event) {
-      if (this.stack[this.current] !== event.detail.element)
-        return;
+      if (this.stack[this.current] !== event.detail.element) return;
       this.setVideoBackgroundFactoryInstance(event);
       const videoBackground = event.detail;
-      if (videoBackground.params.muted)
-        this.muted = true;
-      if (!videoBackground.isIntersecting)
-        return;
-      if (!videoBackground.params.autoplay)
-        return;
+      if (videoBackground.params.muted) this.muted = true;
+      if (!videoBackground.isIntersecting) return;
+      if (!videoBackground.params.autoplay) return;
       this.playing = true;
-      if (videoBackground.currentState === "playing")
-        return;
+      if (videoBackground.currentState === "playing") return;
       videoBackground.softPlay();
     }
     onVideoPause(event) {
       ;
       this.setVideoBackgroundFactoryInstance(event);
       const stackIndex = this.map.get(event.detail.element);
-      if (stackIndex === this.current)
-        return;
+      if (stackIndex === this.current) return;
     }
     levelSeekBars() {
       for (let i = 0; i < this.stack.length; i++) {
-        if (i === this.current)
-          continue;
+        if (i === this.current) continue;
         const seekBarElem = this.getSeekBar(this.videoBackgroundFactoryInstance.get(this.stack[i]));
-        if (!seekBarElem)
-          continue;
+        if (!seekBarElem) continue;
         if (i < this.current) {
           this.setProgress(seekBarElem, 100);
         } else {
@@ -155,35 +129,27 @@
       }
     }
     getSeekBar(currentInstance) {
-      if (!currentInstance)
-        return;
+      if (!currentInstance) return;
       const uid = currentInstance.uid;
       const element = document.querySelector(`.js-seek-bar-wrap[data-target-uid="${uid}"]`);
-      if (!element)
-        return;
+      if (!element) return;
       return element;
     }
     setProgress(seekBarElem, value) {
-      if (!seekBarElem)
-        return;
+      if (!seekBarElem) return;
       const progressElem = seekBarElem.querySelector(".js-seek-bar-progress");
       const inputElem = seekBarElem.querySelector(".js-seek-bar");
-      if (progressElem)
-        progressElem.value = value;
-      if (inputElem)
-        inputElem.value = value;
+      if (progressElem) progressElem.value = value;
+      if (inputElem) inputElem.value = value;
     }
     onVideoSeeked(event) {
       const current = this.map.get(event.detail.element);
-      if (this.current !== current)
-        this.setCurrent(current, true);
+      if (this.current !== current) this.setCurrent(current, true);
     }
     setCurrent(index, seek) {
       const previous = this.current;
-      if (index >= this.stack.length)
-        index = 0;
-      if (index < 0)
-        index = this.stack.length - 1;
+      if (index >= this.stack.length) index = 0;
+      if (index < 0) index = this.stack.length - 1;
       const previousInstance = this.videoBackgroundFactoryInstance.get(this.stack[previous]);
       this.current = index;
       this.currentInstance = this.videoBackgroundFactoryInstance.get(this.stack[this.current]);
@@ -192,28 +158,22 @@
       this.currentElement.style.display = "block";
       if (!seek) {
         const seekBarElem = this.getSeekBar(this.currentInstance);
-        if (seekBarElem)
-          this.setProgress(seekBarElem, 0);
+        if (seekBarElem) this.setProgress(seekBarElem, 0);
         this.currentInstance.seek(0);
       }
       setTimeout(() => {
-        if (this.currentInstance.currentState !== "playing")
-          this.currentInstance.play();
+        if (this.currentInstance.currentState !== "playing") this.currentInstance.play();
       }, 100);
-      if (previousInstance && previousInstance.currentState !== "paused")
-        previousInstance.pause();
+      if (previousInstance && previousInstance.currentState !== "paused") previousInstance.pause();
       setTimeout(this.levelSeekBars.bind(this), 100);
-      if (index >= this.stack.length)
-        this.dispatchEvent("video-background-group-forward-rewind");
-      if (index < 0)
-        this.dispatchEvent("video-background-group-backward-rewind");
+      if (index >= this.stack.length) this.dispatchEvent("video-background-group-forward-rewind");
+      if (index < 0) this.dispatchEvent("video-background-group-backward-rewind");
     }
     dispatchEvent(name) {
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
     }
     onVideoEnded(event) {
-      if (event.detail.element !== this.currentElement)
-        return;
+      if (event.detail.element !== this.currentElement) return;
       this.next();
     }
     next() {
@@ -227,8 +187,7 @@
     unmute() {
       for (let i = 0; i < this.stack.length; i++) {
         const instance = this.videoBackgroundFactoryInstance.get(this.stack[i]);
-        if (!instance)
-          continue;
+        if (!instance) continue;
         instance.unmute();
       }
       this.muted = false;
@@ -237,8 +196,7 @@
     mute() {
       for (let i = 0; i < this.stack.length; i++) {
         const instance = this.videoBackgroundFactoryInstance.get(this.stack[i]);
-        if (!instance)
-          continue;
+        if (!instance) continue;
         instance.mute();
       }
       this.muted = true;
@@ -255,8 +213,7 @@
       this.dispatchEvent("video-background-group-play");
     }
     destroy() {
-      if (!this.elements || !this.listeners)
-        return;
+      if (!this.elements || !this.listeners) return;
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         for (let j = 0; j < this.listeners.length; j++) {
@@ -268,12 +225,10 @@
   };
   var PlayToggle = class {
     constructor(playToggleElem, vbgInstance) {
-      if (!playToggleElem)
-        return;
+      if (!playToggleElem) return;
       this.element = playToggleElem;
       this.targetSelector = this.element.getAttribute("data-target");
-      if (!this.targetSelector)
-        return;
+      if (!this.targetSelector) return;
       this.active = false;
       if (this.element.hasAttribute("aria-pressed")) {
         this.active = this.element.getAttribute("aria-pressed") === "true";
@@ -282,10 +237,8 @@
       }
       this.element.setAttribute("role", "switch");
       this.targetElem = document.querySelector(this.targetSelector);
-      if (!this.targetElem)
-        return;
-      if (vbgInstance)
-        this.vbgInstance = vbgInstance;
+      if (!this.targetElem) return;
+      if (vbgInstance) this.vbgInstance = vbgInstance;
       this.targetElem.addEventListener("video-background-ready", this.onReady.bind(this));
       this.targetElem.addEventListener("video-background-state-change", this.onStateChange.bind(this));
       this.targetElem.addEventListener("video-background-play", this.onPlay.bind(this));
@@ -297,20 +250,17 @@
       this.vbgInstance = event.detail;
     }
     onStateChange(event) {
-      if (!this.vbgInstance)
-        this.vbgInstance = event.detail;
+      if (!this.vbgInstance) this.vbgInstance = event.detail;
       this.active = this.vbgInstance.currentState === "playing" || this.vbgInstance.currentState === "buffering";
       this.element.setAttribute("aria-pressed", this.active);
     }
     onPlay(event) {
-      if (!this.vbgInstance)
-        this.vbgInstance = event.detail;
+      if (!this.vbgInstance) this.vbgInstance = event.detail;
       this.active = true;
       this.element.setAttribute("aria-pressed", this.active);
     }
     onPause(event) {
-      if (!this.vbgInstance)
-        this.vbgInstance = event.detail;
+      if (!this.vbgInstance) this.vbgInstance = event.detail;
       this.active = false;
       this.element.setAttribute("aria-pressed", this.active);
     }
@@ -320,8 +270,7 @@
       this.element.setAttribute("aria-pressed", this.active);
     }
     onClick() {
-      if (!this.vbgInstance)
-        return;
+      if (!this.vbgInstance) return;
       if (this.active) {
         this.vbgInstance.pause();
       } else {
@@ -331,12 +280,10 @@
   };
   var MuteToggle = class {
     constructor(muteToggleElem, vbgInstance) {
-      if (!muteToggleElem)
-        return;
+      if (!muteToggleElem) return;
       this.element = muteToggleElem;
       this.targetSelector = this.element.getAttribute("data-target");
-      if (!this.targetSelector)
-        return;
+      if (!this.targetSelector) return;
       this.active = false;
       if (this.element.hasAttribute("aria-pressed")) {
         this.active = this.element.getAttribute("aria-pressed") === "true";
@@ -345,10 +292,8 @@
       }
       this.element.setAttribute("role", "switch");
       this.targetElem = document.querySelector(this.targetSelector);
-      if (!this.targetElem)
-        return;
-      if (vbgInstance)
-        this.vbgInstance = vbgInstance;
+      if (!this.targetElem) return;
+      if (vbgInstance) this.vbgInstance = vbgInstance;
       this.targetElem.addEventListener("video-background-ready", this.onReady.bind(this));
       this.targetElem.addEventListener("video-background-mute", this.onMute.bind(this));
       this.targetElem.addEventListener("video-background-unmute", this.onUnmute.bind(this));
@@ -363,14 +308,12 @@
       }
     }
     onMute(event) {
-      if (!this.vbgInstance)
-        this.vbgInstance = event.detail;
+      if (!this.vbgInstance) this.vbgInstance = event.detail;
       this.active = true;
       this.element.setAttribute("aria-pressed", this.active);
     }
     onUnmute(event) {
-      if (!this.vbgInstance)
-        this.vbgInstance = event.detail;
+      if (!this.vbgInstance) this.vbgInstance = event.detail;
       this.active = false;
       this.element.setAttribute("aria-pressed", this.active);
     }
@@ -380,8 +323,7 @@
       this.element.setAttribute("aria-pressed", this.active);
     }
     onClick() {
-      if (!this.vbgInstance)
-        return;
+      if (!this.vbgInstance) return;
       if (this.active) {
         this.vbgInstance.unmute();
       } else {
@@ -396,12 +338,9 @@
       this.elements = [];
       this.videoBackgroundSelector = videoBackgroundSelector;
       this.videoBackgroundFactoryInstance = videoBackgroundFactoryInstance;
-      if (typeof selector === "string")
-        this.elements = document.querySelectorAll(selector);
-      if (selector instanceof Element)
-        this.elements = [selector];
-      if (selector instanceof NodeList)
-        this.elements = selector;
+      if (typeof selector === "string") this.elements = document.querySelectorAll(selector);
+      if (selector instanceof Element) this.elements = [selector];
+      if (selector instanceof NodeList) this.elements = selector;
       for (let i = 0; i < this.elements.length; i++) {
         this.add(this.elements[i]);
       }
@@ -414,8 +353,7 @@
       return uid;
     }
     add(element) {
-      if (!element)
-        return;
+      if (!element) return;
       let id = element.getAttribute("id");
       if (!id || Object.prototype.hasOwnProperty.call(this.instances, id)) {
         id = element.getAttribute("data-uid");
@@ -428,26 +366,20 @@
       return this.instances[id];
     }
     getID(element) {
-      if (!element)
-        return;
-      if (typeof element === "string")
-        return element;
+      if (!element) return;
+      if (typeof element === "string") return element;
       const id = element.getAttribute("id");
-      if (id && Object.prototype.hasOwnProperty.call(this.instances, id))
-        return id;
+      if (id && Object.prototype.hasOwnProperty.call(this.instances, id)) return id;
       const uid = element.getAttribute("data-uid");
-      if (uid && Object.prototype.hasOwnProperty.call(this.instances, uid))
-        return uid;
+      if (uid && Object.prototype.hasOwnProperty.call(this.instances, uid)) return uid;
     }
     get(element) {
       const id = this.getID(element);
-      if (id)
-        return this.instances[id];
+      if (id) return this.instances[id];
     }
     destroy(element) {
       const id = this.getID(element);
-      if (!id)
-        return;
+      if (!id) return;
       this.instances[id].destroy();
       delete this.instances[id];
     }

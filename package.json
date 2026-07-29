@@ -30,7 +30,8 @@
     "globals": "^17.8.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "poops": "^1.0.18"
+    "poops": "^1.9.4",
+    "poops-docs-theme": "^1.1.2"
   },
   "scripts": {
     "dev": "poops",
