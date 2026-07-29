@@ -492,7 +492,7 @@ To just build the code, without running the local server, run:
 npm run build
 ```
 
-The build produces the two bundles at the repo root and the demo page in `site/`, which is what gets deployed to GitHub Pages.
+The build produces the two bundles at the repo root and the demo page in `_site/`, which is what gets deployed to GitHub Pages.
 
 To run the tests ([jest](https://jestjs.io), in `src/__tests__`):
 
@@ -522,7 +522,7 @@ Sources are ES modules with the `.mjs` extension — the package itself stays Co
 * **lib/buttons.mjs** - It contains the play and pause automatic buttons and their functionality that are added to the video backgrounds. I seriously don't know why I created this in the first place.
 * **lib/controls.mjs** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle`, `VideoBackgroundGroup` and `VideoBackgroundGroups` which tune onto the video events and use the common API, they are not bundled with the main script, but are available through `youtube-background-experimental.js`.
 
-The demo page is generated, not hand-written: `src/markup/index.md` and `src/styles/prose.scss` are built through [poops-docs-theme](https://github.com/stamat/poops-docs-theme) into `site/`.
+The demo page is generated, not hand-written: `site/index.md` and `src/styles/prose.scss` are built through [poops-docs-theme](https://github.com/stamat/poops-docs-theme) into `_site/`.
 
 Tu summarize, because YouTube, Vimeo and HTML5 Video API's are different - we need a way to generalize these APIs and provide a common interface for all of them. Due to a lot of common code we have the `SuperVideoBackground` class that is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
 

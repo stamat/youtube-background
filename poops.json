@@ -22,7 +22,7 @@
     },
     {
       "in": "src/main.mjs",
-      "out": "site/jquery.youtube-background.js",
+      "out": "_site/jquery.youtube-background.js",
       "options": {
         "minify": true,
         "justMinified": true,
@@ -32,7 +32,7 @@
     },
     {
       "in": "src/experimental.mjs",
-      "out": "site/youtube-background-experimental.js",
+      "out": "_site/youtube-background-experimental.js",
       "options": {
         "minify": true,
         "justMinified": true,
@@ -42,7 +42,7 @@
     },
     {
       "in": "node_modules/poops-docs-theme/src/prose.ts",
-      "out": "site/js/prose.js",
+      "out": "_site/js/prose.js",
       "options": {
         "minify": true,
         "justMinified": true,
@@ -54,11 +54,12 @@
   "banner": "/* {{ name }} v{{ version }} | {{ homepage }} | {{ license }} License */",
   "serve": {
     "port": 4040,
-    "base": "/site"
+    "base": "/_site"
   },
   "livereload": true,
   "watch": [
-    "src"
+    "src",
+    "site"
   ],
   "includePaths": [
     "node_modules"
@@ -66,7 +67,7 @@
   "styles": [
     {
       "in": "src/styles/prose.scss",
-      "out": "site/css/prose.css",
+      "out": "_site/css/prose.css",
       "options": {
         "minify": true,
         "justMinified": true
@@ -74,8 +75,8 @@
     }
   ],
   "markup": {
-    "in": "src/markup",
-    "out": "site",
+    "in": "site",
+    "out": "_site",
     "site": {
       "title": "Youtube Background",
       "brand": "youtube-background",

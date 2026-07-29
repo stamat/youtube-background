@@ -3,11 +3,11 @@ import globals from 'globals';
 
 export default [
   {
-    // build output: the bundles at the root and everything generated into site/
+    // build output: the bundles at the root and everything generated into _site/
     ignores: [
       'jquery.youtube-background*.js',
       'youtube-background-experimental*.js',
-      'site/**',
+      '_site/**',
       '**/*.map',
       'node_modules/**'
     ]
