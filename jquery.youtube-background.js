@@ -1067,19 +1067,21 @@
           });
         });
       } else {
-        window.addEventListener("resize", function() {
+        this.onResize = function() {
           for (let k in self.index) {
             window.requestAnimationFrame(() => self.index[k].resize(self.index[k].playerElement));
           }
-        });
+        };
+        window.addEventListener("resize", this.onResize);
       }
       this.initPlayers();
+      this.onVisibilityChange = this.onVisibilityChange.bind(this);
+      document.addEventListener("visibilitychange", this.onVisibilityChange);
       if (!this.elements || !this.elements.length) return;
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         this.add(element, params);
       }
-      document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
     }
     onVisibilityChange() {
       if (document.hidden) return;
@@ -1133,8 +1135,18 @@
     }
     destroyAll() {
       for (let k in this.index) {
-        this.destroy(this.index[k].playerElement);
+        this.destroy(this.index[k].element);
       }
+    }
+    // Full teardown. destroyAll() only clears the index - the observers and the two
+    // global listeners outlive it, and nothing else can reach them once the factory
+    // goes out of scope.
+    disconnect() {
+      this.destroyAll();
+      if (this.intersectionObserver) this.intersectionObserver.disconnect();
+      if (this.resizeObserver) this.resizeObserver.disconnect();
+      document.removeEventListener("visibilitychange", this.onVisibilityChange);
+      if (this.onResize) window.removeEventListener("resize", this.onResize);
     }
     getVidID(link) {
       if (!link) return;

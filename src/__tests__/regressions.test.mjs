@@ -110,6 +110,52 @@ describe('time and percentage conversion', () => {
   })
 })
 
+describe('VideoBackgrounds teardown', () => {
+  // jsdom has neither observer, so the factory takes its fallback paths: no
+  // IntersectionObserver, and the window resize listener instead of ResizeObserver.
+  const stubInstance = (backgrounds, uid) => {
+    const element = document.createElement('div')
+    element.setAttribute('data-vbg-uid', uid)
+    document.body.appendChild(element)
+
+    const instance = {
+      element,
+      playerElement: document.createElement('iframe'),
+      params: { 'always-play': true },
+      shouldPlay: () => true,
+      softPlay: () => { instance.played += 1 },
+      destroy: () => { instance.destroyed = true },
+      played: 0,
+      destroyed: false
+    }
+
+    backgrounds.index[uid] = instance
+    return instance
+  }
+
+  test('destroyAll reaches instances through the wrapper element', () => {
+    const backgrounds = new VideoBackgrounds([])
+    const instance = stubInstance(backgrounds, 'vbg-test-1')
+
+    backgrounds.destroyAll()
+
+    expect(instance.destroyed).toBe(true)
+    expect(backgrounds.index['vbg-test-1']).toBeUndefined()
+  })
+
+  test('disconnect stops the factory responding to visibilitychange', () => {
+    const backgrounds = new VideoBackgrounds([])
+    const instance = stubInstance(backgrounds, 'vbg-test-2')
+
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(instance.played).toBe(1)
+
+    backgrounds.disconnect()
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(instance.played).toBe(1)
+  })
+})
+
 describe('shouldPlay', () => {
   const shouldPlay = (state) => SuperVideoBackground.prototype.shouldPlay.call(state)
 
