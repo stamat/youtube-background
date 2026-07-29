@@ -1,4 +1,4 @@
-import { generateActionButton } from './buttons.js';
+import { generateActionButton } from './buttons.mjs';
 import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed } from 'book-of-spells';
 
 export class SuperVideoBackground {
@@ -298,7 +298,7 @@ export class SuperVideoBackground {
     } else {
       for (let k in defaults) {
         //load in defaults if the param hasn't been set
-        res_params[k] = !params.hasOwnProperty(k) ? defaults[k] : params[k];
+        res_params[k] = !Object.prototype.hasOwnProperty.call(params, k) ? defaults[k] : params[k];
       }
     }
   

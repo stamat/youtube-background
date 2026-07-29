@@ -37,7 +37,7 @@ export class SeekBar {
     if (!this.lock) requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
   }
 
-  onDestroyed(event) {
+  onDestroyed() {
     this.vbgInstance = null;
     requestAnimationFrame(() => this.setProgress(0));
   }
@@ -317,13 +317,13 @@ export class PlayToggle {
     this.element.setAttribute('aria-pressed', this.active);
   }
 
-  onDestroyed(event) {
+  onDestroyed() {
     this.vbgInstance = null;
     this.active = false;
     this.element.setAttribute('aria-pressed', this.active);
   }
 
-  onClick(event) {
+  onClick() {
     if (!this.vbgInstance) return;
     if (this.active) {
       this.vbgInstance.pause();
@@ -384,13 +384,13 @@ export class MuteToggle {
     this.element.setAttribute('aria-pressed', this.active);
   }
 
-  onDestroyed(event) {
+  onDestroyed() {
     this.vbgInstance = null;
     this.active = false;
     this.element.setAttribute('aria-pressed', this.active);
   }
 
-  onClick(event) {
+  onClick() {
     if (!this.vbgInstance) return;
     if (this.active) {
       this.vbgInstance.unmute();
@@ -420,7 +420,7 @@ export class VideoBackgroundGroups {
 
   generateUID() {
     let uid = Date.now().toString(36) + Math.random().toString(36).substring(2);
-    while (this.instances.hasOwnProperty(uid)) {
+    while (Object.prototype.hasOwnProperty.call(this.instances, uid)) {
       uid = Date.now().toString(36) + Math.random().toString(36).substring(2);
     }
     return uid;
@@ -430,10 +430,10 @@ export class VideoBackgroundGroups {
     if (!element) return;
 
     let id = element.getAttribute('id');
-    if (!id || this.instances.hasOwnProperty(id)) {
+    if (!id || Object.prototype.hasOwnProperty.call(this.instances, id)) {
       id = element.getAttribute('data-uid');
 
-      if (!id || this.instances.hasOwnProperty(id)) {
+      if (!id || Object.prototype.hasOwnProperty.call(this.instances, id)) {
         id = this.generateUID();
         element.setAttribute('data-uid', id);
       }
@@ -447,9 +447,9 @@ export class VideoBackgroundGroups {
     if (!element) return;
     if (typeof element === 'string') return element;
     const id = element.getAttribute('id');
-    if (id && this.instances.hasOwnProperty(id)) return id;
+    if (id && Object.prototype.hasOwnProperty.call(this.instances, id)) return id;
     const uid = element.getAttribute('data-uid');
-    if (uid && this.instances.hasOwnProperty(uid)) return uid;
+    if (uid && Object.prototype.hasOwnProperty.call(this.instances, uid)) return uid;
   }
 
   get(element) {

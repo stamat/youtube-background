@@ -1,41 +1,28 @@
-/* youtube-background v1.1.8 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.2.0 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
-  // src/lib/buttons.js
-  function buttonOn(buttonObj) {
-    if (!buttonObj)
+  // src/lib/buttons.mjs
+  function setButtonState(buttonObj, active) {
+    if (!buttonObj || !buttonObj.element)
       return;
-    buttonObj.element.classList.add(buttonObj.stateClassName);
-    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[0]);
-    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[1]);
-    buttonObj.element.setAttribute("aria-pressed", false);
-  }
-  function buttonOff(buttonObj) {
-    if (!buttonObj)
-      return;
-    buttonObj.element.classList.remove(buttonObj.stateClassName);
-    buttonObj.element.firstChild.classList.add(buttonObj.stateChildClassNames[0]);
-    buttonObj.element.firstChild.classList.remove(buttonObj.stateChildClassNames[1]);
-    buttonObj.element.setAttribute("aria-pressed", true);
+    const element = buttonObj.element;
+    element.classList.toggle(buttonObj.stateClassName, active);
+    element.firstChild.classList.toggle(buttonObj.stateChildClassNames[0], !active);
+    element.firstChild.classList.toggle(buttonObj.stateChildClassNames[1], active);
+    element.setAttribute("aria-pressed", active);
+    if (buttonObj.stateLabels)
+      element.setAttribute("aria-label", buttonObj.stateLabels[active ? 1 : 0]);
   }
   function generateActionButton(obj, props) {
     const btn = document.createElement("button");
     btn.className = props.className;
     btn.innerHTML = props.innerHtml;
-    btn.setAttribute("role", "switch");
-    btn.firstChild.classList.add(props.stateChildClassNames[0]);
-    btn.setAttribute("aria-pressed", !props.initialState);
+    btn.setAttribute("type", "button");
     props.element = btn;
-    if (obj.params[props.condition_parameter] === props.initialState) {
-      buttonOn(props);
-    }
-    btn.addEventListener("click", function(e) {
-      if (this.classList.contains(props.stateClassName)) {
-        buttonOff(props);
-        obj[props.actions[0]]();
-      } else {
-        buttonOn(props);
-        obj[props.actions[1]]();
-      }
+    setButtonState(props, !!obj[props.condition_parameter]);
+    btn.addEventListener("click", function() {
+      const active = this.classList.contains(props.stateClassName);
+      setButtonState(props, !active);
+      obj[props.actions[active ? 0 : 1]]();
     });
     obj.buttons[props.name] = {
       element: btn,
@@ -127,7 +114,6 @@
   // node_modules/book-of-spells/src/regex.mjs
   var RE_YOUTUBE = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
   var RE_VIMEO = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i;
-  var RE_VIDEO = /\/([^\/]+\.(?:mp4|ogg|ogv|ogm|webm|avi))\s*$/i;
 
   // node_modules/book-of-spells/src/parsers.mjs
   function parseResolutionString(res) {
@@ -196,7 +182,7 @@
     return isUserAgentMobile(navigator.userAgent);
   }
 
-  // src/lib/super-video-background.js
+  // src/lib/super-video-background.mjs
   var SuperVideoBackground = class {
     constructor(elem, params, id, uid, type, factoryInstance) {
       if (!id)
@@ -255,6 +241,7 @@
       this.percentComplete = 0;
       if (this.params["start-at"])
         this.percentComplete = this.timeToPercentage(this.params["start-at"]);
+      this.originalStyle = this.element.getAttribute("style");
       this.buildWrapperHTML();
       if (this.is_mobile && !this.params.mobile)
         return;
@@ -263,10 +250,10 @@
           name: "playing",
           className: "play-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: !this.paused,
           stateClassName: "paused",
           condition_parameter: "paused",
           stateChildClassNames: ["fa-pause-circle", "fa-play-circle"],
+          stateLabels: ["Pause", "Play"],
           actions: ["play", "pause"]
         });
       }
@@ -275,10 +262,10 @@
           name: "muted",
           className: "mute-toggle",
           innerHtml: '<i class="fa"></i>',
-          initialState: this.muted,
           stateClassName: "muted",
           condition_parameter: "muted",
           stateChildClassNames: ["fa-volume-up", "fa-volume-mute"],
+          stateLabels: ["Mute", "Unmute"],
           actions: ["unmute", "mute"]
         });
       }
@@ -360,7 +347,7 @@
         for (let property in wrapper_styles) {
           this.element.style[property] = wrapper_styles[property];
         }
-        if (!["absolute", "fixed", "relative", "sticky"].indexOf(parent.style.position)) {
+        if (window.getComputedStyle(parent).position === "static") {
           parent.style.position = "relative";
         }
       }
@@ -387,13 +374,17 @@
         this.element.style["background-image"] = `url(https://vumbnail.com/${id}.jpg)`;
     }
     destroy() {
-      this.playerElement.remove();
+      if (this.playerElement)
+        this.playerElement.remove();
       this.element.classList.remove("youtube-background", "video-background");
       this.element.removeAttribute("data-vbg-uid");
-      this.element.style = "";
-      if (this.params["play-button"] || this.params["mute-button"]) {
-        this.controls_element.remove();
+      if (this.originalStyle) {
+        this.element.setAttribute("style", this.originalStyle);
+      } else {
+        this.element.removeAttribute("style");
       }
+      if (this.controls_element)
+        this.controls_element.remove();
       if (this.timeUpdateTimer)
         clearInterval(this.timeUpdateTimer);
       this.dispatchEvent("video-background-destroyed");
@@ -431,6 +422,8 @@
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
     }
     shouldPlay() {
+      if (this.paused)
+        return false;
       if (this.currentState === "ended" && !this.params.loop)
         return false;
       if (this.params["always-play"] && this.currentState !== "playing")
@@ -460,7 +453,7 @@
         res_params = defaults;
       } else {
         for (let k in defaults) {
-          res_params[k] = !params.hasOwnProperty(k) ? defaults[k] : params[k];
+          res_params[k] = !Object.prototype.hasOwnProperty.call(params, k) ? defaults[k] : params[k];
         }
       }
       if (!element)
@@ -486,7 +479,7 @@
     }
   };
 
-  // src/lib/youtube-background.js
+  // src/lib/youtube-background.mjs
   var YoutubeBackground = class extends SuperVideoBackground {
     constructor(elem, params, id, uid, factoryInstance) {
       super(elem, params, id, uid, "youtube", factoryInstance);
@@ -522,7 +515,7 @@
       return this.STATES[state];
     }
     initYTPlayer() {
-      if (!window.hasOwnProperty("YT") || this.player !== null)
+      if (!Object.prototype.hasOwnProperty.call(window, "YT") || this.player !== null)
         return;
       this.player = new YT.Player(this.uid, {
         events: {
@@ -539,7 +532,7 @@
     }
     injectScript() {
       const src = "https://www.youtube.com/player_api";
-      if (window.hasOwnProperty("YT") || document.querySelector(`script[src="${src}"]`))
+      if (Object.prototype.hasOwnProperty.call(window, "YT") || document.querySelector(`script[src="${src}"]`))
         return;
       const tag = document.createElement("script");
       tag.async = true;
@@ -568,9 +561,6 @@
       }
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         src += "&autoplay=1";
-      }
-      if (this.params.loop) {
-        src += "&loop=1";
       }
       return src;
     }
@@ -730,7 +720,7 @@
     }
   };
 
-  // src/lib/vimeo-background.js
+  // src/lib/vimeo-background.mjs
   var VimeoBackground = class extends SuperVideoBackground {
     constructor(elem, params, id, uid, factoryInstance) {
       super(elem, params, id.id, uid, "vimeo", factoryInstance);
@@ -746,11 +736,11 @@
     }
     injectScript() {
       const src = "https://player.vimeo.com/api/player.js";
-      if (window.hasOwnProperty("Vimeo") || document.querySelector(`script[src="${src}"]`))
+      if (Object.prototype.hasOwnProperty.call(window, "Vimeo") || document.querySelector(`script[src="${src}"]`))
         return;
       const tag = document.createElement("script");
       tag.async = true;
-      if (window.hasOwnProperty("onVimeoIframeAPIReady") && typeof window.onVimeoIframeAPIReady === "function")
+      if (Object.prototype.hasOwnProperty.call(window, "onVimeoIframeAPIReady") && typeof window.onVimeoIframeAPIReady === "function")
         tag.addEventListener("load", () => {
           window.onVimeoIframeAPIReady();
         });
@@ -759,7 +749,7 @@
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
     initVimeoPlayer() {
-      if (!window.hasOwnProperty("Vimeo") || this.player !== null)
+      if (!Object.prototype.hasOwnProperty.call(window, "Vimeo") || this.player !== null)
         return;
       this.player = new Vimeo.Player(this.playerElement);
       this.player.on("loaded", this.onVideoPlayerReady.bind(this));
@@ -951,7 +941,19 @@
     }
   };
 
-  // src/lib/video-background.js
+  // src/lib/video-background.mjs
+  var MIME_MAP = {
+    "ogv": "video/ogg",
+    "ogm": "video/ogg",
+    "ogg": "video/ogg",
+    "avi": "video/avi",
+    "mp4": "video/mp4",
+    "webm": "video/webm",
+    "m4v": "video/x-m4v",
+    "mov": "video/quicktime",
+    "qt": "video/quicktime"
+  };
+  var RE_VIDEO_FILE = new RegExp(`\\/([^\\/?#]+\\.(?:${Object.keys(MIME_MAP).join("|")}))(?:[?#][^\\/]*)?\\s*$`, "i");
   var VideoBackground = class extends SuperVideoBackground {
     constructor(elem, params, vid_data, uid, factoryInstance) {
       super(elem, params, vid_data.link, uid, "video", factoryInstance);
@@ -960,26 +962,19 @@
       if (this.is_mobile && !this.params.mobile)
         return;
       this.src = vid_data.link;
-      this.ext = /(?:\.([^.]+))?$/.exec(vid_data.id)[1];
       this.uid = uid;
       this.element.setAttribute("data-vbg-uid", uid);
       this.player = null;
       this.buttons = {};
-      this.MIME_MAP = {
-        "ogv": "video/ogg",
-        "ogm": "video/ogg",
-        "ogg": "video/ogg",
-        "avi": "video/avi",
-        "mp4": "video/mp4",
-        "webm": "video/webm",
-        "m4v": "video/x-m4v",
-        "mov": "video/quicktime",
-        "qt": "video/quicktime"
-      };
-      this.mime = this.MIME_MAP[this.ext.toLowerCase()];
+      this.MIME_MAP = MIME_MAP;
+      this.setMimeType(vid_data.id);
       this.injectPlayer();
       this.mobileLowBatteryAutoplayHack();
       this.dispatchEvent("video-background-ready");
+    }
+    setMimeType(source) {
+      this.ext = /(?:\.([^.]+))?$/.exec(source)[1];
+      this.mime = this.ext ? this.MIME_MAP[this.ext.toLowerCase()] : void 0;
     }
     generatePlayerElement() {
       const playerElement = document.createElement("video");
@@ -1018,7 +1013,8 @@
       this.element.appendChild(this.playerElement);
       const source = document.createElement("source");
       source.setAttribute("src", this.src);
-      source.setAttribute("type", this.mime);
+      if (this.mime)
+        source.setAttribute("type", this.mime);
       this.playerElement.appendChild(source);
       this.resize(this.playerElement);
     }
@@ -1028,16 +1024,16 @@
     }
     /* ===== API ===== */
     setSource(url) {
-      const pts = url.match(RE_VIDEO);
+      const pts = url.match(RE_VIDEO_FILE);
       if (!pts || !pts.length)
         return;
       this.id = pts[1];
-      this.ext = /(?:\.([^.]+))?$/.exec(this.id)[1];
-      this.mime = this.MIME_MAP[this.ext.toLowerCase()];
+      this.setMimeType(this.id);
       this.playerElement.innerHTML = "";
       const source = document.createElement("source");
       source.setAttribute("src", url);
-      source.setAttribute("type", this.mime);
+      if (this.mime)
+        source.setAttribute("type", this.mime);
       this.playerElement.appendChild(source);
       this.src = url;
       if (this.element.hasAttribute("data-vbg"))
@@ -1095,11 +1091,11 @@
     seekTo(seconds) {
       if (!this.player)
         return;
-      if (this.player.hasOwnProperty("fastSeek")) {
+      if (typeof this.player.fastSeek === "function") {
         this.player.fastSeek(seconds);
-        return;
+      } else {
+        this.player.currentTime = seconds;
       }
-      this.player.currentTime = seconds;
       this.dispatchEvent("video-background-seeked");
     }
     softPause() {
@@ -1156,7 +1152,12 @@
     }
   };
 
-  // src/video-backgrounds.js
+  // src/video-backgrounds.mjs
+  var SOURCE_PATTERNS = {
+    YOUTUBE: RE_YOUTUBE,
+    VIMEO: RE_VIMEO,
+    VIDEO: RE_VIDEO_FILE
+  };
   var VideoBackgrounds = class {
     constructor(selector, params) {
       this.elements = selector;
@@ -1171,20 +1172,19 @@
         this.intersectionObserver = new IntersectionObserver(function(entries) {
           entries.forEach(function(entry) {
             const uid = entry.target.getAttribute("data-vbg-uid");
-            if (uid && self.index.hasOwnProperty(uid) && entry.isIntersecting) {
-              self.index[uid].isIntersecting = true;
-              try {
-                if (self.index[uid].player && !self.index[uid].paused)
-                  self.index[uid].softPlay();
-              } catch (e) {
+            if (!uid || !Object.prototype.hasOwnProperty.call(self.index, uid))
+              return;
+            const instance = self.index[uid];
+            instance.isIntersecting = entry.isIntersecting;
+            try {
+              if (entry.isIntersecting) {
+                if (instance.player && !instance.paused)
+                  instance.softPlay();
+              } else {
+                if (instance.player)
+                  instance.softPause();
               }
-            } else {
-              self.index[uid].isIntersecting = false;
-              try {
-                if (self.index[uid].player)
-                  self.index[uid].softPause();
-              } catch (e) {
-              }
+            } catch {
             }
           });
         });
@@ -1194,7 +1194,7 @@
         this.resizeObserver = new ResizeObserver(function(entries) {
           entries.forEach(function(entry) {
             const uid = entry.target.getAttribute("data-vbg-uid");
-            if (uid && self.index.hasOwnProperty(uid)) {
+            if (uid && Object.prototype.hasOwnProperty.call(self.index, uid)) {
               window.requestAnimationFrame(() => self.index[uid].resize());
             }
           });
@@ -1244,17 +1244,16 @@
         return;
       switch (vid_data.type) {
         case "YOUTUBE":
-          const yb = new YoutubeBackground(element, params, vid_data.id, uid, this);
-          this.index[uid] = yb;
+          this.index[uid] = new YoutubeBackground(element, params, vid_data.id, uid, this);
           break;
         case "VIMEO":
-          const vm = new VimeoBackground(element, params, vid_data, uid, this);
-          this.index[uid] = vm;
+          this.index[uid] = new VimeoBackground(element, params, vid_data, uid, this);
           break;
         case "VIDEO":
-          const vid = new VideoBackground(element, params, vid_data, uid, this);
-          this.index[uid] = vid;
+          this.index[uid] = new VideoBackground(element, params, vid_data, uid, this);
           break;
+        default:
+          return;
       }
       if (this.resizeObserver) {
         this.resizeObserver.observe(element);
@@ -1265,7 +1264,7 @@
     }
     destroy(element) {
       const uid = element.uid || element.getAttribute("data-vbg-uid");
-      if (uid && this.index.hasOwnProperty(uid)) {
+      if (uid && Object.prototype.hasOwnProperty.call(this.index, uid)) {
         if (!this.index[uid].params["always-play"] && this.intersectionObserver)
           this.intersectionObserver.unobserve(element);
         if (this.resizeObserver)
@@ -1280,16 +1279,12 @@
       }
     }
     getVidID(link) {
-      if (link === void 0 && link === null)
+      if (!link)
         return;
-      this.re = {};
-      this.re.YOUTUBE = RE_YOUTUBE;
-      this.re.VIMEO = RE_VIMEO;
-      this.re.VIDEO = RE_VIDEO;
-      for (let k in this.re) {
-        const pts = link.match(this.re[k]);
+      for (let k in SOURCE_PATTERNS) {
+        const pts = link.match(SOURCE_PATTERNS[k]);
         if (pts && pts.length) {
-          this.re[k].lastIndex = 0;
+          SOURCE_PATTERNS[k].lastIndex = 0;
           const data = {
             id: pts[1],
             type: k,
@@ -1298,7 +1293,7 @@
           };
           if (k === "VIMEO") {
             const unlistedQueryRegex = /(\?|&)h=([^=&#?]+)/;
-            const unlistedPathRegex = /\/[^\/\:\.]+(\:|\/)([^:?\/]+)\s?$/;
+            const unlistedPathRegex = /\/[^/:.]+(:|\/)([^:?/]+)\s?$/;
             const unlistedQuery = link.match(unlistedPathRegex) || link.match(unlistedQueryRegex);
             if (unlistedQuery)
               data.unlisted = unlistedQuery[2];
@@ -1314,14 +1309,14 @@
       pref = pref.replace(/^-+/, "").replace(/-+$/, "");
       pref = "vbg-" + pref;
       let uid = pref + "-" + randomIntInclusive(0, 9999);
-      while (this.index.hasOwnProperty(uid)) {
+      while (Object.prototype.hasOwnProperty.call(this.index, uid)) {
         uid = pref + "-" + randomIntInclusive(0, 9999);
       }
       return uid;
     }
     get(element) {
       const uid = typeof element === "string" ? element : element.getAttribute("data-vbg-uid");
-      if (uid && this.index.hasOwnProperty(uid))
+      if (uid && Object.prototype.hasOwnProperty.call(this.index, uid))
         return this.index[uid];
     }
     pauseAll() {
@@ -1351,7 +1346,11 @@
     }
     initPlayers(callback) {
       const self = this;
+      const previousYouTubeReady = window.onYouTubeIframeAPIReady;
+      const previousVimeoReady = window.onVimeoIframeAPIReady;
       window.onYouTubeIframeAPIReady = function() {
+        if (typeof previousYouTubeReady === "function")
+          previousYouTubeReady();
         for (let k in self.index) {
           if (self.index[k] instanceof YoutubeBackground) {
             self.index[k].initYTPlayer();
@@ -1361,10 +1360,12 @@
           setTimeout(callback, 100);
         }
       };
-      if (window.hasOwnProperty("YT") && window.YT.loaded) {
+      if (Object.prototype.hasOwnProperty.call(window, "YT") && window.YT.loaded) {
         window.onYouTubeIframeAPIReady();
       }
       window.onVimeoIframeAPIReady = function() {
+        if (typeof previousVimeoReady === "function")
+          previousVimeoReady();
         for (let k in self.index) {
           if (self.index[k] instanceof VimeoBackground) {
             self.index[k].initVimeoPlayer();
@@ -1374,19 +1375,21 @@
           setTimeout(callback, 100);
         }
       };
-      if (window.hasOwnProperty("Vimeo") && window.Vimeo.hasOwnProperty("Player")) {
+      if (Object.prototype.hasOwnProperty.call(window, "Vimeo") && Object.prototype.hasOwnProperty.call(window.Vimeo, "Player")) {
         window.onVimeoIframeAPIReady();
       }
     }
   };
 
-  // src/main.js
+  // src/main.mjs
   if (typeof jQuery == "function") {
     (function($) {
       $.fn.youtube_background = function(params) {
         const $this = $(this);
-        if (window.hasOwnProperty("VIDEO_BACKGROUNDS")) {
-          window.VIDEO_BACKGROUNDS.add($this, params);
+        if (Object.prototype.hasOwnProperty.call(window, "VIDEO_BACKGROUNDS")) {
+          $this.each(function() {
+            window.VIDEO_BACKGROUNDS.add(this, params);
+          });
           return $this;
         }
         window.VIDEO_BACKGROUNDS = new VideoBackgrounds(this, params);

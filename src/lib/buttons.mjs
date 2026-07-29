@@ -22,7 +22,7 @@ export function generateActionButton(obj, props) {
   // the live instance flag, not params - params has no 'paused' key at all
   setButtonState(props, !!obj[props.condition_parameter]);
 
-  btn.addEventListener('click', function(e) {
+  btn.addEventListener('click', function() {
     const active = this.classList.contains(props.stateClassName);
     setButtonState(props, !active);
     obj[props.actions[active ? 0 : 1]]();

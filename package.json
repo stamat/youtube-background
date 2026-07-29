@@ -1,6 +1,6 @@
 {
   "name": "youtube-background",
-  "version": "1.1.8",
+  "version": "1.2.0",
   "description": "ESM / jQuery plugin for creating video backgrounds from YouTube, Vimeo or video file links.",
   "main": "jquery.youtube-background.js",
   "homepage": "https://github.com/stamat/youtube-background",
@@ -26,12 +26,17 @@
     "url": "https://github.com/stamat/youtube-background/issues"
   },
   "devDependencies": {
+    "eslint": "^9.39.5",
+    "globals": "^17.8.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "poops": "^1.0.18"
   },
   "scripts": {
     "dev": "poops",
     "build": "poops -b",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test 'test/**/*.test.mjs'"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' npx jest",
+    "lint": "npx eslint ."
   },
   "dependencies": {
     "book-of-spells": "^1.0.18"

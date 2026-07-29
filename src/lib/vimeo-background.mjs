@@ -1,4 +1,4 @@
-import { SuperVideoBackground } from './super-video-background.js';
+import { SuperVideoBackground } from './super-video-background.mjs';
 import { RE_VIMEO } from 'book-of-spells';
 
 export class VimeoBackground extends SuperVideoBackground {
@@ -19,10 +19,10 @@ export class VimeoBackground extends SuperVideoBackground {
 
   injectScript() {
     const src = 'https://player.vimeo.com/api/player.js';
-    if (window.hasOwnProperty('Vimeo') || document.querySelector(`script[src="${src}"]`)) return;
+    if (Object.prototype.hasOwnProperty.call(window, 'Vimeo') || document.querySelector(`script[src="${src}"]`)) return;
     const tag = document.createElement('script');
     tag.async = true;
-    if (window.hasOwnProperty('onVimeoIframeAPIReady') && typeof window.onVimeoIframeAPIReady === 'function') tag.addEventListener('load', () => {
+    if (Object.prototype.hasOwnProperty.call(window, 'onVimeoIframeAPIReady') && typeof window.onVimeoIframeAPIReady === 'function') tag.addEventListener('load', () => {
       window.onVimeoIframeAPIReady();
     });
     tag.src = src;
@@ -31,7 +31,7 @@ export class VimeoBackground extends SuperVideoBackground {
   }
 
   initVimeoPlayer() {
-    if (!window.hasOwnProperty('Vimeo') || this.player !== null) return;
+    if (!Object.prototype.hasOwnProperty.call(window, 'Vimeo') || this.player !== null) return;
     this.player = new Vimeo.Player(this.playerElement);
   
     this.player.on('loaded', this.onVideoPlayerReady.bind(this));

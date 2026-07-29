@@ -1,6 +1,6 @@
-import { YoutubeBackground } from './lib/youtube-background.js';
-import { VimeoBackground } from './lib/vimeo-background.js';
-import { VideoBackground, RE_VIDEO_FILE } from './lib/video-background.js';
+import { YoutubeBackground } from './lib/youtube-background.mjs';
+import { VimeoBackground } from './lib/vimeo-background.mjs';
+import { VideoBackground, RE_VIDEO_FILE } from './lib/video-background.mjs';
 
 import { randomIntInclusive, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
 
@@ -27,7 +27,7 @@ export class VideoBackgrounds {
       this.intersectionObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           const uid = entry.target.getAttribute('data-vbg-uid');
-          if (!uid || !self.index.hasOwnProperty(uid)) return;
+          if (!uid || !Object.prototype.hasOwnProperty.call(self.index, uid)) return;
 
           const instance = self.index[uid];
           instance.isIntersecting = entry.isIntersecting;
@@ -38,7 +38,7 @@ export class VideoBackgrounds {
             } else {
               if (instance.player) instance.softPause();
             }
-          } catch (e) {
+          } catch {
             // console.log(e);
           }
         });
@@ -52,7 +52,7 @@ export class VideoBackgrounds {
         entries.forEach(function (entry) {
           const uid = entry.target.getAttribute('data-vbg-uid');
 
-          if (uid && self.index.hasOwnProperty(uid)) {
+          if (uid && Object.prototype.hasOwnProperty.call(self.index, uid)) {
             window.requestAnimationFrame(() => self.index[uid].resize());
           }
         });
@@ -107,17 +107,16 @@ export class VideoBackgrounds {
   
     switch (vid_data.type) {
       case 'YOUTUBE':
-        const yb = new YoutubeBackground(element, params, vid_data.id, uid, this);
-        this.index[uid] = yb;
+        this.index[uid] = new YoutubeBackground(element, params, vid_data.id, uid, this);
         break;
       case 'VIMEO':
-        const vm = new VimeoBackground(element, params, vid_data, uid, this);
-        this.index[uid] = vm;
+        this.index[uid] = new VimeoBackground(element, params, vid_data, uid, this);
         break;
       case 'VIDEO':
-        const vid = new VideoBackground(element, params, vid_data, uid, this);
-        this.index[uid] = vid;
+        this.index[uid] = new VideoBackground(element, params, vid_data, uid, this);
         break;
+      default:
+        return;
     }
 
     if (this.resizeObserver) {
@@ -131,7 +130,7 @@ export class VideoBackgrounds {
 
   destroy(element) {
     const uid = element.uid || element.getAttribute('data-vbg-uid');
-    if (uid && this.index.hasOwnProperty(uid)) {
+    if (uid && Object.prototype.hasOwnProperty.call(this.index, uid)) {
       if (!this.index[uid].params['always-play'] && this.intersectionObserver) this.intersectionObserver.unobserve(element);
       if (this.resizeObserver) this.resizeObserver.unobserve(element);
       this.index[uid].destroy();
@@ -162,7 +161,7 @@ export class VideoBackgrounds {
         
         if (k === 'VIMEO') {
           const unlistedQueryRegex = /(\?|&)h=([^=&#?]+)/;
-          const unlistedPathRegex = /\/[^\/\:\.]+(\:|\/)([^:?\/]+)\s?$/;
+          const unlistedPathRegex = /\/[^/:.]+(:|\/)([^:?/]+)\s?$/;
           const unlistedQuery = link.match(unlistedPathRegex) || link.match(unlistedQueryRegex);
           if (unlistedQuery) data.unlisted = unlistedQuery[2];
         }
@@ -182,7 +181,7 @@ export class VideoBackgrounds {
     pref = 'vbg-'+ pref; //prefix id with 'vbg-
 
     let uid = pref +'-'+ randomIntInclusive(0, 9999);
-    while (this.index.hasOwnProperty(uid)) {
+    while (Object.prototype.hasOwnProperty.call(this.index, uid)) {
       uid = pref +'-'+ randomIntInclusive(0, 9999);
     }
   
@@ -191,7 +190,7 @@ export class VideoBackgrounds {
 
   get(element) {
     const uid = typeof element === 'string' ? element : element.getAttribute('data-vbg-uid');
-    if (uid && this.index.hasOwnProperty(uid)) return this.index[uid];
+    if (uid && Object.prototype.hasOwnProperty.call(this.index, uid)) return this.index[uid];
   }
 
   pauseAll() {
@@ -246,7 +245,7 @@ export class VideoBackgrounds {
       }
     };
   
-    if (window.hasOwnProperty('YT') && window.YT.loaded) {
+    if (Object.prototype.hasOwnProperty.call(window, 'YT') && window.YT.loaded) {
       window.onYouTubeIframeAPIReady();
     }
   
@@ -264,7 +263,7 @@ export class VideoBackgrounds {
       }
     }
   
-    if (window.hasOwnProperty('Vimeo') && window.Vimeo.hasOwnProperty('Player')) {
+    if (Object.prototype.hasOwnProperty.call(window, 'Vimeo') && Object.prototype.hasOwnProperty.call(window.Vimeo, 'Player')) {
       window.onVimeoIframeAPIReady();
     }
   }

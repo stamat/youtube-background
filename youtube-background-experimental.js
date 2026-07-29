@@ -1,6 +1,6 @@
-/* youtube-background v1.1.8 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v1.2.0 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
-  // src/lib/controls.js
+  // src/lib/controls.mjs
   var SeekBar = class {
     constructor(element, vbgInstance) {
       this.lock = false;
@@ -41,7 +41,7 @@
       if (!this.lock)
         requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
     }
-    onDestroyed(event) {
+    onDestroyed() {
       this.vbgInstance = null;
       requestAnimationFrame(() => this.setProgress(0));
     }
@@ -54,7 +54,7 @@
       requestAnimationFrame(() => this.setProgress(event.target.value));
       if (this.vbgInstance) {
         this.vbgInstance.seek(event.target.value);
-        if (this.vbgInstance.playerElement && this.vbgInstance.playerElement.style.opacity === 0)
+        if (this.vbgInstance.playerElement && parseFloat(this.vbgInstance.playerElement.style.opacity) === 0)
           this.vbgInstance.playerElement.style.opacity = 1;
       }
     }
@@ -83,6 +83,15 @@
       this.currentInstance = null;
       this.playing = false;
       this.muted = true;
+      const boundSetFactoryInstance = this.setVideoBackgroundFactoryInstance.bind(this);
+      this.listeners = [
+        ["video-background-ended", this.onVideoEnded.bind(this)],
+        ["video-background-seeked", this.onVideoSeeked.bind(this)],
+        ["video-background-pause", this.onVideoPause.bind(this)],
+        ["video-background-ready", this.onVideoReady.bind(this)],
+        ["video-background-state-change", boundSetFactoryInstance, { once: true }],
+        ["video-background-time-update", boundSetFactoryInstance, { once: true }]
+      ];
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
         if (!element.hasAttribute("data-vbg-uid") && this.videoBackgroundFactoryInstance)
@@ -95,12 +104,10 @@
           if (this.videoBackgroundFactoryInstance)
             this.currentInstance = this.videoBackgroundFactoryInstance.get(element);
         }
-        element.addEventListener("video-background-ended", this.onVideoEnded.bind(this));
-        element.addEventListener("video-background-seeked", this.onVideoSeeked.bind(this));
-        element.addEventListener("video-background-pause", this.onVideoPause.bind(this));
-        element.addEventListener("video-background-ready", this.onVideoReady.bind(this));
-        element.addEventListener("video-background-state-change", this.setVideoBackgroundFactoryInstance.bind(this), { once: true });
-        element.addEventListener("video-background-time-update", this.setVideoBackgroundFactoryInstance.bind(this), { once: true });
+        for (let j = 0; j < this.listeners.length; j++) {
+          const [eventName, handler, options] = this.listeners[j];
+          element.addEventListener(eventName, handler, options);
+        }
       }
     }
     setVideoBackgroundFactoryInstance(event) {
@@ -248,14 +255,14 @@
       this.dispatchEvent("video-background-group-play");
     }
     destroy() {
+      if (!this.elements || !this.listeners)
+        return;
       for (let i = 0; i < this.elements.length; i++) {
         const element = this.elements[i];
-        element.removeEventListener("video-background-ended", this.onVideoEnded.bind(this));
-        element.removeEventListener("video-background-seeked", this.onVideoSeeked.bind(this));
-        element.removeEventListener("video-background-pause", this.onVideoPause.bind(this));
-        element.removeEventListener("video-background-ready", this.onVideoReady.bind(this));
-        element.removeEventListener("video-background-state-change", this.setVideoBackgroundFactoryInstance.bind(this));
-        element.removeEventListener("video-background-time-update", this.setVideoBackgroundFactoryInstance.bind(this));
+        for (let j = 0; j < this.listeners.length; j++) {
+          const [eventName, handler] = this.listeners[j];
+          element.removeEventListener(eventName, handler);
+        }
       }
     }
   };
@@ -307,12 +314,12 @@
       this.active = false;
       this.element.setAttribute("aria-pressed", this.active);
     }
-    onDestroyed(event) {
+    onDestroyed() {
       this.vbgInstance = null;
       this.active = false;
       this.element.setAttribute("aria-pressed", this.active);
     }
-    onClick(event) {
+    onClick() {
       if (!this.vbgInstance)
         return;
       if (this.active) {
@@ -367,12 +374,12 @@
       this.active = false;
       this.element.setAttribute("aria-pressed", this.active);
     }
-    onDestroyed(event) {
+    onDestroyed() {
       this.vbgInstance = null;
       this.active = false;
       this.element.setAttribute("aria-pressed", this.active);
     }
-    onClick(event) {
+    onClick() {
       if (!this.vbgInstance)
         return;
       if (this.active) {
@@ -382,48 +389,43 @@
       }
     }
   };
-  var GeneralFactory = class {
-    constructor(selector, callback, uidAttribute = "data-uid") {
+  var VideoBackgroundGroups = class {
+    constructor(selector = ".js-vbg-group", videoBackgroundSelector, videoBackgroundFactoryInstance) {
       this.instances = {};
       this.selector = selector;
       this.elements = [];
-      this.callback = callback;
-      this.uidAttribute = uidAttribute;
-      if (!callback || typeof callback !== "function")
-        return;
-      if (typeof this.selector === "string") {
-        this.elements = document.querySelectorAll(this.selector);
-      }
-      if (this.selector instanceof Element) {
-        this.elements = [this.selector];
-      }
-      if (this.selector instanceof NodeList) {
-        this.elements = this.selector;
-      }
+      this.videoBackgroundSelector = videoBackgroundSelector;
+      this.videoBackgroundFactoryInstance = videoBackgroundFactoryInstance;
+      if (typeof selector === "string")
+        this.elements = document.querySelectorAll(selector);
+      if (selector instanceof Element)
+        this.elements = [selector];
+      if (selector instanceof NodeList)
+        this.elements = selector;
       for (let i = 0; i < this.elements.length; i++) {
         this.add(this.elements[i]);
       }
     }
-    basicUID() {
-      return Date.now().toString(36) + Math.random().toString(36).substring(2);
-    }
     generateUID() {
-      let tempuid = this.basicUID();
-      if (!this.instances.hasOwnProperty(tempuid))
-        return tempuid;
-      return this.generateUID();
+      let uid = Date.now().toString(36) + Math.random().toString(36).substring(2);
+      while (Object.prototype.hasOwnProperty.call(this.instances, uid)) {
+        uid = Date.now().toString(36) + Math.random().toString(36).substring(2);
+      }
+      return uid;
     }
     add(element) {
+      if (!element)
+        return;
       let id = element.getAttribute("id");
-      if (!id || this.instances.hasOwnProperty(id)) {
-        id = element.getAttribute(this.uidAttribute);
-        if (!id || this.instances.hasOwnProperty(id)) {
+      if (!id || Object.prototype.hasOwnProperty.call(this.instances, id)) {
+        id = element.getAttribute("data-uid");
+        if (!id || Object.prototype.hasOwnProperty.call(this.instances, id)) {
           id = this.generateUID();
-          element.setAttribute(this.uidAttribute, id);
+          element.setAttribute("data-uid", id);
         }
       }
-      if (this.callback && typeof this.callback === "function")
-        this.instances[id] = this.callback(element, id, this);
+      this.instances[id] = new VideoBackgroundGroup(element, this.videoBackgroundSelector, this.videoBackgroundFactoryInstance);
+      return this.instances[id];
     }
     getID(element) {
       if (!element)
@@ -431,47 +433,33 @@
       if (typeof element === "string")
         return element;
       const id = element.getAttribute("id");
-      if (id && this.instances.hasOwnProperty(id))
+      if (id && Object.prototype.hasOwnProperty.call(this.instances, id))
         return id;
-      const uid = element.getAttribute(this.uidAttribute);
-      if (uid && this.instances.hasOwnProperty(uid))
+      const uid = element.getAttribute("data-uid");
+      if (uid && Object.prototype.hasOwnProperty.call(this.instances, uid))
         return uid;
     }
     get(element) {
-      if (!element)
-        return;
       const id = this.getID(element);
-      if (!id)
-        return;
-      return this.instances[id];
+      if (id)
+        return this.instances[id];
     }
     destroy(element) {
-      if (!element)
-        return;
       const id = this.getID(element);
       if (!id)
         return;
-      const instance = this.instances[id];
-      if (instance.hasOwnProperty("destroy") && typeof instance.destroy == "function")
-        this.instances[id].destroy();
+      this.instances[id].destroy();
       delete this.instances[id];
     }
     destroyAll() {
-      for (const uid in this.instances) {
-        const instance = this.instances[uid];
-        if (instance.hasOwnProperty("destroy") && typeof instance.destroy == "function")
-          instance.destroy();
-        delete this.instances[uid];
+      for (const id in this.instances) {
+        this.instances[id].destroy();
+        delete this.instances[id];
       }
     }
   };
-  var VideoBackgroundGroups = class extends GeneralFactory {
-    constructor(selector = ".js-vbg-group", videoBackgroundSelector, videoBackgroundFactoryInstance) {
-      super(selector, (element, id, factoryInstance) => new VideoBackgroundGroup(element, videoBackgroundSelector, videoBackgroundFactoryInstance));
-    }
-  };
 
-  // src/experimental.js
+  // src/experimental.mjs
   window.SeekBar = SeekBar;
   window.PlayToggle = PlayToggle;
   window.MuteToggle = MuteToggle;

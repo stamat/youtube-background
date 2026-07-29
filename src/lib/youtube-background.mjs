@@ -1,4 +1,4 @@
-import { SuperVideoBackground } from './super-video-background.js';
+import { SuperVideoBackground } from './super-video-background.mjs';
 import { RE_YOUTUBE } from 'book-of-spells';
 
 export class YoutubeBackground extends SuperVideoBackground {
@@ -43,7 +43,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   }
 
   initYTPlayer() {
-    if (!window.hasOwnProperty('YT') || this.player !== null) return;
+    if (!Object.prototype.hasOwnProperty.call(window, 'YT') || this.player !== null) return;
 
     this.player = new YT.Player(this.uid, {
       events: {
@@ -62,7 +62,7 @@ export class YoutubeBackground extends SuperVideoBackground {
 
   injectScript() {
     const src = 'https://www.youtube.com/player_api';
-    if (window.hasOwnProperty('YT') || document.querySelector(`script[src="${src}"]`)) return
+    if (Object.prototype.hasOwnProperty.call(window, 'YT') || document.querySelector(`script[src="${src}"]`)) return
     const tag = document.createElement('script');
     tag.async = true;
     tag.src = src;

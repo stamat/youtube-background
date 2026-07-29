@@ -1,4 +1,4 @@
-import { SuperVideoBackground } from './super-video-background.js';
+import { SuperVideoBackground } from './super-video-background.mjs';
 
 export const MIME_MAP = {
   'ogv' : 'video/ogg',

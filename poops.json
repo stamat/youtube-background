@@ -1,6 +1,6 @@
 {
   "scripts": [{
-    "in": "src/main.js",
+    "in": "src/main.mjs",
     "out": "jquery.youtube-background.js",
     "options": {
       "sourcemap": true,
@@ -10,7 +10,7 @@
     }
   },
   {
-    "in": "src/experimental.js",
+    "in": "src/experimental.mjs",
     "out": "youtube-background-experimental.js",
     "options": {
       "sourcemap": true,

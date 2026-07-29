@@ -1,10 +1,10 @@
-import { VideoBackgrounds } from './video-backgrounds.js';
+import { VideoBackgrounds } from './video-backgrounds.mjs';
 
 if (typeof jQuery == 'function') {
   (function ($) {
     $.fn.youtube_background = function (params) {
       const $this = $(this);
-      if (window.hasOwnProperty('VIDEO_BACKGROUNDS')) {
+      if (Object.prototype.hasOwnProperty.call(window, 'VIDEO_BACKGROUNDS')) {
         $this.each(function () {
           window.VIDEO_BACKGROUNDS.add(this, params);
         });

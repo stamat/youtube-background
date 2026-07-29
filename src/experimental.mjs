@@ -1,4 +1,4 @@
-import { SeekBar, PlayToggle, MuteToggle, VideoBackgroundGroup, VideoBackgroundGroups } from "./lib/controls";
+import { SeekBar, PlayToggle, MuteToggle, VideoBackgroundGroup, VideoBackgroundGroups } from "./lib/controls.mjs";
 
 window.SeekBar = SeekBar;
 window.PlayToggle = PlayToggle;
