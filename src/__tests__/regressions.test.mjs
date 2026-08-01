@@ -110,6 +110,11 @@ describe('time and percentage conversion', () => {
     const pending = { params: { 'start-at': 7 }, duration: 0 }
     expect(SuperVideoBackground.prototype.percentageToTime.call(pending, 50)).toBe(7)
   })
+
+  test('reports 0%, not 100%, while the duration is still unknown', () => {
+    const pending = { params: { 'start-at': 0 }, duration: 0 }
+    expect(SuperVideoBackground.prototype.timeToPercentage.call(pending, 5)).toBe(0)
+  })
 })
 
 describe('VideoBackgrounds teardown', () => {

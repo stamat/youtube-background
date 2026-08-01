@@ -105,6 +105,7 @@ export class SuperVideoBackground {
 
   timeToPercentage(time) {
     if (time <= this.params['start-at']) return 0;
+    if (!this.duration) return 0; // duration unknown yet - not "100% done"
     if (time >= this.duration) return 100;
     if (time <= 0) return 0;
     time -= this.params['start-at']; // normalize
