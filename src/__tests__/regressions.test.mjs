@@ -117,6 +117,20 @@ describe('time and percentage conversion', () => {
   })
 })
 
+describe('setDuration', () => {
+  const setDuration = (params, duration) => {
+    const state = { params, duration: params['end-at'] || 0 }
+    SuperVideoBackground.prototype.setDuration.call(state, duration)
+    return state.duration
+  }
+
+  test('clamps to end-at, or to a shorter video', () => {
+    expect(setDuration({ 'end-at': 30 }, 100)).toBe(30)
+    expect(setDuration({ 'end-at': 30 }, 20)).toBe(20)
+    expect(setDuration({ 'end-at': 0 }, 100)).toBe(100)
+  })
+})
+
 describe('VideoBackgrounds teardown', () => {
   // jsdom has neither observer, so the factory takes its fallback paths: no
   // IntersectionObserver, and the window resize listener instead of ResizeObserver.
