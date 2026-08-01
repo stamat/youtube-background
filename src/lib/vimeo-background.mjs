@@ -110,7 +110,11 @@ export class VimeoBackground extends SuperVideoBackground {
     if (!pts || !pts.length) return;
 
     this.id = pts[1];
-    this.src = this.generateSrcURL(this.id);
+    // same unlisted-hash extraction as VideoBackgrounds.getVidID - without it
+    // an unlisted video loses its h= param and the player 404s
+    const unlisted = url.match(/\/[^/:.]+(:|\/)([^:?/]+)\s?$/) || url.match(/(\?|&)h=([^=&#?]+)/);
+    this.unlisted = unlisted ? unlisted[2] : null;
+    this.src = this.generateSrcURL(this.id, this.unlisted);
     this.playerElement.src = this.src;
 
     if (this.element.hasAttribute('data-vbg')) this.element.setAttribute('data-vbg', this.src);
