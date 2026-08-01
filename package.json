@@ -3,6 +3,13 @@
   "version": "1.2.0",
   "description": "ESM / jQuery plugin for creating video backgrounds from YouTube, Vimeo or video file links.",
   "main": "jquery.youtube-background.js",
+  "exports": {
+    ".": {
+      "import": "./src/video-backgrounds.mjs",
+      "default": "./jquery.youtube-background.js"
+    },
+    "./*": "./*"
+  },
   "homepage": "https://github.com/stamat/youtube-background",
   "repository": {
     "type": "git",
