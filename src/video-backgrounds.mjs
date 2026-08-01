@@ -95,9 +95,9 @@ export class VideoBackgrounds {
     if (!element) return;
     if (element.hasAttribute('data-vbg-uid')) return;
 
+    // copy, don't mutate - the caller's object is shared across elements
     if (!this.intersectionObserver) {
-      if (!params) params = {};
-      params['always-play'] = true;
+      params = Object.assign({}, params, { 'always-play': true });
     }
 
     const link = element.getAttribute('data-youtube') || element.getAttribute('data-vbg');
