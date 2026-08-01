@@ -227,7 +227,7 @@ export class VideoBackgroundGroup {
     }
 
     this.muted = false;
-    this.dispatchEvent('video-background-group-umnute');
+    this.dispatchEvent('video-background-group-unmute');
   }
 
   mute() {
