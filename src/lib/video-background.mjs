@@ -6,7 +6,7 @@ export const MIME_MAP = {
   'ogv' : 'video/ogg',
   'ogm' : 'video/ogg',
   'ogg' : 'video/ogg',
-  'avi' : 'video/avi',
+  'avi' : 'video/x-msvideo',
   'mp4' : 'video/mp4',
   'webm' : 'video/webm',
   'm4v' : 'video/x-m4v',
