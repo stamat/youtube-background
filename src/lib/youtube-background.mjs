@@ -48,16 +48,11 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.player = new YT.Player(this.uid, {
       events: {
         'onReady': this.onVideoPlayerReady.bind(this),
-        'onStateChange': this.onVideoStateChange.bind(this),
-        // 'onError': this.onVideoError.bind(this)
+        'onStateChange': this.onVideoStateChange.bind(this)
       }
     });
 
     if (this.volume !== 1 && !this.muted) this.setVolume(this.volume);
-  }
-
-  onVideoError(event) {
-    console.error(event);
   }
 
   injectScript() {
