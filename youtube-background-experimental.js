@@ -73,7 +73,6 @@
       this.listeners = [
         ["video-background-ended", this.onVideoEnded.bind(this)],
         ["video-background-seeked", this.onVideoSeeked.bind(this)],
-        ["video-background-pause", this.onVideoPause.bind(this)],
         ["video-background-ready", this.onVideoReady.bind(this)],
         ["video-background-state-change", boundSetFactoryInstance, { once: true }],
         ["video-background-time-update", boundSetFactoryInstance, { once: true }]
@@ -110,12 +109,6 @@
       if (videoBackground.currentState === "playing") return;
       videoBackground.softPlay();
     }
-    onVideoPause(event) {
-      ;
-      this.setVideoBackgroundFactoryInstance(event);
-      const stackIndex = this.map.get(event.detail.element);
-      if (stackIndex === this.current) return;
-    }
     levelSeekBars() {
       for (let i = 0; i < this.stack.length; i++) {
         if (i === this.current) continue;
@@ -148,8 +141,10 @@
     }
     setCurrent(index, seek) {
       const previous = this.current;
-      if (index >= this.stack.length) index = 0;
-      if (index < 0) index = this.stack.length - 1;
+      const forwardRewind = index >= this.stack.length;
+      const backwardRewind = index < 0;
+      if (forwardRewind) index = 0;
+      if (backwardRewind) index = this.stack.length - 1;
       const previousInstance = this.videoBackgroundFactoryInstance.get(this.stack[previous]);
       this.current = index;
       this.currentInstance = this.videoBackgroundFactoryInstance.get(this.stack[this.current]);
@@ -166,8 +161,8 @@
       }, 100);
       if (previousInstance && previousInstance.currentState !== "paused") previousInstance.pause();
       setTimeout(this.levelSeekBars.bind(this), 100);
-      if (index >= this.stack.length) this.dispatchEvent("video-background-group-forward-rewind");
-      if (index < 0) this.dispatchEvent("video-background-group-backward-rewind");
+      if (forwardRewind) this.dispatchEvent("video-background-group-forward-rewind");
+      if (backwardRewind) this.dispatchEvent("video-background-group-backward-rewind");
     }
     dispatchEvent(name) {
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
@@ -191,7 +186,7 @@
         instance.unmute();
       }
       this.muted = false;
-      this.dispatchEvent("video-background-group-umnute");
+      this.dispatchEvent("video-background-group-unmute");
     }
     mute() {
       for (let i = 0; i < this.stack.length; i++) {
