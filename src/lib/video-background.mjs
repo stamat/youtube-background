@@ -45,7 +45,9 @@ export class VideoBackground extends SuperVideoBackground {
     const playerElement = document.createElement('video');
     if (this.params.title) playerElement.setAttribute('title', this.params.title);
     playerElement.setAttribute('playsinline', '');
-    if (this.params.loop) playerElement.setAttribute('loop', '');
+    // native loop wraps to 0:00 and never fires 'ended', which would skip
+    // start-at - with start-at the loop is driven from onVideoEnded instead
+    if (this.params.loop && !this.params['start-at']) playerElement.setAttribute('loop', '');
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       playerElement.setAttribute('autoplay', '');
       playerElement.autoplay = true;
@@ -156,9 +158,17 @@ export class VideoBackground extends SuperVideoBackground {
     this.updateState('ended');
     this.dispatchEvent('video-background-ended');
     if (!this.params.loop) return this.pause();
-      
+
     this.seekTo(this.params['start-at']);
-    this.onVideoPlay();
+    if (this.player.paused) {
+      // native 'ended' stopped playback - restart it, the resulting 'play'
+      // event drives onVideoPlay
+      this.player.play();
+    } else {
+      // end-at cut in from timeupdate, playback never stopped - just
+      // re-announce the state
+      this.onVideoPlay();
+    }
   }
 
   onVideoBuffering() {
