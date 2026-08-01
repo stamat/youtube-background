@@ -160,7 +160,9 @@ export class YoutubeBackground extends SuperVideoBackground {
 
     if (this.currentState === 'ended') this.onVideoEnded();
   
-    if (this.currentState === 'notstarted' && this.params.autoplay) {
+    // same gate as onVideoPlayerReady: YT fires 'notstarted' on load, and
+    // an unconditional play here started lazy videos that were offscreen
+    if (this.currentState === 'notstarted' && this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       this.seekTo(this.params['start-at']);
       this.player.playVideo();
     }
