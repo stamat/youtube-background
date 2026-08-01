@@ -3,7 +3,7 @@ import { RE_VIMEO } from 'book-of-spells';
 
 export class VimeoBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid, factoryInstance) {
-    super(elem, params, id.id, uid, 'vimeo', factoryInstance);
+    super(elem, params, id ? id.id : null, uid, 'vimeo', factoryInstance);
     if (!id) return;
     this.unlisted = id.unlisted;
 

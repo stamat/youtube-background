@@ -16,7 +16,7 @@ export const MIME_MAP = {
 
 export class VideoBackground extends SuperVideoBackground {
   constructor(elem, params, vid_data, uid, factoryInstance) {
-    super(elem, params, vid_data.link, uid, 'video', factoryInstance);
+    super(elem, params, vid_data ? vid_data.link : null, uid, 'video', factoryInstance);
     if (!vid_data || !vid_data.link) return;
     if (this.is_mobile && !this.params.mobile) return;
 
