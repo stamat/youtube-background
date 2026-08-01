@@ -170,8 +170,11 @@ export class VideoBackgroundGroup {
 
   setCurrent(index, seek) {
     const previous = this.current;
-    if (index >= this.stack.length) index = 0;
-    if (index < 0) index = this.stack.length - 1;
+    // remember the wrap before clamping - the dispatches below need it
+    const forwardRewind = index >= this.stack.length;
+    const backwardRewind = index < 0;
+    if (forwardRewind) index = 0;
+    if (backwardRewind) index = this.stack.length - 1;
     const previousInstance = this.videoBackgroundFactoryInstance.get(this.stack[previous]);
     this.current = index;
     this.currentInstance = this.videoBackgroundFactoryInstance.get(this.stack[this.current]);
@@ -193,8 +196,8 @@ export class VideoBackgroundGroup {
 
     setTimeout(this.levelSeekBars.bind(this), 100);
 
-    if (index >= this.stack.length) this.dispatchEvent('video-background-group-forward-rewind');
-    if (index < 0) this.dispatchEvent('video-background-group-backward-rewind');
+    if (forwardRewind) this.dispatchEvent('video-background-group-forward-rewind');
+    if (backwardRewind) this.dispatchEvent('video-background-group-backward-rewind');
   }
 
   dispatchEvent(name) {
