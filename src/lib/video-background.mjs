@@ -21,10 +21,7 @@ export class VideoBackground extends SuperVideoBackground {
     if (this.is_mobile && !this.params.mobile) return;
 
     this.src = vid_data.link;
-    this.uid = uid;
-    this.element.setAttribute('data-vbg-uid', uid);
     this.player = null;
-    this.buttons = {};
 
     this.MIME_MAP = MIME_MAP;
 
@@ -56,7 +53,6 @@ export class VideoBackground extends SuperVideoBackground {
       playerElement.setAttribute('muted', '');
       playerElement.muted = true;
     }
-    if (this.params['lazyloading']) playerElement.setAttribute('loading', 'lazy');
 
     return playerElement;
   }
