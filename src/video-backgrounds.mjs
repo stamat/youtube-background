@@ -169,7 +169,6 @@ export class VideoBackgrounds {
       const pts = link.match(SOURCE_PATTERNS[k]);
 
       if (pts && pts.length) {
-        SOURCE_PATTERNS[k].lastIndex = 0;
         const data = {
           id: pts[1],
           type: k,
