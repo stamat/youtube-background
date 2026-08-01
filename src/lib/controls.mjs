@@ -86,7 +86,6 @@ export class VideoBackgroundGroup {
     this.listeners = [
       ['video-background-ended', this.onVideoEnded.bind(this)],
       ['video-background-seeked', this.onVideoSeeked.bind(this)],
-      ['video-background-pause', this.onVideoPause.bind(this)],
       ['video-background-ready', this.onVideoReady.bind(this)],
       ['video-background-state-change', boundSetFactoryInstance, { once: true }],
       ['video-background-time-update', boundSetFactoryInstance, { once: true }]
@@ -126,12 +125,6 @@ export class VideoBackgroundGroup {
     this.playing = true;
     if (videoBackground.currentState === 'playing') return;
     videoBackground.softPlay();
-  }
-
-  onVideoPause(event) {;
-    this.setVideoBackgroundFactoryInstance(event);
-    const stackIndex = this.map.get(event.detail.element);
-    if (stackIndex === this.current) return;
   }
 
   levelSeekBars() {
