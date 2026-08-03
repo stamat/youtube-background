@@ -5,7 +5,7 @@
   "main": "jquery.youtube-background.js",
   "exports": {
     ".": {
-      "import": "./src/video-backgrounds.mjs",
+      "import": "./src/main.mjs",
       "default": "./jquery.youtube-background.js"
     },
     "./*": "./*"

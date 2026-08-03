@@ -84,14 +84,15 @@ There are two ways to use this script: vanilla implementation or as a jQuery plu
 ```
 
 ```javascript
-    import 'youtube-background'; // the bundle registers window.VideoBackgrounds
+    import 'youtube-background'; // the entry registers window.VideoBackgrounds
 
     const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
 ```
 
-The package entry is the prebuilt IIFE bundle: importing it is a side effect that
-registers the global, so there is no named or default export to destructure. To
-import the class itself, reach for the ES module source:
+The package entry is the jQuery/global bootstrap — `src/main.mjs` for `import`,
+the prebuilt IIFE bundle for `require` and CDN. Either way it is a side effect
+that registers the global and the jQuery plugin, so there is no named or default
+export to destructure. To import the class itself, reach for the ES module source:
 
 ```javascript
     import { VideoBackgrounds } from 'youtube-background/src/video-backgrounds.mjs';
