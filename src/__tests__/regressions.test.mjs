@@ -1,5 +1,16 @@
+// Covers the bugs that have actually shipped here: URL parsing, MIME and param
+// resolution, time/percentage arithmetic, the loop and pause decisions, source
+// attribute round-tripping, group wrap-around, and factory teardown.
+//
+// Deliberately not covered: anything needing a real YouTube, Vimeo or media
+// player. jsdom has no playback, no IntersectionObserver and no network, so
+// those paths are exercised through their decision logic with stub receivers
+// instead - what breaks in a real browser is timing, and this cannot see it.
+
 import { VideoBackgrounds } from '../video-backgrounds.mjs'
 import { VideoBackground, MIME_MAP } from '../lib/video-background.mjs'
+import { YoutubeBackground } from '../lib/youtube-background.mjs'
+import { VideoBackgroundGroup } from '../lib/controls.mjs'
 import { SuperVideoBackground, SOURCE_ATTRIBUTES } from '../lib/super-video-background.mjs'
 import { RE_VIDEO } from 'book-of-spells'
 
@@ -160,6 +171,20 @@ describe('source attributes', () => {
     }
   })
 
+  // jsdom has no IntersectionObserver, so add() takes its always-play fallback
+  test('the always-play fallback never writes into the params it was handed', () => {
+    const backgrounds = new VideoBackgrounds([])
+    const params = { muted: true }
+    const element = document.createElement('div')
+    element.setAttribute('data-vbg', 'https://example.com/clip.mp4')
+    document.body.appendChild(element)
+
+    backgrounds.add(element, params)
+
+    expect(params).toEqual({ muted: true })
+    backgrounds.disconnect()
+  })
+
   test('an attribute the markup never carried is not invented', () => {
     const element = document.createElement('div')
     element.setAttribute('data-vbg', 'https://example.com/clip.mp4')
@@ -235,6 +260,76 @@ describe('onVideoEnded', () => {
 
   test('a non-looping video stays stopped', () => {
     expect(ended({ params: { loop: false, 'start-at': 5 } })).toEqual(['pause'])
+  })
+})
+
+describe('YouTube notstarted', () => {
+  // YT fires state -1 on load, before anything has scrolled into view
+  const notstarted = (overrides) => {
+    const calls = []
+    const stub = {
+      STATES: { '-1': 'notstarted' },
+      convertState: YoutubeBackground.prototype.convertState,
+      params: { autoplay: true, 'always-play': false, 'start-at': 0 },
+      isIntersecting: false,
+      player: { playVideo: () => calls.push('play') },
+      seekTo: () => {},
+      onVideoPlay: () => {},
+      onVideoPause: () => {},
+      onVideoEnded: () => {},
+      dispatchEvent: () => {},
+      ...overrides
+    }
+    YoutubeBackground.prototype.onVideoStateChange.call(stub, { data: -1 })
+    return calls
+  }
+
+  test('a lazy video never scrolled to stays quiet', () => {
+    expect(notstarted({})).toEqual([])
+  })
+
+  test('an intersecting video starts, and always-play starts off-screen', () => {
+    expect(notstarted({ isIntersecting: true })).toEqual(['play'])
+    expect(notstarted({ params: { autoplay: true, 'always-play': true, 'start-at': 0 } })).toEqual(['play'])
+  })
+
+  test('autoplay off means off, wherever the video sits', () => {
+    expect(notstarted({
+      isIntersecting: true,
+      params: { autoplay: false, 'always-play': true, 'start-at': 0 }
+    })).toEqual([])
+  })
+})
+
+describe('VideoBackgroundGroup wrap-around', () => {
+  const step = (index) => {
+    const events = []
+    const stack = [document.createElement('div'), document.createElement('div')]
+    const instance = { currentState: 'playing', play: () => {}, pause: () => {}, seek: () => {} }
+    const stub = {
+      current: 0,
+      stack,
+      videoBackgroundFactoryInstance: new Map(stack.map((element) => [element, instance])),
+      getSeekBar: () => null,
+      setProgress: () => {},
+      levelSeekBars: () => {},
+      dispatchEvent: (name) => events.push(name)
+    }
+
+    VideoBackgroundGroup.prototype.setCurrent.call(stub, index, true)
+    return { events, current: stub.current }
+  }
+
+  test('running off the end wraps to the first and announces the rewind', () => {
+    expect(step(2)).toEqual({ events: ['video-background-group-forward-rewind'], current: 0 })
+  })
+
+  test('running off the start wraps to the last and announces the rewind', () => {
+    expect(step(-1)).toEqual({ events: ['video-background-group-backward-rewind'], current: 1 })
+  })
+
+  test('an ordinary step announces no rewind at all', () => {
+    expect(step(1)).toEqual({ events: [], current: 1 })
   })
 })
 
