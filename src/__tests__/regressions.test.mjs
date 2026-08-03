@@ -139,6 +139,37 @@ describe('setDuration', () => {
   })
 })
 
+describe('native loop and start-at', () => {
+  const loopAttribute = (params) => {
+    const player = document.createElement('video')
+    VideoBackground.prototype.syncNativeLoop.call({ player, params })
+    return player.hasAttribute('loop')
+  }
+
+  test('a loop with no start-at rides the seamless native attribute', () => {
+    expect(loopAttribute({ loop: true, 'start-at': 0 })).toBe(true)
+    expect(loopAttribute({ loop: false, 'start-at': 0 })).toBe(false)
+  })
+
+  test('start-at hands the loop to onVideoEnded, which native loop would skip', () => {
+    expect(loopAttribute({ loop: true, 'start-at': 5 })).toBe(false)
+  })
+
+  test('a start-at set after the player exists still takes the attribute back', () => {
+    const player = document.createElement('video')
+    player.setAttribute('loop', '')
+    const stub = Object.assign(Object.create(VideoBackground.prototype), {
+      player,
+      params: { loop: true, 'start-at': 0 }
+    })
+
+    stub.setStartAt(5)
+
+    expect(stub.params['start-at']).toBe(5)
+    expect(player.hasAttribute('loop')).toBe(false)
+  })
+})
+
 describe('onVideoEnded', () => {
   const ended = (overrides) => {
     const calls = []

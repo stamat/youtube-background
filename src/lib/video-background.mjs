@@ -42,9 +42,6 @@ export class VideoBackground extends SuperVideoBackground {
     const playerElement = document.createElement('video');
     if (this.params.title) playerElement.setAttribute('title', this.params.title);
     playerElement.setAttribute('playsinline', '');
-    // native loop wraps to 0:00 and never fires 'ended', which would skip
-    // start-at - with start-at the loop is driven from onVideoEnded instead
-    if (this.params.loop && !this.params['start-at']) playerElement.setAttribute('loop', '');
     if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       playerElement.setAttribute('autoplay', '');
       playerElement.autoplay = true;
@@ -57,10 +54,23 @@ export class VideoBackground extends SuperVideoBackground {
     return playerElement;
   }
 
+  // native loop wraps to 0:00 and never fires 'ended', which would skip start-at
+  // - with start-at the loop is driven from onVideoEnded instead. Re-run on every
+  // start-at change, the attribute outlives the value it was decided from.
+  syncNativeLoop() {
+    if (!this.player) return;
+    if (this.params.loop && !this.params['start-at']) {
+      this.player.setAttribute('loop', '');
+    } else {
+      this.player.removeAttribute('loop');
+    }
+  }
+
   injectPlayer() {
     this.player = this.generatePlayerElement();
     this.playerElement = this.player;
-    
+    this.syncNativeLoop();
+
     if (this.volume !== 1 && !this.muted) this.setVolume(this.volume);
   
     this.playerElement.setAttribute('id', this.uid)
@@ -91,6 +101,11 @@ export class VideoBackground extends SuperVideoBackground {
   }
 
   /* ===== API ===== */
+
+  setStartAt(startAt) {
+    super.setStartAt(startAt);
+    this.syncNativeLoop();
+  }
 
   setSource(url) {
     const pts = url.match(RE_VIDEO);
