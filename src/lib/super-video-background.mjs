@@ -72,7 +72,6 @@ export class SuperVideoBackground {
     this.currentTime = this.params['start-at'] || 0;
     this.duration = this.params['end-at'] || 0;
     this.percentComplete = 0;
-    if (this.params['start-at']) this.percentComplete = this.timeToPercentage(this.params['start-at']);
 
     this.originalStyle = this.element.getAttribute('style');
 
