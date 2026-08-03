@@ -1,5 +1,5 @@
 import { YoutubeBackground } from './lib/youtube-background.mjs';
-import { VimeoBackground } from './lib/vimeo-background.mjs';
+import { VimeoBackground, getVimeoUnlistedHash } from './lib/vimeo-background.mjs';
 import { VideoBackground } from './lib/video-background.mjs';
 
 import { randomIntInclusive, RE_VIDEO, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
@@ -177,10 +177,8 @@ export class VideoBackgrounds {
         };
         
         if (k === 'VIMEO') {
-          const unlistedQueryRegex = /(\?|&)h=([^=&#?]+)/;
-          const unlistedPathRegex = /\/[^/:.]+(:|\/)([^:?/]+)\s?$/;
-          const unlistedQuery = link.match(unlistedPathRegex) || link.match(unlistedQueryRegex);
-          if (unlistedQuery) data.unlisted = unlistedQuery[2];
+          const unlisted = getVimeoUnlistedHash(link);
+          if (unlisted) data.unlisted = unlisted;
         }
 
         return data;

@@ -30,6 +30,14 @@ describe('getVidID', () => {
   test('picks up the Vimeo unlisted hash', () => {
     expect(getVidID('https://vimeo.com/123456789/abc123def').unlisted).toBe('abc123def')
     expect(getVidID('https://vimeo.com/123456789?h=abc123def').unlisted).toBe('abc123def')
+    expect(getVidID('https://player.vimeo.com/video/123456789?h=abc123def').unlisted).toBe('abc123def')
+  })
+
+  test('a public Vimeo URL never grows a hash it does not have', () => {
+    expect(getVidID('https://vimeo.com/123456789').unlisted).toBeUndefined()
+    // the last two segments look like id/hash, but the id is the last one
+    expect(getVidID('https://vimeo.com/channels/staffpicks/123456789').unlisted).toBeUndefined()
+    expect(getVidID('https://vimeo.com/groups/motion/videos/123456789').unlisted).toBeUndefined()
   })
 
   // guards MIME_MAP against drifting away from book-of-spells' RE_VIDEO

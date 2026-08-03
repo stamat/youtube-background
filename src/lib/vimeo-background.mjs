@@ -1,6 +1,19 @@
 import { SuperVideoBackground } from './super-video-background.mjs';
 import { RE_VIMEO } from 'book-of-spells';
 
+// the segment before the hash has to be the numeric id, otherwise
+// /channels/staffpicks/123456789 reads the id itself as a hash
+const RE_VIMEO_UNLISTED_PATH = /\/\d+\/([^/?#\s]+)\/?\s*$/;
+const RE_VIMEO_UNLISTED_QUERY = /[?&]h=([^&#]+)/;
+
+// an unlisted vimeo video 404s without its hash, carried either as the trailing
+// path segment or as ?h= - both spellings reach this one place
+export function getVimeoUnlistedHash(url) {
+  if (!url) return;
+  const pts = url.match(RE_VIMEO_UNLISTED_PATH) || url.match(RE_VIMEO_UNLISTED_QUERY);
+  if (pts) return pts[1];
+}
+
 export class VimeoBackground extends SuperVideoBackground {
   constructor(elem, params, id, uid, factoryInstance) {
     super(elem, params, id ? id.id : null, uid, 'vimeo', factoryInstance);
@@ -105,10 +118,7 @@ export class VimeoBackground extends SuperVideoBackground {
     if (!pts || !pts.length) return;
 
     this.id = pts[1];
-    // same unlisted-hash extraction as VideoBackgrounds.getVidID - without it
-    // an unlisted video loses its h= param and the player 404s
-    const unlisted = url.match(/\/[^/:.]+(:|\/)([^:?/]+)\s?$/) || url.match(/(\?|&)h=([^=&#?]+)/);
-    this.unlisted = unlisted ? unlisted[2] : null;
+    this.unlisted = getVimeoUnlistedHash(url);
     this.src = this.generateSrcURL(this.id, this.unlisted);
     this.playerElement.src = this.src;
 
