@@ -147,7 +147,7 @@ export class VimeoBackground extends SuperVideoBackground {
   onVideoEnded() {
     this.updateState('ended');
     this.dispatchEvent('video-background-ended');
-    if (!this.params.loop) return this.pause();
+    if (this.paused || !this.params.loop) return this.pause();
     
     this.seekTo(this.params['start-at']);
     this.updateState('playing');

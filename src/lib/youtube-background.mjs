@@ -201,7 +201,7 @@ export class YoutubeBackground extends SuperVideoBackground {
   onVideoEnded() {
     this.dispatchEvent('video-background-ended');
 
-    if (!this.params.loop) return this.pause();
+    if (this.paused || !this.params.loop) return this.pause();
     this.seekTo(this.params['start-at']);
     this.player.playVideo();
   }

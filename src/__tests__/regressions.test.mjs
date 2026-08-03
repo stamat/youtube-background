@@ -139,6 +139,42 @@ describe('setDuration', () => {
   })
 })
 
+describe('onVideoEnded', () => {
+  const ended = (overrides) => {
+    const calls = []
+    const stub = {
+      paused: false,
+      params: { loop: true, 'start-at': 5 },
+      updateState: () => {},
+      dispatchEvent: () => {},
+      seekTo: (seconds) => calls.push(`seek:${seconds}`),
+      pause: () => calls.push('pause'),
+      onVideoPlay: () => calls.push('announce'),
+      ...overrides,
+      player: { paused: true, play: () => calls.push('play'), ...overrides.player }
+    }
+    VideoBackground.prototype.onVideoEnded.call(stub)
+    return calls
+  }
+
+  test('a looping video rewinds to start-at and plays again', () => {
+    expect(ended({})).toEqual(['seek:5', 'play'])
+  })
+
+  test('an explicit user pause outlives the end of the video', () => {
+    expect(ended({ paused: true })).toEqual(['pause'])
+  })
+
+  test('a loop cut short by end-at re-announces play without restarting', () => {
+    // timeupdate reached end-at, so the element never actually stopped
+    expect(ended({ player: { paused: false } })).toEqual(['seek:5', 'announce'])
+  })
+
+  test('a non-looping video stays stopped', () => {
+    expect(ended({ params: { loop: false, 'start-at': 5 } })).toEqual(['pause'])
+  })
+})
+
 describe('VideoBackgrounds teardown', () => {
   // jsdom has neither observer, so the factory takes its fallback paths: no
   // IntersectionObserver, and the window resize listener instead of ResizeObserver.
