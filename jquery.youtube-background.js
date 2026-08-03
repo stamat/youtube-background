@@ -157,6 +157,7 @@
   }
 
   // src/lib/super-video-background.mjs
+  var SOURCE_ATTRIBUTES = ["data-vbg", "data-youtube", "data-ytbg"];
   var SuperVideoBackground = class {
     constructor(elem, params, id, uid, type, factoryInstance) {
       if (!id) return;
@@ -212,7 +213,6 @@
       this.currentTime = this.params["start-at"] || 0;
       this.duration = this.params["end-at"] || 0;
       this.percentComplete = 0;
-      if (this.params["start-at"]) this.percentComplete = this.timeToPercentage(this.params["start-at"]);
       this.originalStyle = this.element.getAttribute("style");
       this.buildWrapperHTML();
       if (this.is_mobile && !this.params.mobile) return;
@@ -345,6 +345,13 @@
     }
     setDuration(duration) {
       this.duration = this.params["end-at"] ? Math.min(duration, this.params["end-at"]) : duration;
+    }
+    // the URL the caller gave, not the generated embed URL - the factory has to be
+    // able to read back what it read in
+    writeSourceAttributes(url) {
+      for (const attribute of SOURCE_ATTRIBUTES) {
+        if (this.element.hasAttribute(attribute)) this.element.setAttribute(attribute, url);
+      }
     }
     setStartAt(startAt) {
       this.params["start-at"] = startAt;
@@ -497,8 +504,7 @@
       this.id = pts[1];
       this.src = this.generateSrcURL(this.id);
       this.playerElement.src = this.src;
-      if (this.element.hasAttribute("data-vbg")) this.element.setAttribute("data-vbg", url);
-      if (this.element.hasAttribute("data-ytbg")) this.element.setAttribute("data-ytbg", url);
+      this.writeSourceAttributes(url);
       this.loadBackground(this.id);
     }
     onVideoTimeUpdate() {
@@ -559,7 +565,7 @@
     }
     onVideoEnded() {
       this.dispatchEvent("video-background-ended");
-      if (!this.params.loop) return this.pause();
+      if (this.paused || !this.params.loop) return this.pause();
       this.seekTo(this.params["start-at"]);
       this.player.playVideo();
     }
@@ -620,6 +626,13 @@
   };
 
   // src/lib/vimeo-background.mjs
+  var RE_VIMEO_UNLISTED_PATH = /\/\d+\/([^/?#\s]+)\/?\s*$/;
+  var RE_VIMEO_UNLISTED_QUERY = /[?&]h=([^&#]+)/;
+  function getVimeoUnlistedHash(url) {
+    if (!url) return;
+    const pts = url.match(RE_VIMEO_UNLISTED_PATH) || url.match(RE_VIMEO_UNLISTED_QUERY);
+    if (pts) return pts[1];
+  }
   var VimeoBackground = class extends SuperVideoBackground {
     constructor(elem, params, id, uid, factoryInstance) {
       super(elem, params, id ? id.id : null, uid, "vimeo", factoryInstance);
@@ -700,12 +713,10 @@
       const pts = url.match(RE_VIMEO);
       if (!pts || !pts.length) return;
       this.id = pts[1];
-      const unlisted = url.match(/\/[^/:.]+(:|\/)([^:?/]+)\s?$/) || url.match(/(\?|&)h=([^=&#?]+)/);
-      this.unlisted = unlisted ? unlisted[2] : null;
+      this.unlisted = getVimeoUnlistedHash(url);
       this.src = this.generateSrcURL(this.id, this.unlisted);
       this.playerElement.src = this.src;
-      if (this.element.hasAttribute("data-vbg")) this.element.setAttribute("data-vbg", url);
-      if (this.element.hasAttribute("data-ytbg")) this.element.setAttribute("data-ytbg", url);
+      this.writeSourceAttributes(url);
       this.loadBackground(this.id);
     }
     onVideoPlayerReady() {
@@ -722,7 +733,7 @@
     onVideoEnded() {
       this.updateState("ended");
       this.dispatchEvent("video-background-ended");
-      if (!this.params.loop) return this.pause();
+      if (this.paused || !this.params.loop) return this.pause();
       this.seekTo(this.params["start-at"]);
       this.updateState("playing");
       this.dispatchEvent("video-background-play");
@@ -850,7 +861,6 @@
       const playerElement = document.createElement("video");
       if (this.params.title) playerElement.setAttribute("title", this.params.title);
       playerElement.setAttribute("playsinline", "");
-      if (this.params.loop && !this.params["start-at"]) playerElement.setAttribute("loop", "");
       if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         playerElement.setAttribute("autoplay", "");
         playerElement.autoplay = true;
@@ -861,9 +871,21 @@
       }
       return playerElement;
     }
+    // native loop wraps to 0:00 and never fires 'ended', which would skip start-at
+    // - with start-at the loop is driven from onVideoEnded instead. Re-run on every
+    // start-at change, the attribute outlives the value it was decided from.
+    syncNativeLoop() {
+      if (!this.player) return;
+      if (this.params.loop && !this.params["start-at"]) {
+        this.player.setAttribute("loop", "");
+      } else {
+        this.player.removeAttribute("loop");
+      }
+    }
     injectPlayer() {
       this.player = this.generatePlayerElement();
       this.playerElement = this.player;
+      this.syncNativeLoop();
       if (this.volume !== 1 && !this.muted) this.setVolume(this.volume);
       this.playerElement.setAttribute("id", this.uid);
       this.stylePlayerElement(this.playerElement);
@@ -887,6 +909,10 @@
       this.dispatchEvent("video-background-state-change");
     }
     /* ===== API ===== */
+    setStartAt(startAt) {
+      super.setStartAt(startAt);
+      this.syncNativeLoop();
+    }
     setSource(url) {
       const pts = url.match(RE_VIDEO);
       if (!pts || !pts.length) return;
@@ -898,8 +924,7 @@
       if (this.mime) source.setAttribute("type", this.mime);
       this.playerElement.appendChild(source);
       this.src = url;
-      if (this.element.hasAttribute("data-vbg")) this.element.setAttribute("data-vbg", this.src);
-      if (this.element.hasAttribute("data-ytbg")) this.element.setAttribute("data-ytbg", this.src);
+      this.writeSourceAttributes(url);
     }
     onVideoLoadedMetadata() {
       this.setDuration(this.player.duration);
@@ -937,7 +962,7 @@
     onVideoEnded() {
       this.updateState("ended");
       this.dispatchEvent("video-background-ended");
-      if (!this.params.loop) return this.pause();
+      if (this.paused || !this.params.loop) return this.pause();
       this.seekTo(this.params["start-at"]);
       if (this.player.paused) {
         this.player.play();
@@ -1080,7 +1105,11 @@
       if (!this.intersectionObserver) {
         params = Object.assign({}, params, { "always-play": true });
       }
-      const link = element.getAttribute("data-youtube") || element.getAttribute("data-vbg");
+      let link = null;
+      for (const attribute of SOURCE_ATTRIBUTES) {
+        link = element.getAttribute(attribute);
+        if (link) break;
+      }
       const vid_data = this.getVidID(link);
       if (!vid_data) return;
       const uid = this.generateUID(vid_data.id);
@@ -1141,10 +1170,8 @@
             link
           };
           if (k === "VIMEO") {
-            const unlistedQueryRegex = /(\?|&)h=([^=&#?]+)/;
-            const unlistedPathRegex = /\/[^/:.]+(:|\/)([^:?/]+)\s?$/;
-            const unlistedQuery = link.match(unlistedPathRegex) || link.match(unlistedQueryRegex);
-            if (unlistedQuery) data.unlisted = unlistedQuery[2];
+            const unlisted = getVimeoUnlistedHash(link);
+            if (unlisted) data.unlisted = unlisted;
           }
           return data;
         }
