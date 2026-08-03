@@ -10,6 +10,17 @@
     },
     "./*": "./*"
   },
+  "files": [
+    "src",
+    "!src/__tests__",
+    "!src/styles",
+    "jquery.youtube-background.js",
+    "jquery.youtube-background.js.map",
+    "jquery.youtube-background.min.js",
+    "youtube-background-experimental.js",
+    "youtube-background-experimental.js.map",
+    "youtube-background-experimental.min.js"
+  ],
   "homepage": "https://github.com/stamat/youtube-background",
   "repository": {
     "type": "git",
