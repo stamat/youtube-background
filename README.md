@@ -377,6 +377,18 @@ The source URL itself lives on `data-vbg`, and is also read from the legacy `dat
 * **video-background-resize** - when the video background is resized, this event is fired.
 * **video-background-destroyed** - when the video background is destroyed using the `destroy` function of the instance and reverted to pre-initialization state, this event is fired.
 
+### Group events
+
+`VideoBackgroundGroup` from `youtube-background-experimental.js` dispatches on the group element, with the group instance in `event.detail`:
+
+* **video-background-group-play** / **video-background-group-pause** - the whole group was started or stopped
+* **video-background-group-mute** / **video-background-group-unmute** - the whole group was muted or unmuted
+* **video-background-group-next** / **video-background-group-previous** - the group stepped to another video
+* **video-background-group-forward-rewind** - `next()` ran past the last video and wrapped to the first
+* **video-background-group-backward-rewind** - `prev()` ran past the first video and wrapped to the last
+
+**⚠️ Note:** up to and including 1.2.0 the unmute event was dispatched under the misspelling `video-background-group-umnute`, and the two rewind events never fired at all. Listeners bound to the misspelling need updating.
+
 Events bubble. If you go vanilla, you can get the video object via `event.detail` or `event.originalEvent.detail` in case of jQuery implementation.
 
 You can add listeners to the events onto the element that you've initialized the video background on. If the ID of that element is `#video-background`, you can add listeners like this:

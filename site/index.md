@@ -216,6 +216,17 @@ document.querySelector("#hero").addEventListener("video-background-ready", (even
 });
 ```
 
+A group dispatches on the group element, with the group in `event.detail`:
+
+`video-background-group-play`, `video-background-group-pause`,
+`video-background-group-mute`, `video-background-group-unmute`,
+`video-background-group-next`, `video-background-group-previous`,
+`video-background-group-forward-rewind`, `video-background-group-backward-rewind`.
+
+The last two fire when stepping past either end of the stack wraps around. Up to
+and including 1.2.0 they never fired, and the unmute event was dispatched under
+the misspelling `video-background-group-umnute`.
+
 ## API
 
 ```javascript
