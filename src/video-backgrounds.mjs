@@ -1,6 +1,7 @@
 import { YoutubeBackground } from './lib/youtube-background.mjs';
 import { VimeoBackground, getVimeoUnlistedHash } from './lib/vimeo-background.mjs';
 import { VideoBackground } from './lib/video-background.mjs';
+import { SOURCE_ATTRIBUTES } from './lib/super-video-background.mjs';
 
 import { randomIntInclusive, RE_VIDEO, RE_VIMEO, RE_YOUTUBE } from 'book-of-spells';
 
@@ -100,7 +101,12 @@ export class VideoBackgrounds {
       params = Object.assign({}, params, { 'always-play': true });
     }
 
-    const link = element.getAttribute('data-youtube') || element.getAttribute('data-vbg');
+    let link = null;
+    for (const attribute of SOURCE_ATTRIBUTES) {
+      link = element.getAttribute(attribute);
+      if (link) break;
+    }
+
     const vid_data = this.getVidID(link);
   
     if (!vid_data) return;

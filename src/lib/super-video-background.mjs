@@ -1,6 +1,10 @@
 import { generateActionButton } from './buttons.mjs';
 import { isArray, stringToType, isMobile, parseResolutionString, proportionalParentCoverResize, percentage, fixed } from 'book-of-spells';
 
+// read by the factory and written back by every setSource, in that order of
+// precedence - an attribute on only one of those lists cannot round-trip
+export const SOURCE_ATTRIBUTES = ['data-vbg', 'data-youtube', 'data-ytbg'];
+
 export class SuperVideoBackground {
   constructor(elem, params, id, uid, type, factoryInstance) {
     if (!id) return;
@@ -235,6 +239,14 @@ export class SuperVideoBackground {
   setDuration(duration) {
     // end-at caps the playable range, a shorter video caps end-at
     this.duration = this.params['end-at'] ? Math.min(duration, this.params['end-at']) : duration;
+  }
+
+  // the URL the caller gave, not the generated embed URL - the factory has to be
+  // able to read back what it read in
+  writeSourceAttributes(url) {
+    for (const attribute of SOURCE_ATTRIBUTES) {
+      if (this.element.hasAttribute(attribute)) this.element.setAttribute(attribute, url);
+    }
   }
 
   setStartAt(startAt) {

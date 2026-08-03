@@ -1,6 +1,6 @@
 import { VideoBackgrounds } from '../video-backgrounds.mjs'
 import { VideoBackground, MIME_MAP } from '../lib/video-background.mjs'
-import { SuperVideoBackground } from '../lib/super-video-background.mjs'
+import { SuperVideoBackground, SOURCE_ATTRIBUTES } from '../lib/super-video-background.mjs'
 import { RE_VIDEO } from 'book-of-spells'
 
 // These methods never touch `this` beyond plain data, so they can be exercised
@@ -136,6 +136,38 @@ describe('setDuration', () => {
     expect(setDuration({ 'end-at': 30 }, 100)).toBe(30)
     expect(setDuration({ 'end-at': 30 }, 20)).toBe(20)
     expect(setDuration({ 'end-at': 0 }, 100)).toBe(100)
+  })
+})
+
+describe('source attributes', () => {
+  const writeBack = (element, url) =>
+    SuperVideoBackground.prototype.writeSourceAttributes.call({ element }, url)
+
+  test('the factory finds a source under every attribute setSource writes back', () => {
+    for (const attribute of SOURCE_ATTRIBUTES) {
+      const backgrounds = new VideoBackgrounds([])
+      const element = document.createElement('div')
+      element.setAttribute(attribute, 'https://example.com/clip.mp4')
+      document.body.appendChild(element)
+
+      backgrounds.add(element)
+      expect(element.hasAttribute('data-vbg-uid')).toBe(true)
+
+      writeBack(element, 'https://example.com/other.mp4')
+      expect(element.getAttribute(attribute)).toBe('https://example.com/other.mp4')
+
+      backgrounds.disconnect()
+    }
+  })
+
+  test('an attribute the markup never carried is not invented', () => {
+    const element = document.createElement('div')
+    element.setAttribute('data-vbg', 'https://example.com/clip.mp4')
+
+    writeBack(element, 'https://example.com/other.mp4')
+
+    expect(element.hasAttribute('data-ytbg')).toBe(false)
+    expect(element.hasAttribute('data-youtube')).toBe(false)
   })
 })
 

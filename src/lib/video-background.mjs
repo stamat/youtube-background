@@ -119,8 +119,7 @@ export class VideoBackground extends SuperVideoBackground {
     this.playerElement.appendChild(source);
     this.src = url;
 
-    if (this.element.hasAttribute('data-vbg')) this.element.setAttribute('data-vbg', this.src);
-    if (this.element.hasAttribute('data-ytbg')) this.element.setAttribute('data-ytbg', this.src);
+    this.writeSourceAttributes(url);
   }
 
   onVideoLoadedMetadata() {

@@ -312,6 +312,8 @@ Noted properties can be added as html attributes as:
 
 Every one of them is also accepted under the legacy `data-ytbg-` prefix, kept from the days when this only did YouTube. `data-vbg-` wins where both are present.
 
+The source URL itself lives on `data-vbg`, and is also read from the legacy `data-youtube` and `data-ytbg`, in that order of precedence. `setSource()` writes the new URL back to whichever of the three the element already carries — it never adds one that was not there.
+
 **⚠️ Note:** Attribute properties will override the properties passed on initialization. Always.
 
 #### Example - Properties as HTML attributes

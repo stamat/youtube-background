@@ -117,9 +117,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     this.src = this.generateSrcURL(this.id);
     this.playerElement.src = this.src;
 
-    // write back the URL the caller gave, not the generated embed URL
-    if (this.element.hasAttribute('data-vbg')) this.element.setAttribute('data-vbg', url);
-    if (this.element.hasAttribute('data-ytbg')) this.element.setAttribute('data-ytbg', url);
+    this.writeSourceAttributes(url);
     this.loadBackground(this.id);
   }
 
