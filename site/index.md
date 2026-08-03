@@ -197,7 +197,7 @@ the object passed to the constructor. Attributes win.
 | `fit-box` | `false` | Stretch to the container instead of covering it |
 | `inline-styles` | `true` | Let the plugin write the positioning styles |
 | `no-cookie` | `true` | Use the privacy-preserving embed domains |
-| `lazyloading` | `false` | Add `loading="lazy"` to the player |
+| `lazyloading` | `false` | Add `loading="lazy"` to the iframe — YouTube and Vimeo only |
 | `title` | `'Video background'` | Accessible name for the player frame |
 
 ## Events
