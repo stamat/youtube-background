@@ -227,6 +227,24 @@ the object passed to the constructor. Attributes win.
 | `lazyloading` | `false` | Add `loading="lazy"` to the iframe — YouTube and Vimeo only |
 | `title` | `'Video background'` | Accessible name for the player frame |
 
+## Limits
+
+YouTube's player flashes its own round play/pause icon in the middle of the frame on every
+playback toggle — `.ytp-bezel`, drawn inside the iframe, which the embed's `controls=0`
+does not cover. The frame is cross-origin, so neither your CSS nor your script reaches it,
+and the plugin's own play and mute buttons set it off like any other toggle. There is no
+option that turns it off, here or upstream.
+
+A cosmetic filter in your own content blocker removes it in that one browser:
+
+```text
+www.youtube-nocookie.com,www.youtube.com##.html5-video-player .ytp-bezel
+```
+
+Both domains, because `no-cookie` defaults to `true` and puts the player on
+`www.youtube-nocookie.com`. It is a local development comfort — a page cannot do this for
+its visitors.
+
 ## Events
 
 Every instance dispatches on its own element and bubbles:

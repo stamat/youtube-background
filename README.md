@@ -486,6 +486,26 @@ group.destroy();
 match and has `add`, `get`, `destroy` and `destroyAll`. The events a group dispatches are
 under [Group events](#group-events).
 
+## Known limits
+
+**YouTube's play/pause bezel cannot be removed.** Every playback toggle flashes YouTube's
+own big round icon in the middle of the frame — `.ytp-bezel`, drawn by the player inside
+the iframe. The embed already goes out with `controls=0`, which takes away the control bar
+and not that. The iframe is cross-origin: no stylesheet of yours selects into it, and
+script that reaches for its document throws. This applies to the plugin's own
+`play-button` and `mute-button` toggles as much as to a click on the background.
+
+The only thing that removes it is a cosmetic filter in the reader's own content blocker:
+
+```text
+www.youtube-nocookie.com,www.youtube.com##.html5-video-player .ytp-bezel
+```
+
+That changes the one browser it is typed into and nothing else — a comfort while you
+develop against `localhost`, never something a page can ship to a visitor. Both domains
+are listed because `no-cookie` defaults to `true`, which puts the player on
+`www.youtube-nocookie.com`; turn it off and the frame is `www.youtube.com`.
+
 ## Browser Support
 
 The bundles are built for **ES2019**, so that is the floor, desktop and mobile alike:
