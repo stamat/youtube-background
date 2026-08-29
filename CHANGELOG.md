@@ -44,7 +44,9 @@ push back to `master`. Pushing the tag triggers
 trusted publishing — `script/publish` never runs `npm publish` from your
 machine. Last it offers a GitHub release, using the entry it cut as the body.
 
-## [Unreleased] — a pass over every file in `src/`, and jQuery on notice
+## [Unreleased]
+
+## [1.2.0] - 2026-08-29 — a pass over every file in `src/`, and jQuery on notice
 
 A full review of `src/` turned up a teardown that tore nothing down, a video that
 restarted itself after the visitor had paused it, and a second instance that
