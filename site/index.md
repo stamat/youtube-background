@@ -65,8 +65,8 @@ Every band below is a real instance. The markup that produces it is right under 
     <div class="inner">
       <h2>Sound, and your own controls</h2>
       <p>Unmute with the plugin's button, or drive it from buttons of your own.</p>
-      <button class="js-demo-play-toggle" data-target="#demo-sound">Toggle play</button>
-      <button class="js-demo-mute-toggle" data-target="#demo-sound">Toggle mute</button>
+      <button class="js-demo-play-toggle" data-target="#demo-sound">Play</button>
+      <button class="js-demo-mute-toggle" data-target="#demo-sound">Mute</button>
       <button class="js-demo-src" data-src="https://www.youtube.com/watch?v=UIyoNvInzCI">Change source</button>
     </div>
   </div>
@@ -164,8 +164,9 @@ There is also a jQuery plugin, `jQuery("[data-vbg]").youtube_background()`, whic
 registers itself only if jQuery is on the page. It is deprecated as of 1.2.0, warns
 once when called, and is removed in 2.0.0.
 
-The seek bars, play/mute toggles and group controls used above live in a separate
-experimental bundle:
+The seek bars, play/mute toggles and group controls used above are optional and live in
+a bundle of their own. Each is a class over markup you write, pointed at a background by
+`data-target`, and each has a `destroy()` that takes its listeners back:
 
 ```html
 <script src="youtube-background-experimental.min.js"></script>

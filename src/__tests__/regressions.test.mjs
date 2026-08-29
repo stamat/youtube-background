@@ -1,6 +1,7 @@
 // Covers the bugs that have actually shipped here: URL parsing, MIME and param
 // resolution, time/percentage arithmetic, the loop and pause decisions, source
-// attribute round-tripping, group wrap-around, and factory teardown.
+// attribute round-tripping, group wrap-around, factory teardown, control
+// teardown, and the ARIA the buttons and seek bar write.
 //
 // Deliberately not covered: anything needing a real YouTube, Vimeo or media
 // player. jsdom has no playback, no IntersectionObserver and no network, so
@@ -10,7 +11,8 @@
 import { VideoBackgrounds } from '../video-backgrounds.mjs'
 import { VideoBackground, MIME_MAP } from '../lib/video-background.mjs'
 import { YoutubeBackground } from '../lib/youtube-background.mjs'
-import { VideoBackgroundGroup } from '../lib/controls.mjs'
+import { VideoBackgroundGroup, SeekBar, PlayToggle, MuteToggle } from '../lib/controls.mjs'
+import { generateActionButton } from '../lib/buttons.mjs'
 import { SuperVideoBackground, SOURCE_ATTRIBUTES } from '../lib/super-video-background.mjs'
 import { RE_VIDEO } from 'book-of-spells'
 
@@ -416,5 +418,190 @@ describe('shouldPlay', () => {
       currentState: 'ended',
       params: { ...playable.params, loop: false }
     })).toBe(false)
+  })
+})
+
+describe('control teardown', () => {
+  // Records every (event, handler) pair an element is given and every one taken
+  // back, so a destroy() that removes a fresh .bind() instead of the original
+  // shows up as a pair still outstanding.
+  const track = (element) => {
+    const pairs = []
+    const add = element.addEventListener.bind(element)
+    const remove = element.removeEventListener.bind(element)
+    element.addEventListener = (name, fn, opts) => { pairs.push([name, fn]); add(name, fn, opts) }
+    element.removeEventListener = (name, fn) => {
+      const i = pairs.findIndex(([n, f]) => n === name && f === fn)
+      if (i > -1) pairs.splice(i, 1)
+      remove(name, fn)
+    }
+    return pairs
+  }
+  const outstanding = (pairs) => pairs.map(([name]) => name)
+  const counted = (...names) => {
+    const calls = []
+    const stub = { calls }
+    for (const name of names) stub[name] = () => calls.push(name)
+    return stub
+  }
+  const dispatch = (element, name, detail) => element.dispatchEvent(new CustomEvent(name, { detail }))
+
+  let target, targetTracked
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="hero"></div>'
+    target = document.querySelector('#hero')
+    targetTracked = track(target)
+  })
+
+  test('a destroyed seek bar hands back every listener it took, and the wrapper can be bound again', () => {
+    document.body.insertAdjacentHTML('beforeend', '<div id="bar" data-target="#hero"><input class="js-seek-bar" type="range"></div>')
+    const wrapper = document.querySelector('#bar')
+    const inputTracked = track(wrapper.querySelector('.js-seek-bar'))
+
+    const bar = new SeekBar(wrapper)
+    dispatch(target, 'video-background-ready', { uid: 'first' })
+    expect(wrapper.getAttribute('data-target-uid')).toBe('first')
+
+    bar.destroy()
+    expect(outstanding(targetTracked)).toEqual([])
+    expect(outstanding(inputTracked)).toEqual([])
+    dispatch(target, 'video-background-ready', { uid: 'second' })
+    expect(wrapper.hasAttribute('data-target-uid')).toBe(false)
+
+    new SeekBar(wrapper)
+    dispatch(target, 'video-background-ready', { uid: 'second' })
+    expect(wrapper.getAttribute('data-target-uid')).toBe('second')
+  })
+
+  test('a destroyed play toggle neither follows the video nor drives it', () => {
+    document.body.insertAdjacentHTML('beforeend', '<button id="play" data-target="#hero"></button>')
+    const button = document.querySelector('#play')
+    const buttonTracked = track(button)
+    const video = counted('pause', 'play')
+
+    const toggle = new PlayToggle(button)
+    dispatch(target, 'video-background-play', video)
+    expect(button.getAttribute('aria-pressed')).toBe('true')
+    button.click()
+    expect(video.calls).toEqual(['pause'])
+
+    toggle.destroy()
+    expect(outstanding(targetTracked)).toEqual([])
+    expect(outstanding(buttonTracked)).toEqual([])
+    dispatch(target, 'video-background-pause', video)
+    expect(button.getAttribute('aria-pressed')).toBe('true')
+    button.click()
+    expect(video.calls).toEqual(['pause'])
+  })
+
+  test('a destroyed mute toggle neither follows the video nor drives it', () => {
+    document.body.insertAdjacentHTML('beforeend', '<button id="mute" data-target="#hero"></button>')
+    const button = document.querySelector('#mute')
+    const buttonTracked = track(button)
+    const video = counted('mute', 'unmute')
+
+    const toggle = new MuteToggle(button)
+    dispatch(target, 'video-background-mute', video)
+    expect(button.getAttribute('aria-pressed')).toBe('true')
+    button.click()
+    expect(video.calls).toEqual(['unmute'])
+
+    toggle.destroy()
+    expect(outstanding(targetTracked)).toEqual([])
+    expect(outstanding(buttonTracked)).toEqual([])
+    dispatch(target, 'video-background-unmute', video)
+    expect(button.getAttribute('aria-pressed')).toBe('true')
+    button.click()
+    expect(video.calls).toEqual(['unmute'])
+  })
+
+  test('destroying a control that never bound is a no-op', () => {
+    expect(() => new SeekBar(null).destroy()).not.toThrow()
+    expect(() => new PlayToggle(document.createElement('button')).destroy()).not.toThrow()
+    expect(() => new MuteToggle(document.createElement('button')).destroy()).not.toThrow()
+  })
+})
+
+describe('control ARIA', () => {
+  const dispatch = (element, name, detail) => element.dispatchEvent(new CustomEvent(name, { detail }))
+  let target
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="hero"></div>'
+    target = document.querySelector('#hero')
+  })
+
+  test('a toggle keeps the name it was given and carries the state in aria-pressed, as a toggle button and not a switch', () => {
+    document.body.insertAdjacentHTML('beforeend', '<button id="play" data-target="#hero">Play</button><button id="mute" data-target="#hero">Mute</button>')
+    const play = document.querySelector('#play')
+    const mute = document.querySelector('#mute')
+    new PlayToggle(play)
+    new MuteToggle(mute)
+
+    for (const button of [play, mute]) {
+      expect(button.hasAttribute('role')).toBe(false)
+      expect(button.getAttribute('type')).toBe('button')
+      expect(button.getAttribute('aria-pressed')).toBe('false')
+    }
+
+    dispatch(target, 'video-background-play', {})
+    dispatch(target, 'video-background-mute', {})
+    expect(play.getAttribute('aria-pressed')).toBe('true')
+    expect(mute.getAttribute('aria-pressed')).toBe('true')
+    expect(play.textContent).toBe('Play')
+    expect(mute.textContent).toBe('Mute')
+    expect(play.hasAttribute('aria-label')).toBe(false)
+    expect(mute.hasAttribute('aria-label')).toBe(false)
+  })
+
+  test('an authored type and aria-pressed are left alone', () => {
+    document.body.insertAdjacentHTML('beforeend', '<button id="play" type="submit" aria-pressed="true" data-target="#hero">Play</button>')
+    const play = document.querySelector('#play')
+    const toggle = new PlayToggle(play)
+    expect(play.getAttribute('type')).toBe('submit')
+    expect(toggle.active).toBe(true)
+  })
+
+  test('a seek bar with no name gets one, and one with a name keeps it', () => {
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="bare" data-target="#hero"><input class="js-seek-bar" type="range"></div>
+      <div id="named" data-target="#hero"><input class="js-seek-bar" type="range" aria-label="Scrub"></div>
+      <div id="labelled" data-target="#hero"><label for="scrub">Scrub</label><input id="scrub" class="js-seek-bar" type="range"></div>
+    `)
+    new SeekBar(document.querySelector('#bare'))
+    new SeekBar(document.querySelector('#named'))
+    new SeekBar(document.querySelector('#labelled'))
+    expect(document.querySelector('#bare input').getAttribute('aria-label')).toBe('Seek')
+    expect(document.querySelector('#named input').getAttribute('aria-label')).toBe('Scrub')
+    expect(document.querySelector('#labelled input').hasAttribute('aria-label')).toBe(false)
+  })
+
+  test("the plugin's own button is named for the action it will take, and carries no pressed state", () => {
+    const calls = []
+    const instance = {
+      paused: false,
+      buttons: {},
+      controls_element: document.createElement('div'),
+      play: () => calls.push('play'),
+      pause: () => calls.push('pause')
+    }
+    generateActionButton(instance, {
+      name: 'playing',
+      className: 'play-toggle',
+      innerHtml: '<i class="fa"></i>',
+      stateClassName: 'paused',
+      condition_parameter: 'paused',
+      stateChildClassNames: ['fa-pause-circle', 'fa-play-circle'],
+      stateLabels: ['Pause', 'Play'],
+      actions: ['play', 'pause']
+    })
+    const button = instance.controls_element.querySelector('button')
+    expect(button.getAttribute('type')).toBe('button')
+    expect(button.getAttribute('aria-label')).toBe('Pause')
+    expect(button.hasAttribute('aria-pressed')).toBe(false)
+
+    button.click()
+    expect(calls).toEqual(['pause'])
+    expect(button.getAttribute('aria-label')).toBe('Play')
+    expect(button.hasAttribute('aria-pressed')).toBe(false)
   })
 })

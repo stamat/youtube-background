@@ -59,6 +59,12 @@ removed in 2.0.0.
   disconnects both observers and removes the two global listeners the factory
   registered; `destroyAll()` leaves the factory itself listening, as it always did.
 
+- **`destroy()` on `SeekBar`, `PlayToggle` and `MuteToggle`.** None had one, and every
+  listener was attached through a fresh `.bind()` with no reference kept, so a control
+  removed from the page stayed alive through the element it pointed at and kept running
+  on every `video-background-time-update`. The controls are documented now, as the
+  optional part of the package they are.
+
 - **`data-ytbg` is read as a source URL.** `setSource()` had always written back to
   it, but nothing ever read it, so an element carrying only `data-ytbg` was never
   picked up.
@@ -145,11 +151,17 @@ removed in 2.0.0.
 - **A user-initiated pause survives the end of a looping video.** `onVideoEnded()`
   rewound and played on regardless, so `loop` overrode the visitor.
 
-- **The control buttons say what they are.** `aria-pressed` reported the opposite of
-  the button's state and was paired with `role="switch"`, which expects
-  `aria-checked`; the role is gone, the values are right, and buttons that announced
-  as a bare "button" — their only content an icon element — now carry a
-  state-dependent `aria-label` and an explicit `type`.
+- **The plugin's own buttons are named for the action they will take, and nothing
+  else.** They announced as a bare "button" — their only content an icon — and then
+  carried `aria-pressed` reporting the opposite of their state; now the name is
+  `Pause` while playing and `Play` while paused, `Mute`/`Unmute` likewise, with an
+  explicit `type="button"` and no `aria-pressed`, since a name that swaps and a pressed
+  state together say it twice (#72).
+
+- **`PlayToggle` and `MuteToggle` are toggle buttons, not switches.** `role="switch"`,
+  which expects `aria-checked`, is gone; the name you gave the button stays, `aria-pressed`
+  alone carries the state, and `type="button"` is added where you gave none. `SeekBar`
+  names its input `Seek` when you gave it no name.
 
 - **The play button starts in the right state.** Its initial state read
   `params['paused']`, which does not exist, so the value was `undefined` and only

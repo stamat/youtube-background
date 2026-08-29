@@ -7,8 +7,9 @@ function setButtonState(buttonObj, active) {
   element.firstChild.classList.toggle(buttonObj.stateChildClassNames[0], !active);
   element.firstChild.classList.toggle(buttonObj.stateChildClassNames[1], active);
 
-  // pressed mirrors the state class: pressed play-toggle is paused, pressed mute-toggle is muted
-  element.setAttribute('aria-pressed', active);
+  // The name is the action the press will take - "Pause" while playing - and that swap is
+  // the whole state: adding aria-pressed on top would say it twice, and ARIA asks for a
+  // toggle button's name to never change.
   if (buttonObj.stateLabels) element.setAttribute('aria-label', buttonObj.stateLabels[active ? 1 : 0]);
 }
 

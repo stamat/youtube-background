@@ -1,3 +1,30 @@
+// Bound once and kept: removeEventListener only matches the very function object
+// addEventListener was given, and a fresh .bind() never is.
+function attach(listeners) {
+  for (const [element, eventName, handler] of listeners) element.addEventListener(eventName, handler);
+}
+
+function detach(listeners) {
+  for (const [element, eventName, handler] of listeners) element.removeEventListener(eventName, handler);
+}
+
+// The name is the author's and never changes; aria-pressed alone is the state, and pressed
+// means what the name says is in effect - "Play" pressed is playing, "Mute" pressed is muted.
+// Not role="switch", which expects aria-checked, and not a name that swaps with the state,
+// which with aria-pressed would say it twice.
+function initToggle(element) {
+  if (!element.hasAttribute('type')) element.setAttribute('type', 'button');
+  if (!element.hasAttribute('aria-pressed')) element.setAttribute('aria-pressed', 'false');
+  return element.getAttribute('aria-pressed') === 'true';
+}
+
+// A range input with no name is announced as a bare "slider".
+function nameInput(input, name) {
+  if (input.hasAttribute('aria-label') || input.hasAttribute('aria-labelledby')) return;
+  if (input.labels && input.labels.length) return;
+  input.setAttribute('aria-label', name);
+}
+
 export class SeekBar {
   constructor(element, vbgInstance) {
     this.lock = false;
@@ -11,15 +38,26 @@ export class SeekBar {
     if (!this.targetSelector && vbgInstance) this.targetElem = vbgInstance.element;
     if (!this.targetElem) return;
 
+    nameInput(this.inputElem, 'Seek');
     if (vbgInstance) this.setVBGInstance(vbgInstance);
-    
-    this.targetElem.addEventListener('video-background-time-update', this.onTimeUpdate.bind(this));
-    this.targetElem.addEventListener('video-background-play', this.onReady.bind(this));
-    this.targetElem.addEventListener('video-background-ready', this.onReady.bind(this));
-    this.targetElem.addEventListener('video-background-destroyed', this.onDestroyed.bind(this));
 
-    this.inputElem.addEventListener('input', this.onInput.bind(this));
-    this.inputElem.addEventListener('change', this.onChange.bind(this));
+    this.listeners = [
+      [this.targetElem, 'video-background-time-update', this.onTimeUpdate.bind(this)],
+      [this.targetElem, 'video-background-play', this.onReady.bind(this)],
+      [this.targetElem, 'video-background-ready', this.onReady.bind(this)],
+      [this.targetElem, 'video-background-destroyed', this.onDestroyed.bind(this)],
+      [this.inputElem, 'input', this.onInput.bind(this)],
+      [this.inputElem, 'change', this.onChange.bind(this)]
+    ];
+    attach(this.listeners);
+  }
+
+  destroy() {
+    if (!this.listeners) return;
+    detach(this.listeners);
+    this.listeners = null;
+    this.vbgInstance = null;
+    this.element.removeAttribute('data-target-uid');
   }
 
   setVBGInstance(vbgInstance) {
@@ -267,28 +305,29 @@ export class PlayToggle {
     this.targetSelector = this.element.getAttribute('data-target');
 
     if (!this.targetSelector) return;
-    this.active = false;
-
-    if (this.element.hasAttribute('aria-pressed')) {
-      this.active = this.element.getAttribute('aria-pressed') === 'true';
-    } else {
-      this.element.setAttribute('aria-pressed', this.active);
-    }
-
-    this.element.setAttribute('role', 'switch');
+    this.active = initToggle(this.element);
 
     this.targetElem = document.querySelector(this.targetSelector);
     if (!this.targetElem) return;
 
     if (vbgInstance) this.vbgInstance = vbgInstance;
 
-    this.targetElem.addEventListener('video-background-ready', this.onReady.bind(this));
-    this.targetElem.addEventListener('video-background-state-change', this.onStateChange.bind(this));
-    this.targetElem.addEventListener('video-background-play', this.onPlay.bind(this));
-    this.targetElem.addEventListener('video-background-pause', this.onPause.bind(this));
-    this.targetElem.addEventListener('video-background-destroyed', this.onDestroyed.bind(this));
+    this.listeners = [
+      [this.targetElem, 'video-background-ready', this.onReady.bind(this)],
+      [this.targetElem, 'video-background-state-change', this.onStateChange.bind(this)],
+      [this.targetElem, 'video-background-play', this.onPlay.bind(this)],
+      [this.targetElem, 'video-background-pause', this.onPause.bind(this)],
+      [this.targetElem, 'video-background-destroyed', this.onDestroyed.bind(this)],
+      [this.element, 'click', this.onClick.bind(this)]
+    ];
+    attach(this.listeners);
+  }
 
-    this.element.addEventListener('click', this.onClick.bind(this));
+  destroy() {
+    if (!this.listeners) return;
+    detach(this.listeners);
+    this.listeners = null;
+    this.vbgInstance = null;
   }
 
   onReady(event) {
@@ -337,27 +376,28 @@ export class MuteToggle {
       this.targetSelector = this.element.getAttribute('data-target');
 
       if (!this.targetSelector) return;
-      this.active = false;
-
-      if (this.element.hasAttribute('aria-pressed')) {
-          this.active = this.element.getAttribute('aria-pressed') === 'true';
-      } else {
-          this.element.setAttribute('aria-pressed', this.active);
-      }
-
-      this.element.setAttribute('role', 'switch');
+      this.active = initToggle(this.element);
 
       this.targetElem = document.querySelector(this.targetSelector);
       if (!this.targetElem) return;
 
       if (vbgInstance) this.vbgInstance = vbgInstance;
 
-      this.targetElem.addEventListener('video-background-ready', this.onReady.bind(this));
-      this.targetElem.addEventListener('video-background-mute', this.onMute.bind(this));
-      this.targetElem.addEventListener('video-background-unmute', this.onUnmute.bind(this));
-      this.targetElem.addEventListener('video-background-destroyed', this.onDestroyed.bind(this));
+      this.listeners = [
+        [this.targetElem, 'video-background-ready', this.onReady.bind(this)],
+        [this.targetElem, 'video-background-mute', this.onMute.bind(this)],
+        [this.targetElem, 'video-background-unmute', this.onUnmute.bind(this)],
+        [this.targetElem, 'video-background-destroyed', this.onDestroyed.bind(this)],
+        [this.element, 'click', this.onClick.bind(this)]
+      ];
+      attach(this.listeners);
+  }
 
-      this.element.addEventListener('click', this.onClick.bind(this));
+  destroy() {
+    if (!this.listeners) return;
+    detach(this.listeners);
+    this.listeners = null;
+    this.vbgInstance = null;
   }
 
   onReady(event) {

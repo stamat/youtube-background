@@ -1,5 +1,6 @@
 # 📺 youtube-background
 [![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
+[![CI](https://github.com/stamat/youtube-background/actions/workflows/ci.yml/badge.svg)](https://github.com/stamat/youtube-background/actions/workflows/ci.yml)
 [![CSS gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
 
 > Create video backgrounds from a YouTube, Vimeo or video file links.
@@ -30,6 +31,7 @@ After numerous iterations it is now a fully fledged ES module, also available as
 * **Lazyloading** - lazyload the iframe/video
 * YouTube and Vimeo **cookies** are disabled by default
 * YouTube and Vimeo player API scrips are loaded only when needed
+* Optional **controls** — a seek bar, play and mute toggles, and a group that plays backgrounds in sequence — in a second bundle
 
 ## Installation
 
@@ -250,8 +252,8 @@ The plugin method accepts properties object as a parameter. For the list of avai
 
 Property | Default | Accepts | Description
 -------- | ------- | ------- | -----------
-**play-button** | false | boolean | Adds a toggle pause button
-**mute-button** | false | boolean | Adds a toggle mute button
+**play-button** | false | boolean | Adds the plugin's own play/pause button, named for the action it will take
+**mute-button** | false | boolean | Adds the plugin's own mute button, named for the action it will take
 **autoplay** | true | boolean | Autoplay loaded video
 **muted** | true | boolean | Load video muted
 **loop** | true | boolean | Loop loaded video
@@ -421,6 +423,68 @@ Method | Accepts | Description
 * **index** - the index of all the instances of the video backgrounds. It is an object with keys being the UID of the element and values being the instance object.
 * **intersectionObserver** - the instance of the `IntersectionObserver` that is used to track the intersecting video backgrounds.
 * **resizeObserver** - the instance of the `ResizeObserver` that is used to track the resize events of the video backgrounds. If the `ResizeObserver` is not supported, the factory instance will fallback to the `window` resize event.
+
+## Controls
+
+Optional, and in a bundle of their own so the main script does not carry them:
+
+```
+<script src="https://unpkg.com/youtube-background/youtube-background-experimental.min.js"></script>
+```
+
+Each control is a class that takes an element carrying `data-target`, a selector for the
+video background element, and tunes onto that element's events. You write the markup and
+style it; the control only wires it.
+
+```html
+<div data-target="#hero" class="js-seek-bar-wrap">
+  <progress class="js-seek-bar-progress" value="0" max="100" aria-hidden="true"></progress>
+  <input class="js-seek-bar" type="range" value="0" min="0" max="100" step="any" aria-label="Seek">
+</div>
+<button data-target="#hero" class="js-play-toggle" aria-label="Play">⏯</button>
+<button data-target="#hero" class="js-mute-toggle" aria-label="Mute">🔇</button>
+```
+
+```javascript
+const seekBar = new SeekBar(document.querySelector('.js-seek-bar-wrap'));
+const playToggle = new PlayToggle(document.querySelector('.js-play-toggle'));
+const muteToggle = new MuteToggle(document.querySelector('.js-mute-toggle'));
+```
+
+Class | Markup it expects | What it does
+----- | ----------------- | ------------
+**SeekBar** | A wrapper with an `<input type="range">` from 0 to 100 marked `.js-seek-bar`, and optionally a `<progress>` marked `.js-seek-bar-progress` for the played fill | Follows `video-background-time-update`, seeks on `change`, marks the wrapper `data-target-uid` once bound, and names the input `Seek` if you gave it no name
+**PlayToggle** | A `<button>` | Writes `aria-pressed`, `true` while playing or buffering, and `type="button"` if you gave it none; a click plays or pauses
+**MuteToggle** | A `<button>` | Writes `aria-pressed`, `true` while muted, and `type="button"` if you gave it none; a click mutes or unmutes
+
+The toggles are [toggle buttons](https://www.w3.org/WAI/ARIA/apg/patterns/button/): the name
+you give one never changes, and `aria-pressed` is the state. Pressed means what the name says
+is in effect — name them `Play` and `Mute`, and a screen reader says "Play, toggle button,
+pressed" while the video plays. Do not name one `Pause` or swap the name yourself; with
+`aria-pressed` that says the state twice.
+
+Each takes the instance as an optional second argument — `new SeekBar(element, instance)` —
+in which case `data-target` can be left off and the instance's element is the target.
+
+**Every control has a `destroy()`** that removes the listeners it attached. A control is held
+alive by the element it points at for as long as that element lives, so a page that
+re-renders its controls — a framework, a live editor — calls `destroy()` on the old ones
+before making new ones, or every seek bar ever made keeps updating on each tick.
+
+`VideoBackgroundGroup` plays the backgrounds inside one element in sequence, one visible at
+a time, stepping on `video-background-ended`:
+
+```javascript
+const group = new VideoBackgroundGroup('#stack', '[data-vbg]', videoBackgrounds);
+group.next(); group.prev();
+group.play(); group.pause();
+group.mute(); group.unmute();
+group.destroy();
+```
+
+`VideoBackgroundGroups('.js-vbg-group', '[data-vbg]', videoBackgrounds)` makes one for every
+match and has `add`, `get`, `destroy` and `destroyAll`. The events a group dispatches are
+under [Group events](#group-events).
 
 ## Browser Support
 

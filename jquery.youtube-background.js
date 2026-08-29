@@ -7,7 +7,6 @@
     element.classList.toggle(buttonObj.stateClassName, active);
     element.firstChild.classList.toggle(buttonObj.stateChildClassNames[0], !active);
     element.firstChild.classList.toggle(buttonObj.stateChildClassNames[1], active);
-    element.setAttribute("aria-pressed", active);
     if (buttonObj.stateLabels) element.setAttribute("aria-label", buttonObj.stateLabels[active ? 1 : 0]);
   }
   function generateActionButton(obj, props) {
