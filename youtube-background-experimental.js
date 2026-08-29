@@ -20,6 +20,9 @@
   var SeekBar = class {
     constructor(element, vbgInstance) {
       this.lock = false;
+      this.frame = null;
+      this.shownTime = 0;
+      this.tick = this.tick.bind(this);
       if (!element) return;
       this.element = element;
       if (this.element.hasAttribute("data-target-uid")) return;
@@ -33,6 +36,7 @@
       if (vbgInstance) this.setVBGInstance(vbgInstance);
       this.listeners = [
         [this.targetElem, "video-background-time-update", this.onTimeUpdate.bind(this)],
+        [this.targetElem, "video-background-seeked", this.onSeeked.bind(this)],
         [this.targetElem, "video-background-play", this.onReady.bind(this)],
         [this.targetElem, "video-background-ready", this.onReady.bind(this)],
         [this.targetElem, "video-background-destroyed", this.onDestroyed.bind(this)],
@@ -46,6 +50,8 @@
       detach(this.listeners);
       this.listeners = null;
       this.vbgInstance = null;
+      cancelAnimationFrame(this.frame);
+      this.frame = null;
       this.element.removeAttribute("data-target-uid");
     }
     setVBGInstance(vbgInstance) {
@@ -56,12 +62,39 @@
     onReady(event) {
       this.setVBGInstance(event.detail);
     }
+    // A provider reports time about four times a second - YouTube is polled on a 250ms
+    // interval, Vimeo and <video> fire timeupdate at about that rate - and a thumb that only
+    // moves on those reports visibly steps. So while the video plays the bar moves on an
+    // animation frame: the last report plus the wall clock since it. A report a few
+    // milliseconds behind that is jitter and the bar holds rather than stepping back; one more
+    // than a second behind is a seek or a loop, and the bar snaps to it.
     onTimeUpdate(event) {
       this.setVBGInstance(event.detail);
-      if (!this.lock) requestAnimationFrame(() => this.setProgress(this.vbgInstance.percentComplete));
+      if (this.lock) return;
+      this.anchorTime = this.vbgInstance.currentTime;
+      this.anchorStamp = performance.now();
+      if (this.anchorTime < this.shownTime - 1) this.shownTime = 0;
+      cancelAnimationFrame(this.frame);
+      this.tick();
+    }
+    tick() {
+      this.frame = null;
+      const instance = this.vbgInstance;
+      if (!instance || this.lock) return;
+      const playing = instance.currentState === "playing";
+      const time = playing ? this.anchorTime + (performance.now() - this.anchorStamp) / 1e3 : this.anchorTime;
+      this.shownTime = Math.max(this.shownTime, time);
+      this.setProgress(instance.timeToPercentage(this.shownTime));
+      if (playing) this.frame = requestAnimationFrame(this.tick);
+    }
+    onSeeked() {
+      this.shownTime = 0;
     }
     onDestroyed() {
       this.vbgInstance = null;
+      cancelAnimationFrame(this.frame);
+      this.frame = null;
+      this.shownTime = 0;
       requestAnimationFrame(() => this.setProgress(0));
     }
     onInput(event) {
@@ -70,6 +103,7 @@
     }
     onChange(event) {
       this.lock = false;
+      this.shownTime = 0;
       requestAnimationFrame(() => this.setProgress(event.target.value));
       if (this.vbgInstance) {
         this.vbgInstance.seek(event.target.value);

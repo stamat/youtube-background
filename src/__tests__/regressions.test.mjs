@@ -1,7 +1,8 @@
 // Covers the bugs that have actually shipped here: URL parsing, MIME and param
 // resolution, time/percentage arithmetic, the loop and pause decisions, source
 // attribute round-tripping, group wrap-around, factory teardown, control
-// teardown, and the ARIA the buttons and seek bar write.
+// teardown, the ARIA the buttons and seek bar write, and the seek bar's motion
+// between time reports.
 //
 // Deliberately not covered: anything needing a real YouTube, Vimeo or media
 // player. jsdom has no playback, no IntersectionObserver and no network, so
@@ -13,6 +14,7 @@ import { VideoBackground, MIME_MAP } from '../lib/video-background.mjs'
 import { YoutubeBackground } from '../lib/youtube-background.mjs'
 import { VideoBackgroundGroup, SeekBar, PlayToggle, MuteToggle } from '../lib/controls.mjs'
 import { generateActionButton } from '../lib/buttons.mjs'
+import { jest } from '@jest/globals'
 import { SuperVideoBackground, SOURCE_ATTRIBUTES } from '../lib/super-video-background.mjs'
 import { RE_VIDEO } from 'book-of-spells'
 
@@ -603,5 +605,62 @@ describe('control ARIA', () => {
     expect(calls).toEqual(['pause'])
     expect(button.getAttribute('aria-label')).toBe('Play')
     expect(button.hasAttribute('aria-pressed')).toBe(false)
+  })
+})
+
+describe('seek bar motion', () => {
+  const dispatch = (element, name, detail) => element.dispatchEvent(new CustomEvent(name, { detail }))
+  let target, input, video
+  beforeEach(() => {
+    jest.useFakeTimers()
+    document.body.innerHTML = '<div id="hero"></div><div id="bar" data-target="#hero"><input class="js-seek-bar" type="range" min="0" max="100" step="any"></div>'
+    target = document.querySelector('#hero')
+    input = document.querySelector('.js-seek-bar')
+    // Identity mapping, so the bar's value reads as seconds.
+    video = { uid: 'a', currentTime: 10, currentState: 'playing', timeToPercentage: (t) => t }
+    new SeekBar(document.querySelector('#bar'))
+  })
+  afterEach(() => jest.useRealTimers())
+  const shown = () => parseFloat(input.value)
+
+  test('the bar moves between reports while playing, and stops when the video does', () => {
+    dispatch(target, 'video-background-time-update', video)
+    expect(shown()).toBe(10)
+    jest.advanceTimersByTime(100)
+    expect(shown()).toBeGreaterThan(10)
+    expect(shown()).toBeLessThanOrEqual(10.1)
+
+    video.currentState = 'paused'
+    const atPause = shown()
+    jest.advanceTimersByTime(500)
+    expect(shown()).toBe(atPause)
+  })
+
+  test('a report a little behind the bar holds it rather than stepping it back', () => {
+    dispatch(target, 'video-background-time-update', video)
+    jest.advanceTimersByTime(250)
+    const ahead = shown()
+    video.currentTime = 10.2
+    dispatch(target, 'video-background-time-update', video)
+    expect(shown()).toBeGreaterThanOrEqual(ahead)
+    jest.advanceTimersByTime(100)
+    expect(shown()).toBeGreaterThan(ahead)
+  })
+
+  test('a report far behind the bar is a seek or a loop, and the bar snaps to it', () => {
+    dispatch(target, 'video-background-time-update', video)
+    jest.advanceTimersByTime(250)
+    video.currentTime = 2
+    dispatch(target, 'video-background-time-update', video)
+    expect(shown()).toBeCloseTo(2, 1)
+  })
+
+  test('a seek lets the bar go backwards on the next report', () => {
+    dispatch(target, 'video-background-time-update', video)
+    jest.advanceTimersByTime(250)
+    dispatch(target, 'video-background-seeked', video)
+    video.currentTime = 9.9
+    dispatch(target, 'video-background-time-update', video)
+    expect(shown()).toBeCloseTo(9.9, 1)
   })
 })

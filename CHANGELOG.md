@@ -79,6 +79,11 @@ removed in 2.0.0.
 
 ### Changed
 
+- **`SeekBar` moves smoothly.** It advanced only on `video-background-time-update`, which
+  every provider sends about four times a second, so the thumb visibly stepped; while the
+  video plays it now moves on an animation frame, extrapolating from the last report, and
+  holds rather than stepping back when a report lands a few milliseconds behind it.
+
 - **The group unmute event is `video-background-group-unmute`.** It was dispatched
   as `video-background-group-umnute` — the only rename in this release, and the only
   thing here that breaks a listener.
