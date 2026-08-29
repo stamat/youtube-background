@@ -453,7 +453,7 @@ const muteToggle = new MuteToggle(document.querySelector('.js-mute-toggle'));
 
 Class | Markup it expects | What it does
 ----- | ----------------- | ------------
-**SeekBar** | A wrapper with an `<input type="range">` from 0 to 100 marked `.js-seek-bar`, and optionally a `<progress>` marked `.js-seek-bar-progress` for the played fill | Follows `video-background-time-update`, seeks on `change`, marks the wrapper `data-target-uid` once bound, and names the input `Seek` if you gave it no name
+**SeekBar** | A wrapper with an `<input type="range">` from 0 to 100 marked `.js-seek-bar`, and optionally a `<progress>` marked `.js-seek-bar-progress` for the played fill | Moves on an animation frame while the video plays — providers report time about four times a second, which is visibly steppy — seeks on `change`, marks the wrapper `data-target-uid` once bound, and names the input `Seek` if you gave it no name
 **PlayToggle** | A `<button>` | Writes `aria-pressed`, `true` while playing or buffering, and `type="button"` if you gave it none; a click plays or pauses
 **MuteToggle** | A `<button>` | Writes `aria-pressed`, `true` while muted, and `type="button"` if you gave it none; a click mutes or unmutes
 
@@ -489,11 +489,15 @@ under [Group events](#group-events).
 ## Known limits
 
 **YouTube's play/pause bezel cannot be removed.** Every playback toggle flashes YouTube's
-own big round icon in the middle of the frame — `.ytp-bezel`, drawn by the player inside
-the iframe. The embed already goes out with `controls=0`, which takes away the control bar
-and not that. The iframe is cross-origin: no stylesheet of yours selects into it, and
-script that reaches for its document throws. This applies to the plugin's own
-`play-button` and `mute-button` toggles as much as to a click on the background.
+own big round icon in the middle of the frame — `.ytp-bezel`, drawn by the player inside the
+iframe. It started showing on embeds in **May 2026**:
+[#77](https://github.com/stamat/youtube-background/issues/77) is the first report here, on
+the 5th, a second one followed on the 27th, and nothing on YouTube's side announces it — the
+player parameter revision history has had no entry since August 2023. The embed already goes
+out with `controls=0`, which takes away the control bar and not that. The iframe is
+cross-origin: no stylesheet of yours selects into it, and script that reaches for its
+document throws. This applies to the plugin's own `play-button` and `mute-button` toggles as
+much as to a click on the background.
 
 The only thing that removes it is a cosmetic filter in the reader's own content blocker:
 

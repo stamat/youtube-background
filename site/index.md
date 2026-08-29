@@ -229,6 +229,7 @@ the object passed to the constructor. Attributes win.
 
 ## Limits
 
+Since **May 2026** ([#77](https://github.com/stamat/youtube-background/issues/77)),
 YouTube's player flashes its own round play/pause icon in the middle of the frame on every
 playback toggle — `.ytp-bezel`, drawn inside the iframe, which the embed's `controls=0`
 does not cover. The frame is cross-origin, so neither your CSS nor your script reaches it,
