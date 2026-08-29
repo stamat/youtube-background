@@ -1090,7 +1090,7 @@
             instance.isIntersecting = entry.isIntersecting;
             try {
               if (entry.isIntersecting) {
-                if (instance.player && !instance.paused) instance.softPlay();
+                if (instance.player && instance.shouldPlay()) instance.softPlay();
               } else {
                 if (instance.player) instance.softPause();
               }

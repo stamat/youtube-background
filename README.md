@@ -209,7 +209,7 @@ To destroy all the instances in the index you can use `destroyAll` function of t
     videoBackgrounds.disconnect();
 ```
 
-Factory instance also implements the `IntersectionObserver` out of the box to keep track of the visible video backgrounds in order to toggle their play/pause state and preserve the bandwidth and improve the performance. You can find the instance of the `IntersectionObserver` in the `intersectionObserver` property of the factory instance.
+Factory instance also implements the `IntersectionObserver` out of the box to keep track of the visible video backgrounds in order to toggle their play/pause state and preserve the bandwidth and improve the performance. Scrolling into view only starts a video that would start anyway — `autoplay` off, a pause you asked for, or a video that ended with `loop` off all stay put. You can find the instance of the `IntersectionObserver` in the `intersectionObserver` property of the factory instance.
 
 For the resize events, the factory instance implements the `ResizeObserver` out of the box. You can find the instance of the `ResizeObserver` in the `resizeObserver` property of the factory instance. If the `resizeObserver` is not supported, the factory instance will fallback to the `window` resize event.
 

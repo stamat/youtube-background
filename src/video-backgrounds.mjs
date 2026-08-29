@@ -35,7 +35,9 @@ export class VideoBackgrounds {
 
           try {
             if (entry.isIntersecting) {
-              if (instance.player && !instance.paused) instance.softPlay();
+              // The same gate the tab-switch path asks, so autoplay off, a user pause and
+              // an ended non-looping video all stay put on scroll-in.
+              if (instance.player && instance.shouldPlay()) instance.softPlay();
             } else {
               if (instance.player) instance.softPause();
             }

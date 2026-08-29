@@ -1,6 +1,6 @@
 // Covers the bugs that have actually shipped here: URL parsing, MIME and param
 // resolution, time/percentage arithmetic, the loop and pause decisions, source
-// attribute round-tripping, group wrap-around, factory teardown, control
+// attribute round-tripping, group wrap-around, factory teardown, the scroll-in gate, control
 // teardown, the ARIA the buttons and seek bar write, and the seek bar's motion
 // between time reports.
 //
@@ -383,6 +383,77 @@ describe('VideoBackgrounds teardown', () => {
   })
 })
 
+describe('scrolling into view', () => {
+  // jsdom has no IntersectionObserver; a stand-in hands back the factory's callback
+  // so an entry can be delivered by hand.
+  let callback, backgrounds
+  beforeEach(() => {
+    window.IntersectionObserver = class {
+      constructor(fn) { callback = fn }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    backgrounds = new VideoBackgrounds([])
+  })
+  afterEach(() => {
+    backgrounds.disconnect()
+    delete window.IntersectionObserver
+  })
+
+  const stubInstance = (uid, overrides) => {
+    const element = document.createElement('div')
+    element.setAttribute('data-vbg-uid', uid)
+    document.body.appendChild(element)
+    const instance = {
+      element,
+      player: {},
+      paused: false,
+      currentState: 'notstarted',
+      params: { loop: true, autoplay: true, 'always-play': false },
+      shouldPlay: SuperVideoBackground.prototype.shouldPlay,
+      softPlay: () => { instance.played += 1 },
+      softPause: () => { instance.pausedSoftly += 1 },
+      destroy: () => {},
+      played: 0,
+      pausedSoftly: 0,
+      ...overrides
+    }
+    backgrounds.index[uid] = instance
+    return instance
+  }
+  const scroll = (instance, isIntersecting) => callback([{ target: instance.element, isIntersecting }])
+
+  test('an autoplaying video starts on scroll-in, one with autoplay off stays still', () => {
+    const auto = stubInstance('auto')
+    const manual = stubInstance('manual', { params: { loop: true, autoplay: false, 'always-play': false } })
+    scroll(auto, true)
+    scroll(manual, true)
+    expect(auto.played).toBe(1)
+    expect(manual.played).toBe(0)
+    expect(manual.isIntersecting).toBe(true)
+  })
+
+  test('a video the visitor paused stays paused on scroll-in', () => {
+    const instance = stubInstance('paused', { paused: true, currentState: 'paused' })
+    scroll(instance, true)
+    expect(instance.played).toBe(0)
+  })
+
+  test('an ended video with loop off does not restart on scroll-in', () => {
+    const instance = stubInstance('ended', { currentState: 'ended', params: { loop: false, autoplay: true, 'always-play': false } })
+    scroll(instance, true)
+    expect(instance.played).toBe(0)
+  })
+
+  test('scrolling out pauses whatever autoplay says', () => {
+    const instance = stubInstance('out', { currentState: 'playing', params: { loop: true, autoplay: false, 'always-play': false } })
+    scroll(instance, false)
+    expect(instance.pausedSoftly).toBe(1)
+    expect(instance.isIntersecting).toBe(false)
+  })
+})
+
 describe('shouldPlay', () => {
   const shouldPlay = (state) => SuperVideoBackground.prototype.shouldPlay.call(state)
 
@@ -399,6 +470,10 @@ describe('shouldPlay', () => {
 
   test('never overrides an explicit user pause', () => {
     expect(shouldPlay({ ...playable, paused: true })).toBe(false)
+  })
+
+  test('autoplay off means off, in view or not', () => {
+    expect(shouldPlay({ ...playable, params: { ...playable.params, autoplay: false } })).toBe(false)
   })
 
   test('leaves an already playing or off-screen video alone', () => {

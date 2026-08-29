@@ -149,6 +149,11 @@ removed in 2.0.0.
   in `book-of-spells@1.3.1`, where a trailing query string or hash no longer blocks a
   match either. A test keeps `MIME_MAP` and `RE_VIDEO` from drifting apart.
 
+- **`autoplay: false` holds on scroll-in.** The IntersectionObserver started any
+  video entering the viewport that the visitor had not paused, `autoplay` or not; it
+  now asks `shouldPlay()`, the gate the tab-switch path already used (#74). The same
+  gate keeps a video that ended with `loop` off from restarting when scrolled back in.
+
 - **A user-initiated pause survives a tab switch.** `shouldPlay()` ignored the
   `paused` flag that exists to prevent exactly that, so returning to the tab
   restarted a video the visitor had stopped.
