@@ -1,0 +1,162 @@
+#!/usr/bin/env node
+
+/**
+ * For repos that keep a CHANGELOG.md: cuts its `## [Unreleased]` section into a
+ * released entry and writes the matching changelog post for the site.
+ *
+ * Run by script/publish on every version bump — `script/changelog 1.9.9` — and
+ * a no-op in repos without a CHANGELOG.md, so it is safe to copy anywhere.
+ *
+ * Write the release under `## [Unreleased]`:
+ *
+ *   ## [Unreleased] — fence info strings carry through
+ *
+ *   An intro paragraph, which becomes the post description.
+ *
+ *   ### Added
+ *   - ...
+ *
+ * The post directory is `<markup.in>/changelog` from poops.json, or pass it as
+ * the second argument. A repo without one still gets the cut and the notes, it
+ * just gets no post.
+ *
+ * The entry is also left in the temp dir as `<repo>-release-notes-v<version>.md`
+ * so script/publish can hand it to `gh release create --notes-file`.
+ *
+ * With love, @stamat
+ */
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
+const version = process.argv[2]
+
+if (!version) {
+  console.error('Usage: script/changelog <version> [posts-dir]')
+  process.exit(1)
+}
+
+const CHANGELOG = path.join(process.cwd(), 'CHANGELOG.md')
+
+if (!fs.existsSync(CHANGELOG)) {
+  console.log('No CHANGELOG.md, skipping changelog post')
+  process.exit(0)
+}
+
+function defaultPostsDir() {
+  const config = path.join(process.cwd(), 'poops.json')
+  if (!fs.existsSync(config)) return null
+  const markupIn = JSON.parse(fs.readFileSync(config, 'utf8'))?.markup?.in
+  return markupIn ? path.join(markupIn, 'changelog') : null
+}
+
+// Not every repo publishes a site with a changelog section — cutting the entry
+// and writing the release notes is the part that has to work everywhere, so a
+// missing post directory only means no post.
+const postsDir = process.argv[3] || defaultPostsDir()
+const writesPost = !!postsDir && fs.existsSync(postsDir)
+
+if (!writesPost) {
+  console.log(`No changelog post directory (${postsDir || 'no markup.in in poops.json'}), writing no post`)
+}
+
+const today = new Date().toISOString().slice(0, 10)
+const postPath = writesPost ? path.join(postsDir, `v${version}.md`) : null
+
+// CHANGELOG.md stays plain markdown so it reads on GitHub and npm — template
+// tags in it are prose, so they get fenced on the way into the post the way a
+// hand-written post would do it inline.
+function escapeTemplating(text) {
+  return text.replace(/\{\{[\s\S]*?\}\}|\{%(?!\s*(?:end)?raw\s*%\})[\s\S]*?%\}/g, (tag) => `{% raw %}${tag}{% endraw %}`)
+}
+
+// A CHANGELOG that documents its own format has `## [Unreleased]` sitting in a
+// code fence, so headings only count outside one. Closing takes a marker at
+// least as long as the one that opened it, the way ````markdown wraps ```html.
+function outsideFences(lines) {
+  let fence = null
+  return lines.map((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1]
+    if (marker) {
+      if (!fence) fence = marker
+      else if (marker[0] === fence[0] && marker.length >= fence.length) fence = null
+    }
+    return !fence
+  })
+}
+
+const lines = fs.readFileSync(CHANGELOG, 'utf8').split('\n')
+const prose = outsideFences(lines)
+
+// An unclosed fence swallows every heading under it, so the [Unreleased] search
+// below comes up empty and the release would ship with no entry. Skipping that
+// silently is how a release goes out with its changelog untouched.
+if (!prose[prose.length - 1]) {
+  console.error('CHANGELOG.md has an unclosed code fence — every heading below it is invisible to this script. Close it and re-run.')
+  process.exit(1)
+}
+
+const start = lines.findIndex((line, i) => prose[i] && /^## \[Unreleased\]/.test(line))
+
+if (start === -1) {
+  console.log('No [Unreleased] section in CHANGELOG.md, skipping changelog post')
+  process.exit(0)
+}
+
+let end = lines.findIndex((line, i) => i > start && prose[i] && /^## /.test(line))
+if (end === -1) end = lines.length
+
+const title = lines[start].replace(/^## \[Unreleased\]\s*[—–-]*\s*/, '').trim()
+const section = lines.slice(start + 1, end).join('\n').trim()
+
+if (!section) {
+  console.log('[Unreleased] is empty, skipping changelog post')
+  process.exit(0)
+}
+
+// An intro paragraph right under the heading becomes the post description,
+// without one the title does the job.
+const blocks = section.split(/\n\s*\n/)
+const hasIntro = !/^[#\-*]/.test(blocks[0].trim())
+const description = hasIntro ? blocks[0].replace(/\s+/g, ' ').trim() : title
+const body = hasIntro ? blocks.slice(1).join('\n\n').trim() : section
+
+// CHANGELOG nests its sections under a version heading, the post has no such
+// parent — promote every heading one level, leaving markdown samples alone.
+const bodyLines = escapeTemplating(body).split('\n')
+const bodyProse = outsideFences(bodyLines)
+const postBody = bodyLines.map((line, i) => bodyProse[i] ? line.replace(/^#(#+ )/, '$1') : line).join('\n')
+
+// JSON.stringify doubles as a YAML double-quoted scalar, so a title or
+// description containing a colon or a quote can't break the front matter.
+const frontMatter = [
+  '---',
+  'layout: post',
+  `title: ${JSON.stringify(title ? `v${version} — ${title}` : `v${version}`)}`,
+  `date: ${today}`,
+  `description: ${JSON.stringify(description)}`,
+  'published: true',
+  '---'
+].join('\n')
+
+// A post written by hand always wins — in poops the changelog posts double as
+// live demos of the feature being released, which generated markdown can't be.
+if (writesPost && fs.existsSync(postPath)) {
+  console.log(`${postPath} already exists, keeping it`)
+} else if (writesPost) {
+  fs.writeFileSync(postPath, `${frontMatter}\n\n${postBody}\n`)
+  console.log(`Wrote ${postPath}`)
+}
+
+// Roll [Unreleased] over to the released version, leaving a fresh empty one.
+lines[start] = `## [Unreleased]\n\n## [${version}] - ${today}${title ? ` — ${title}` : ''}`
+fs.writeFileSync(CHANGELOG, lines.join('\n'))
+
+console.log(`Cut [Unreleased] into ${version}`)
+
+// The GitHub release body is the entry as written, not the post — no front
+// matter, no promoted headings, template tags left alone. script/publish
+// computes this same path and passes it as `gh release create --notes-file`.
+const notesPath = path.join(os.tmpdir(), `${path.basename(process.cwd())}-release-notes-v${version}.md`)
+fs.writeFileSync(notesPath, `${section}\n`)
+console.log(`Wrote ${notesPath}`)

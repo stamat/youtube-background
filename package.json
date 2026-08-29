@@ -11,6 +11,7 @@
     "./*": "./*"
   },
   "files": [
+    "CHANGELOG.md",
     "src",
     "!src/__tests__",
     "!src/styles",

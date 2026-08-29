@@ -10,12 +10,14 @@
  *
  * With love, @stamat
  */
-const readline = require('readline')
-const { exec } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+import readline from 'node:readline'
+import { exec, execFile } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
 const argVersion = process.argv[2]
-const packageJson = require(path.join(process.cwd(), './package.json'))
+const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'))
 
 function question(prompt) {
   const rl = readline.createInterface({
@@ -36,23 +38,32 @@ function isValidVersion(version) {
 }
 
 function incrementPatchVersion(version) {
+  // can't auto-bump prerelease/build versions (e.g. 1.2.3-beta.1), ask for manual entry instead
+  if (version.includes('-') || version.includes('+')) return null
   const parts = version.split('.')
   const patch = parseInt(parts[2]) + 1
   return `${parts[0]}.${parts[1]}.${patch}`
 }
 
 function runPromise(child) {
-  child.stdout.on('data', (data) => {
+  // stdout/stderr are null when stdio is inherited (interactive commands)
+  child.stdout?.on('data', (data) => {
     console.log(data.toString())
   })
 
-  child.stderr.on('data', (data) => {
+  child.stderr?.on('data', (data) => {
     console.log(data.toString())
   })
 
   return new Promise(function(resolve, reject) {
     child.addListener('error', reject)
-    child.addListener('exit', resolve)
+    child.addListener('exit', (code) => {
+      if (code === 0) {
+        resolve()
+      } else {
+        reject(new Error(`Command exited with code ${code}`))
+      }
+    })
   })
 }
 
@@ -61,38 +72,85 @@ async function run(cmd, exitOnError = true) {
   try {
     await runPromise(exec(cmd))
   } catch (e) {
+    console.error(e.message)
     if (exitOnError) process.exit(1)
   }
 }
 
+// like run(), but takes an args array so user input never touches the shell
+async function runFile(cmd, args, exitOnError = true) {
+  console.log([cmd, ...args].join(' '))
+  try {
+    await runPromise(execFile(cmd, args))
+  } catch (e) {
+    console.error(e.message)
+    if (exitOnError) process.exit(1)
+  }
+}
+
+async function commit(message) {
+  const nothingStaged = await new Promise((resolve) =>
+    exec('git diff --cached --quiet', (err) => resolve(!err)))
+  if (nothingStaged) {
+    console.log(`Nothing staged, skipping commit: ${message}`)
+    return
+  }
+  await run(`git commit -m "${message}"`)
+}
+
 async function publish(version) {
   packageJson.version = version
-  fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2))
+  fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n')
 
   await run('git add package.json')
-  await run(`git commit -m "Bump version to ${version}"`)
+
+  // script/changelog leaves the entry it cut here for the GitHub release below
+  const notesPath = path.join(os.tmpdir(), `${path.basename(process.cwd())}-release-notes-v${version}.md`)
+
+  // repos keeping a CHANGELOG.md drop in a script/changelog to cut its
+  // [Unreleased] section into a release entry — it lands in the bump commit, so
+  // the tag contains it and no CI step has to push back to the default branch
+  if (fs.existsSync(path.join(process.cwd(), 'script/changelog'))) {
+    // a leftover from an earlier run of this version must not become the notes
+    fs.rmSync(notesPath, { force: true })
+    await runFile('script/changelog', [version])
+    await run('git add .')
+  }
+
+  await commit(`Bump version to ${version}`)
 
   if (fs.existsSync(path.join(process.cwd(), 'script/build'))) {
     await run('script/build')
     await run('git add .')
-    await run(`git commit -m "Build version ${version}"`)
+    await commit(`Build version ${version}`)
   }
 
   await run(`git tag v${version}`)
+
+  // npm publish happens in CI (publish.yml) via trusted publishing when the tag is pushed
   await run('git push')
   await run('git push --tags')
 
-  const publish = await question('Do you want to create a GitHub release? (y/n): ')
-  if (publish === 'y') {
-    let notesArg = ''
-    const notes = await question('Enter notes for the release (optional): ')
-    if (notes.trim() !== '') {
-      notesArg = ` --notes "${notes}"`
+  const answer = await question('Do you want to create a GitHub release? (y/n): ')
+  if (answer === 'y') {
+    const args = ['release', 'create', `v${version}`, '--title', `v${version}`, '--latest']
+    if (fs.existsSync(notesPath)) {
+      console.log(`Release notes from the CHANGELOG entry: ${notesPath}`)
+      // GitHub prepends the body to the generated notes, so the entry keeps the
+      // top and the compare link lands under it
+      args.push('--notes-file', notesPath, '--generate-notes')
+    } else {
+      const notes = await question('Enter notes for the release (optional): ')
+      if (notes.trim() !== '') {
+        args.push('--notes', notes)
+      } else {
+        args.push('--generate-notes')
+      }
     }
-    await run(`gh release create v${version} --title "v${version}"${notesArg} --generate-notes --latest`)
-    await run('npm publish')
-  } else {
-    await run('npm publish')
+    await runFile('gh', args)
+    // the release carries the notes now — a failing gh exits above, keeping the
+    // file around for a manual retry
+    fs.rmSync(notesPath, { force: true })
   }
 }
 
@@ -100,6 +158,16 @@ async function init() {
   if (!packageJson.version) {
     console.log('No version found in package.json')
     process.exit(1)
+  }
+
+  // a clean tree guarantees `git add .` after the build only picks up build output
+  const dirty = await new Promise((resolve, reject) => {
+    exec('git status --porcelain', (err, stdout) => err ? reject(err) : resolve(stdout.trim()))
+  })
+  if (dirty !== '') {
+    console.log('Working tree is not clean:\n' + dirty)
+    const answer = await question('Uncommitted changes will be included in the release commits. Continue? (y/n) ')
+    if (answer !== 'y') process.exit(1)
   }
 
   if (argVersion && !isValidVersion(argVersion)) {
@@ -116,23 +184,23 @@ async function init() {
   if (!argVersion) {
     console.log('Current version: ', packageJson.version)
     const version = incrementPatchVersion(packageJson.version)
-    const answer = await question(`Do you want to increment the version to ${version}? (y/n) `)
+    const answer = version ? await question(`Do you want to increment the version to ${version}? (y/n) `) : 'n'
     if (answer === 'y') {
-      publish(version)
+      await publish(version)
     } else {
       const desiredVersion = await question(`Enter the desired version: (or press enter to use ${packageJson.version})`)
       if (desiredVersion.trim() === '') {
-        publish(packageJson.version)
+        await publish(packageJson.version)
       } else {
         if (!isValidVersion(desiredVersion)) {
           console.log('Invalid version: ', desiredVersion)
           process.exit(1)
         }
-        publish(desiredVersion)
+        await publish(desiredVersion)
       }
     }
   } else {
-    publish(argVersion)
+    await publish(argVersion)
   }
 }
 init()

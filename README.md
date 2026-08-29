@@ -387,7 +387,7 @@ The source URL itself lives on `data-vbg`, and is also read from the legacy `dat
 * **video-background-group-forward-rewind** - `next()` ran past the last video and wrapped to the first
 * **video-background-group-backward-rewind** - `prev()` ran past the first video and wrapped to the last
 
-**⚠️ Note:** up to and including 1.2.0 the unmute event was dispatched under the misspelling `video-background-group-umnute`, and the two rewind events never fired at all. Listeners bound to the misspelling need updating.
+**⚠️ Note:** up to and including 1.1.8 the unmute event was dispatched under the misspelling `video-background-group-umnute`, and the two rewind events never fired at all. Listeners bound to the misspelling need updating.
 
 Events bubble. If you go vanilla, you can get the video object via `event.detail` or `event.originalEvent.detail` in case of jQuery implementation.
 
@@ -522,6 +522,8 @@ npm run lint
 ```
 
 Both run in CI on every push and pull request, along with a check that the checked-in build output is not stale.
+
+A user-visible change goes in [CHANGELOG.md](CHANGELOG.md) under `## [Unreleased]` — that file explains the format, and how `script/publish` cuts the entry into a release.
 
 ### Code
 
