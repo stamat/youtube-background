@@ -98,12 +98,12 @@ Every band below is a real instance. The markup that produces it is right under 
 ```
 
 <div class="example-marquee">
-  <div id="demo-file" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" data-vbg-play-button="true" data-vbg-mute-button="true" data-vbg-start-at="10" data-vbg-end-at="60"></div>
+  <div id="demo-file" data-vbg="https://media.w3.org/2010/05/sintel/trailer.mp4" data-vbg-poster="https://media.w3.org/2010/05/sintel/poster.png" data-vbg-play-button="true" data-vbg-mute-button="true" data-vbg-start-at="10" data-vbg-end-at="25"></div>
   <div class="content">
     <div class="inner">
       <h2>A plain video file</h2>
       <p>Any <code>.mp4</code>, <code>.webm</code>, <code>.ogg</code>, <code>.avi</code>, <code>.mov</code>, <code>.m4v</code> or <code>.qt</code> URL, played in a native <code>&lt;video&gt;</code>.</p>
-      <button class="js-demo-src" data-src="https://download.samplelib.com/mp4/sample-5s.mp4">Change source</button>
+      <button class="js-demo-src" data-src="https://media.w3.org/2010/05/bunny/trailer.mp4">Change source</button>
     </div>
   </div>
   <div data-target="#demo-file" class="seek-bar-wrapper js-seek-bar-wrap">
@@ -112,10 +112,19 @@ Every band below is a real instance. The markup that produces it is right under 
   </div>
 </div>
 
+```html
+<div
+  data-vbg="https://media.w3.org/2010/05/sintel/trailer.mp4"
+  data-vbg-poster="https://media.w3.org/2010/05/sintel/poster.png"
+  data-vbg-start-at="10"
+  data-vbg-end-at="25"
+></div>
+```
+
 <div id="demo-group" class="example-marquee js-vbg-group">
-  <div id="demo-group-1" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-loop="false" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"></div>
-  <div id="demo-group-2" data-vbg="https://vimeo.com/137250145" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></div>
-  <div id="demo-group-3" data-vbg="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-start-at="10" data-vbg-end-at="60" data-vbg-poster="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></div>
+  <div id="demo-group-1" data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-loop="false" data-vbg-load-background="true"></div>
+  <div id="demo-group-2" data-vbg="https://vimeo.com/137250145" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-load-background="true" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></div>
+  <div id="demo-group-3" data-vbg="https://media.w3.org/2010/05/bunny/trailer.mp4" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-start-at="5" data-vbg-end-at="20" data-vbg-poster="https://media.w3.org/2010/05/bunny/poster.png" style="display: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></div>
   <div class="content">
     <div class="inner">
       <h2>A group</h2>
@@ -143,6 +152,23 @@ Every band below is a real instance. The markup that produces it is right under 
     </div>
   </div>
 </div>
+
+```html
+<div class="js-vbg-group">
+  <div data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-loop="false" data-vbg-load-background="true"></div>
+  <div data-vbg="https://vimeo.com/137250145" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-load-background="true" style="display: none"></div>
+  <div data-vbg="https://media.w3.org/2010/05/bunny/trailer.mp4" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-end-at="20" style="display: none"></div>
+</div>
+```
+
+A group only toggles `display` between its children, so stacking them is your CSS: the
+demo above absolutely positions all three over the same box and hides every one but the
+first. `loop="false"` is what makes a member end, and an ended member is what advances
+the group, so a looping member would hold the playlist forever.
+
+The video files are the Blender Foundation's [Sintel](https://durian.blender.org/) and
+[Big Buck Bunny](https://peach.blender.org/) trailers, CC-BY 3.0, served from
+`media.w3.org`.
 
 ## Usage
 
