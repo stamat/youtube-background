@@ -189,9 +189,10 @@ Or from a script tag, where the bundle exposes `window.VideoBackgrounds`:
 <script src="jquery.youtube-background.min.js"></script>
 ```
 
-There is also a jQuery plugin, `jQuery("[data-vbg]").youtube_background()`, which
-registers itself only if jQuery is on the page. It is deprecated as of 1.2.0, warns
-once when called, and is removed in 2.0.0.
+> [!WARNING]
+> There is also a jQuery plugin, `jQuery("[data-vbg]").youtube_background()`, which
+> registers itself only if jQuery is on the page. It is deprecated as of 1.2.0, warns
+> once when called, and is removed in 2.0.0.
 
 The seek bars, play/mute toggles and group controls used above are optional and live in
 a bundle of their own. Each is a class over markup you write, pointed at a background by
@@ -246,11 +247,12 @@ www.youtube-nocookie.com,www.youtube.com##.html5-video-player .ytp-bezel
 Both domains, because `no-cookie` defaults to `true` and puts the player on
 `www.youtube-nocookie.com`.
 
-That fixes the browser it is typed into and nothing further. A content blocker is an
-extension, and injecting a stylesheet into a cross-origin frame is a permission extensions
-have and pages do not — your CSS never enters the frame, `iframe.contentDocument` throws.
-So it is a development comfort on `localhost`, and every visitor without that filter still
-sees the bezel.
+> [!WARNING]
+> That fixes the browser it is typed into and nothing further. A content blocker is an
+> extension, and injecting a stylesheet into a cross-origin frame is a permission
+> extensions have and pages do not — your CSS never enters the frame,
+> `iframe.contentDocument` throws. So it is a development comfort on `localhost`, and every
+> visitor without that filter still sees the bezel.
 
 ## Events
 

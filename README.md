@@ -5,7 +5,10 @@
 
 > Create video backgrounds from a YouTube, Vimeo or video file links.
 
-**⚠️ Future development will be moved to [stamat/video-backgrounds](https://github.com/stamat/video-backgrounds).** Support will still be provided for this repo.
+> [!IMPORTANT]
+> Future development will be moved to
+> [stamat/video-backgrounds](https://github.com/stamat/video-backgrounds). Support will
+> still be provided for this repo.
 
 [DEMO HERE ➡️](http://stamat.github.io/youtube-background/)
 
@@ -212,9 +215,11 @@ For the resize events, the factory instance implements the `ResizeObserver` out 
 
 ### jQuery Way
 
-**⚠️ Deprecated as of 1.2.0 and removed in 2.0.0.** Calling the plugin warns once in the
-console. Everything below has a one-line vanilla equivalent — `new VideoBackgrounds('[data-vbg]')`
-— so porting is replacing the call, not rewriting the page.
+> [!WARNING]
+> Deprecated as of 1.2.0 and removed in 2.0.0. Calling the plugin warns once in the
+> console. Everything below has a one-line vanilla equivalent —
+> `new VideoBackgrounds('[data-vbg]')` — so porting is replacing the call, not rewriting
+> the page.
 
 The plugin ships only in the IIFE bundle, and only registers itself if jQuery is already on the page: `jQuery('[data-vbg]').youtube_background();`.
 
@@ -301,7 +306,8 @@ Every one of them is also accepted under the legacy `data-ytbg-` prefix, kept fr
 
 The source URL itself lives on `data-vbg`, and is also read from the legacy `data-youtube` and `data-ytbg`, in that order of precedence. `setSource()` writes the new URL back to whichever of the three the element already carries — it never adds one that was not there.
 
-**⚠️ Note:** Attribute properties will override the properties passed on initialization. Always.
+> [!NOTE]
+> Attribute properties will override the properties passed on initialization. Always.
 
 #### Example - Properties as HTML attributes
 
@@ -350,7 +356,10 @@ The source URL itself lives on `data-vbg`, and is also read from the legacy `dat
 * **video-background-group-forward-rewind** - `next()` ran past the last video and wrapped to the first
 * **video-background-group-backward-rewind** - `prev()` ran past the first video and wrapped to the last
 
-**⚠️ Note:** up to and including 1.1.8 the unmute event was dispatched under the misspelling `video-background-group-umnute`, and the two rewind events never fired at all. Listeners bound to the misspelling need updating.
+> [!IMPORTANT]
+> Up to and including 1.1.8 the unmute event was dispatched under the misspelling
+> `video-background-group-umnute`, and the two rewind events never fired at all. Listeners
+> bound to the misspelling need updating.
 
 Events bubble. If you go vanilla, you can get the video object via `event.detail` or `event.originalEvent.detail` in case of jQuery implementation.
 
@@ -510,14 +519,15 @@ www.youtube-nocookie.com,www.youtube.com##.html5-video-player .ytp-bezel
 Both domains are listed because `no-cookie` defaults to `true`, which puts the player on
 `www.youtube-nocookie.com`; turn it off and the frame is `www.youtube.com`.
 
-**It fixes your browser, not your site.** The rule works because a content blocker is an
-extension with host permissions: it injects its stylesheet into every frame it is granted,
-whatever the origin. A page has no such permission. Your CSS stops at the iframe boundary
-and your script gets a `SecurityError` off `iframe.contentDocument`, so there is no way to
-ship that rule from the server, put it in your bundle, or hand it to the frame — and a
-visitor without the filter installed sees the bezel exactly as before. Paste it into your
-own blocker while developing against `localhost` if it bothers you; treat the bezel as part
-of the embed for everyone else.
+> [!WARNING]
+> **It fixes your browser, not your site.** The rule works because a content blocker is an
+> extension with host permissions: it injects its stylesheet into every frame it is
+> granted, whatever the origin. A page has no such permission. Your CSS stops at the iframe
+> boundary and your script gets a `SecurityError` off `iframe.contentDocument`, so there is
+> no way to ship that rule from the server, put it in your bundle, or hand it to the frame
+> — and a visitor without the filter installed sees the bezel exactly as before. Paste it
+> into your own blocker while developing against `localhost` if it bothers you; treat the
+> bezel as part of the embed for everyone else.
 
 ## Browser Support
 
