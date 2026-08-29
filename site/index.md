@@ -3,6 +3,9 @@ layout: poops-docs-theme/prose
 ---
 
 # 📺 Youtube Background
+[![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
+[![CI](https://img.shields.io/github/actions/workflow/status/stamat/youtube-background/ci.yml?branch=master&label=CI)](https://github.com/stamat/youtube-background/actions/workflows/ci.yml)
+[![gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
 
 ESM module for turning a YouTube, Vimeo or plain video file link into a
 cover background — with autoplay, looping, play/mute controls, seek bars and
