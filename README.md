@@ -499,16 +499,25 @@ cross-origin: no stylesheet of yours selects into it, and script that reaches fo
 document throws. This applies to the plugin's own `play-button` and `mute-button` toggles as
 much as to a click on the background.
 
-The only thing that removes it is a cosmetic filter in the reader's own content blocker:
+The one thing that does remove it is **cosmetic filtering** — an element-hiding rule in
+Adblock Plus / uBlock Origin filter syntax, where `##` means *hide what this selector
+matches on these domains*:
 
 ```text
 www.youtube-nocookie.com,www.youtube.com##.html5-video-player .ytp-bezel
 ```
 
-That changes the one browser it is typed into and nothing else — a comfort while you
-develop against `localhost`, never something a page can ship to a visitor. Both domains
-are listed because `no-cookie` defaults to `true`, which puts the player on
+Both domains are listed because `no-cookie` defaults to `true`, which puts the player on
 `www.youtube-nocookie.com`; turn it off and the frame is `www.youtube.com`.
+
+**It fixes your browser, not your site.** The rule works because a content blocker is an
+extension with host permissions: it injects its stylesheet into every frame it is granted,
+whatever the origin. A page has no such permission. Your CSS stops at the iframe boundary
+and your script gets a `SecurityError` off `iframe.contentDocument`, so there is no way to
+ship that rule from the server, put it in your bundle, or hand it to the frame — and a
+visitor without the filter installed sees the bezel exactly as before. Paste it into your
+own blocker while developing against `localhost` if it bothers you; treat the bezel as part
+of the embed for everyone else.
 
 ## Browser Support
 

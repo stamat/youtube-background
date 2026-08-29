@@ -236,15 +236,21 @@ does not cover. The frame is cross-origin, so neither your CSS nor your script r
 and the plugin's own play and mute buttons set it off like any other toggle. There is no
 option that turns it off, here or upstream.
 
-A cosmetic filter in your own content blocker removes it in that one browser:
+**Cosmetic filtering** hides it — an element-hiding rule in Adblock Plus / uBlock Origin
+syntax, where `##` means *hide this selector on these domains*:
 
 ```text
 www.youtube-nocookie.com,www.youtube.com##.html5-video-player .ytp-bezel
 ```
 
 Both domains, because `no-cookie` defaults to `true` and puts the player on
-`www.youtube-nocookie.com`. It is a local development comfort — a page cannot do this for
-its visitors.
+`www.youtube-nocookie.com`.
+
+That fixes the browser it is typed into and nothing further. A content blocker is an
+extension, and injecting a stylesheet into a cross-origin frame is a permission extensions
+have and pages do not — your CSS never enters the frame, `iframe.contentDocument` throws.
+So it is a development comfort on `localhost`, and every visitor without that filter still
+sees the bezel.
 
 ## Events
 
