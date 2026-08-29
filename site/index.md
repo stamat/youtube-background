@@ -4,7 +4,7 @@ layout: poops-docs-theme/prose
 
 # 📺 Youtube Background
 
-ESM / jQuery plugin for turning a YouTube, Vimeo or plain video file link into a
+ESM module for turning a YouTube, Vimeo or plain video file link into a
 cover background — with autoplay, looping, play/mute controls, seek bars and
 playlist groups.
 
@@ -146,7 +146,7 @@ Every band below is a real instance. The markup that produces it is right under 
 
 ## Usage
 
-Point an empty element at a video and initialise. Without jQuery:
+Point an empty element at a video and initialise:
 
 ```javascript
 import { VideoBackgrounds } from "youtube-background";
@@ -154,18 +154,15 @@ import { VideoBackgrounds } from "youtube-background";
 new VideoBackgrounds("[data-vbg]");
 ```
 
-With jQuery:
-
-```javascript
-jQuery("[data-vbg]").youtube_background();
-```
-
-Or from a script tag, where the plugin exposes `window.VideoBackgrounds` and, once
-initialised through jQuery, `window.VIDEO_BACKGROUNDS`:
+Or from a script tag, where the bundle exposes `window.VideoBackgrounds`:
 
 ```html
 <script src="jquery.youtube-background.min.js"></script>
 ```
+
+There is also a jQuery plugin, `jQuery("[data-vbg]").youtube_background()`, which
+registers itself only if jQuery is on the page. It is deprecated as of 1.2.0, warns
+once when called, and is removed in 2.0.0.
 
 The seek bars, play/mute toggles and group controls used above live in a separate
 experimental bundle:
@@ -249,13 +246,12 @@ backgrounds.destroy(element);
 backgrounds.destroyAll();
 ```
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://kit.fontawesome.com/228006f19a.js" crossorigin="anonymous"></script>
 <script src="{{ relativePathPrefix }}jquery.youtube-background.min.js"></script>
 <script src="{{ relativePathPrefix }}youtube-background-experimental.min.js"></script>
 <script>
-  jQuery(function () {
-    jQuery('[data-vbg]').youtube_background();
+  document.addEventListener('DOMContentLoaded', function () {
+    window.VIDEO_BACKGROUNDS = new VideoBackgrounds('[data-vbg]');
 
     document.querySelectorAll('.js-seek-bar-wrap').forEach((el) => new SeekBar(el));
     document.querySelectorAll('.js-demo-play-toggle').forEach((el) => new PlayToggle(el));

@@ -77,21 +77,23 @@
   "markup": {
     "in": "site",
     "out": "_site",
-    "site": {
-      "title": "Youtube Background",
-      "brand": "youtube-background",
-      "brandMark": "📺",
-      "description": "ESM / jQuery plugin for creating video backgrounds from YouTube, Vimeo or video file links.",
-      "lang": "en",
-      "url": "https://stamat.github.io/youtube-background",
-      "repo": "https://github.com/stamat/youtube-background",
-      "branch": "master",
-      "links": [
-        {
-          "title": "npm",
-          "url": "https://www.npmjs.com/package/youtube-background"
-        }
-      ]
+    "options": {
+      "site": {
+        "title": "Youtube Background",
+        "brand": "youtube-background",
+        "brandMark": "📺",
+        "description": "ESM module for creating video backgrounds from YouTube, Vimeo or video file links, with a deprecated jQuery plugin.",
+        "lang": "en",
+        "url": "https://stamat.github.io/youtube-background",
+        "repo": "https://github.com/stamat/youtube-background",
+        "branch": "master",
+        "links": [
+          {
+            "title": "npm",
+            "url": "https://www.npmjs.com/package/youtube-background"
+          }
+        ]
+      }
     }
   }
 }

@@ -10,8 +10,6 @@
 
 This project started as a simple 100 liner jQuery plugin for YouTube video backgrounds. The idea behind it was to have a straightforward minimal way to add a YouTube video as a background for a div, or any other HTML element. It was intended to be used on hero and banner elements mostly. You would add a data attribute `data-vbg` to the element, and the script would take care of the rest, no CSS required.
 
-**Vanilla**
-
 ```html
     <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
@@ -19,28 +17,16 @@ This project started as a simple 100 liner jQuery plugin for YouTube video backg
         const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
     </script>
 ```
-**jQuery**
-```html
-    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
-
-    <script type="text/javascript">
-        jQuery(document).ready(function() {
-            jQuery('[data-vbg]').youtube_background();
-
-            const videoBackgrounds = VIDEO_BACKGROUNDS;
-        });
-    </script>
-```
 
 Since it's creation it has evolved to support Vimeo and video files as well. Numerous features were added out of necessity on other projects or by community requests.
 
-After numerous iterations and is now a fully fledged ES module that can be used with or without jQuery. It is also available as a standalone script.
+After numerous iterations it is now a fully fledged ES module, also available as a standalone script. The jQuery plugin is still here, deprecated, and goes away in 2.0.0.
 
 ## Features
 
 * **No CSS required** - the script takes care of everything
 * **YouTube**, **Vimeo** and **video files** support
-* **jQuery** plugin and **ESM** module
+* **ESM** module or standalone global — plus a **jQuery** plugin, deprecated
 * **Lazyloading** - lazyload the iframe/video
 * YouTube and Vimeo **cookies** are disabled by default
 * YouTube and Vimeo player API scrips are loaded only when needed
@@ -54,13 +40,14 @@ To install the package from NPM run:
 npm install youtube-background
 ```
 
-Then import the script just like any other ESM module (if your bundler supports resolving `node_modules`, your import will look like this, otherwise you'll have to provide the full path to the script):
+Then import the class just like from any other ESM module (if your bundler supports resolving `node_modules`, your import will look like this, otherwise you'll have to provide the full path to the script):
 
-```
-import 'youtube-background';
+```javascript
+import { VideoBackgrounds } from 'youtube-background';
 ```
 
-If you are using a bundler and you wish to use this script as a jQuery plugin, don't forget to import jQuery too.
+The jQuery plugin is not reachable this way and never was — it lives in the bundle,
+is deprecated, and is removed in 2.0.0.
 
 ### Over CDN
 
@@ -74,31 +61,25 @@ or minified:
 
 ## Usage
 
-There are two ways to use this script: vanilla implementation or as a jQuery plugin.
+Initialize the factory class yourself. There is also a jQuery plugin, deprecated as of 1.2.0 and removed in 2.0.0.
 
 ### Vanilla Way
- **As of version 1.0.6 jQuery is no longer a dependency**, but purely optional. To initialize video backgrounds without jQuery use the global class: `new VideoBackgrounds('[data-vbg]');`.
+ Construct the factory class with a selector: `new VideoBackgrounds('[data-vbg]');`. jQuery has not been a dependency since 1.0.6.
 
  ```html
     <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 ```
 
 ```javascript
-    import 'youtube-background'; // the entry registers window.VideoBackgrounds
+    import { VideoBackgrounds } from 'youtube-background';
 
     const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
 ```
 
-The package entry is the jQuery/global bootstrap — `src/main.mjs` for `import`,
-the prebuilt IIFE bundle for `require` and CDN. Either way it is a side effect
-that registers the global and the jQuery plugin, so there is no named or default
-export to destructure. To import the class itself, reach for the ES module source:
-
-```javascript
-    import { VideoBackgrounds } from 'youtube-background/src/video-backgrounds.mjs';
-
-    const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
-```
+`import` resolves to the ES module source and gives you the class. `require` and the
+CDN get the prebuilt IIFE bundle instead, which has no exports — loading it is a side
+effect that registers `window.VideoBackgrounds`, and the deprecated jQuery plugin if
+jQuery is on the page.
 
 `VideoBackgrounds` is a factory class - this means that it is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file. It accepts a selector as a parameter and properties object that will be applied to all of the instances queried by the selector. For the list of available properties, please refer to the [Properties](#properties) section.
 
@@ -229,7 +210,11 @@ For the resize events, the factory instance implements the `ResizeObserver` out 
 
 ### jQuery Way
 
-jQuery is no longer a dependency, but purely optional. To initialize video backgrounds with jQuery use the global function: `jQuery('[data-vbg]').youtube_background();`.
+**⚠️ Deprecated as of 1.2.0 and removed in 2.0.0.** Calling the plugin warns once in the
+console. Everything below has a one-line vanilla equivalent — `new VideoBackgrounds('[data-vbg]')`
+— so porting is replacing the call, not rewriting the page.
+
+The plugin ships only in the IIFE bundle, and only registers itself if jQuery is already on the page: `jQuery('[data-vbg]').youtube_background();`.
 
 ```html
     <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
@@ -318,7 +303,6 @@ The source URL itself lives on `data-vbg`, and is also read from the legacy `dat
 
 #### Example - Properties as HTML attributes
 
-**Vanilla**
 ```html
     <div data-vbg-play-button="true" data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
@@ -326,37 +310,14 @@ The source URL itself lives on `data-vbg`, and is also read from the legacy `dat
         const videoBackgrounds = new VideoBackgrounds('[data-vbg]');
     </script>
 ```
-**jQuery**
-```html
-    <div data-vbg-play-button="true" data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
-
-    <script type="text/javascript">
-        jQuery(document).ready(function() {
-            jQuery('[data-vbg]').youtube_background();
-        });
-    </script>
-```
 
 #### Example - Properties as JSON
-**Vanilla**
 ```html
     <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
 
     <script type="text/javascript">
         const videoBackgrounds = new VideoBackgrounds('[data-vbg]', {
             'play-button': true
-        });
-    </script>
-```
-**jQuery**
-```html
-    <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
-
-    <script type="text/javascript">
-        jQuery(document).ready(function() {
-            jQuery('[data-vbg]').youtube_background({
-                'play-button': true
-            });
         });
     </script>
 ```
@@ -485,7 +446,7 @@ Tested with [BrowserStack](https://www.browserstack.com).
 
 Development setup uses **POOPS bundler** to bundle ES modules into IIFE `jquery.youtube-background.js` and  `jquery.youtube-background.min.js`
 
-[POOPS](https://github.com/stamat/poops) is a simple bundler + static site builder that I've created, do give it a try and let me know what you think. It's still in early development, but it's already quite useful.
+[POOPS](https://github.com/stamat/poops) is a simple bundler + static site builder that I've created, do give it a try and let me know what you think.
 
 To install the required package for running **POOPS**, run:
 
@@ -529,7 +490,7 @@ A user-visible change goes in [CHANGELOG.md](CHANGELOG.md) under `## [Unreleased
 
 Sources are ES modules with the `.mjs` extension — the package itself stays CommonJS so the published IIFE bundles remain `require()`-able.
 
-* **main.mjs** - the main entry point of the script. Used to initialize the jQuery plugin.
+* **main.mjs** - entry point of the IIFE bundle. Registers `window.VideoBackgrounds` and, when jQuery is on the page, the deprecated plugin.
 * **video-backgrounds.mjs** - the main entry point of the ES6 module. It contains the factory class `VideoBackgrounds` that is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file.
 * **experimental.mjs** - entry point of the second bundle, exposing the control classes below as globals.
 * **lib/super-video-background.mjs** - It contains the super class `SuperVideoBackground` with all of the common methods and properties for all of the video background types. This class is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.

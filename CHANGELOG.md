@@ -44,13 +44,14 @@ push back to `master`. Pushing the tag triggers
 trusted publishing — `script/publish` never runs `npm publish` from your
 machine. Last it offers a GitHub release, using the entry it cut as the body.
 
-## [Unreleased] — a pass over every file in `src/`
+## [Unreleased] — a pass over every file in `src/`, and jQuery on notice
 
 A full review of `src/` turned up a teardown that tore nothing down, a video that
 restarted itself after the visitor had paused it, and a second instance that
 quietly killed the first. Nothing in the public API was renamed except one event:
 the group unmute event went out as `video-background-group-umnute`, and listeners
-bound to that spelling need updating.
+bound to that spelling need updating. The jQuery plugin is deprecated here and is
+removed in 2.0.0.
 
 ### Added
 
@@ -62,9 +63,9 @@ bound to that spelling need updating.
   it, but nothing ever read it, so an element carrying only `data-ytbg` was never
   picked up.
 
-- **An `exports` map.** `import 'youtube-background'` resolves to `src/main.mjs`,
-  the same jQuery-and-global bootstrap the bundle is built from; the class itself is
-  at `youtube-background/src/video-backgrounds.mjs`.
+- **An `exports` map.** `import { VideoBackgrounds } from 'youtube-background'` hands
+  you the class. `require()` and the CDN keep getting the IIFE bundle, which has no
+  exports — loading it registers `window.VideoBackgrounds` as a side effect.
 
 - **Tests, linting and CI.** `npm test` runs jest over the pure logic behind every
   fix below, `npm run lint` runs eslint, and CI runs both plus the build, failing if
@@ -95,10 +96,15 @@ bound to that spelling need updating.
 
 - **The demo page is generated.** `site/index.md` goes through `poops-docs-theme`
   into `_site/` and is deployed by a workflow, and it now documents the options,
-  events and API alongside the live examples. Poops `^1.0.18` → `^1.9.4`.
+  events and API alongside the live examples. Poops `^1.0.18` → `^3.0.0`,
+  `poops-docs-theme` `^1.1.2` → `^5.1.1` — the page gains a theme switcher, a
+  footer and copy buttons, and its stylesheet and script grow from 12KB and 2KB to
+  40KB and 25KB. Nothing published to npm is affected; both are build-time only.
 
-- **`book-of-spells` `^1.0.18` → `^1.3.1`,** which is where the `.mov` fix below
-  landed.
+- **`book-of-spells` `^1.0.18` → `^2.8.0`.** The `.mov` fix below landed in `1.3.1`.
+  All eleven helpers the bundle imports are byte-identical across the majors, so
+  nothing here changes behaviour — but the new one carries constants that survive
+  tree shaking, so the minified bundle grows 485 bytes, 288 gzipped.
 
 - **The inert `&loop=1` is gone from the YouTube embed URL.** The embed ignores it
   without a `playlist` parameter, and looping already runs through `onVideoEnded()`,
@@ -108,6 +114,12 @@ bound to that spelling need updating.
   a wrong `mobile` default, an instance variable (`playing`) that does not exist, a
   missing event and attribute, and a browser support table listing browsers that
   cannot run the ES2019 bundles.
+
+### Deprecated
+
+- **The jQuery plugin, `jQuery('[data-vbg]').youtube_background()`.** It is removed in
+  2.0.0; the first call now warns once in the console. `new VideoBackgrounds('[data-vbg]')`
+  does the same job and has since 1.0.6 — the plugin only ever wrapped it.
 
 ### Removed
 

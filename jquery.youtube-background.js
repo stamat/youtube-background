@@ -30,6 +30,9 @@
   }
 
   // node_modules/book-of-spells/src/helpers.mjs
+  var objProto = Object.prototype;
+  var foldF64 = new Float64Array(1);
+  var foldU32 = new Uint32Array(foldF64.buffer);
   function stringToBoolean(str) {
     if (/^\s*(true|false)\s*$/i.test(str)) return str.trim().toLowerCase() === "true";
   }
@@ -73,6 +76,36 @@
   function isString(o) {
     return typeof o === "string";
   }
+  var PLAIN = {
+    \u00C6: "AE",
+    \u00E6: "ae",
+    \u0152: "OE",
+    \u0153: "oe",
+    \u00DF: "ss",
+    "\u1E9E": "SS",
+    \u00DE: "TH",
+    \u00FE: "th",
+    \u0110: "D",
+    \u0111: "d",
+    \u00D0: "D",
+    \u00F0: "d",
+    \u00D8: "O",
+    \u00F8: "o",
+    \u0141: "L",
+    \u0142: "l",
+    \u013F: "L",
+    \u0140: "l",
+    \u0126: "H",
+    \u0127: "h",
+    \u0166: "T",
+    \u0167: "t",
+    \u01E4: "G",
+    \u01E5: "g",
+    \u014A: "N",
+    \u014B: "n",
+    \u0131: "i"
+  };
+  var PLAIN_RE = new RegExp(`[${Object.keys(PLAIN).join("")}]`, "g");
   function randomIntInclusive(min, max, safe = false) {
     min = Number(min);
     max = Number(max);
@@ -155,6 +188,10 @@
     if ("orientation" in window) return true;
     return isUserAgentMobile(navigator.userAgent);
   }
+
+  // node_modules/book-of-spells/src/keyboard.mjs
+  var MODIFIERS = ["Meta", "Control", "Alt", "Shift"];
+  var MODIFIER_KEYS = new Set(MODIFIERS);
 
   // src/lib/super-video-background.mjs
   var SOURCE_ATTRIBUTES = ["data-vbg", "data-youtube", "data-ytbg"];
@@ -1254,9 +1291,14 @@
   };
 
   // src/main.mjs
+  var deprecationWarned = false;
   if (typeof jQuery == "function") {
     (function($) {
       $.fn.youtube_background = function(params) {
+        if (!deprecationWarned) {
+          deprecationWarned = true;
+          console.warn("youtube-background: the jQuery plugin is deprecated and will be removed in 2.0.0. Use `new VideoBackgrounds('[data-vbg]')` instead.");
+        }
         const $this = $(this);
         if (Object.prototype.hasOwnProperty.call(window, "VIDEO_BACKGROUNDS")) {
           $this.each(function() {
