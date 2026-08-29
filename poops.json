@@ -87,10 +87,11 @@
         "url": "https://stamat.github.io/youtube-background",
         "repo": "https://github.com/stamat/youtube-background",
         "branch": "master",
-        "links": [
+        "iconLinks": [
           {
             "title": "npm",
-            "url": "https://www.npmjs.com/package/youtube-background"
+            "url": "https://www.npmjs.com/package/youtube-background",
+            "icon": "npm"
           }
         ]
       }
