@@ -3,10 +3,9 @@ import globals from 'globals';
 
 export default [
   {
-    // build output: the bundles at the root and everything generated into _site/
+    // build output: the bundles in dist/ and everything generated into _site/
     ignores: [
-      'jquery.youtube-background*.js',
-      'youtube-background-experimental*.js',
+      'dist/**',
       '_site/**',
       '**/*.map',
       'node_modules/**'
@@ -22,8 +21,7 @@ export default [
         ...globals.browser,
         // injected by the player APIs, not imported
         YT: 'readonly',
-        Vimeo: 'readonly',
-        jQuery: 'readonly'
+        Vimeo: 'readonly'
       }
     }
   },

@@ -5,19 +5,20 @@ robots: noindex
 ---
 
 > [!IMPORTANT]
-> This is the **1.x** page, kept for the `[data-vbg]` factory and the jQuery plugin. The
-> current release is the `<youtube-background>` custom element — its page is
+> This is the **1.x** page, kept for the deprecated jQuery plugin and the old bundle
+> filenames. The current release is **2.x** — the same factory, the same options, events
+> and methods, no jQuery, and the bundles renamed and moved into `dist/`. Its page is
 > [one level up](../), and the 1.x README is on GitHub at
-> [v1.2.0](https://github.com/stamat/youtube-background/blob/v1.2.0/README.md).
+> [v1.2.1](https://github.com/stamat/youtube-background/blob/v1.2.1/README.md).
 
-# 📺 Youtube Background
+# 📺 Youtube Background v1.x
 
 ESM module for turning a YouTube, Vimeo or plain video file link into a
 cover background — with autoplay, looping, play/mute controls, seek bars and
 playlist groups.
 
 ```bash
-npm install youtube-background
+npm install youtube-background@1
 ```
 
 ## Live demos
@@ -330,8 +331,8 @@ backgrounds.destroyAll();
 ```
 
 <script src="https://kit.fontawesome.com/228006f19a.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/youtube-background@1.2.0/jquery.youtube-background.min.js"></script>
-<script src="https://unpkg.com/youtube-background@1.2.0/youtube-background-experimental.min.js"></script>
+<script src="https://unpkg.com/youtube-background@1.2.1/jquery.youtube-background.min.js"></script>
+<script src="https://unpkg.com/youtube-background@1.2.1/youtube-background-experimental.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     window.VIDEO_BACKGROUNDS = new VideoBackgrounds('[data-vbg]');

@@ -1,26 +1,26 @@
 {
   "name": "youtube-background",
   "version": "1.2.1",
-  "description": "ESM module for creating video backgrounds from YouTube, Vimeo or video file links, with a deprecated jQuery plugin.",
-  "main": "jquery.youtube-background.js",
+  "description": "ESM module and standalone script for creating video backgrounds from YouTube, Vimeo or video file links.",
+  "main": "dist/youtube-background.js",
   "exports": {
     ".": {
       "import": "./src/video-backgrounds.mjs",
-      "default": "./jquery.youtube-background.js"
+      "default": "./dist/youtube-background.js"
     },
+    "./controls": {
+      "import": "./src/lib/controls.mjs",
+      "default": "./dist/youtube-background-controls.js"
+    },
+    "./controls.css": "./dist/youtube-background-controls.css",
     "./*": "./*"
   },
   "files": [
     "CHANGELOG.md",
+    "dist",
     "src",
     "!src/__tests__",
-    "!src/styles",
-    "jquery.youtube-background.js",
-    "jquery.youtube-background.js.map",
-    "jquery.youtube-background.min.js",
-    "youtube-background-experimental.js",
-    "youtube-background-experimental.js.map",
-    "youtube-background-experimental.min.js"
+    "!src/styles"
   ],
   "homepage": "https://github.com/stamat/youtube-background",
   "repository": {
@@ -29,14 +29,16 @@
   },
   "keywords": [
     "youtube",
+    "vimeo",
     "background",
-    "jquery",
+    "video-background",
+    "background-video",
+    "hero",
     "embed",
-    "jquery-plugin",
+    "autoplay",
+    "html5-video",
     "youtube-embed",
-    "youtube-embed-player",
-    "javascript",
-    "video-background"
+    "javascript"
   ],
   "author": "Nikola Stamatovic <@stamat>",
   "contributors": [],

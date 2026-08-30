@@ -2,7 +2,7 @@
   "scripts": [
     {
       "in": "src/main.mjs",
-      "out": "jquery.youtube-background.js",
+      "out": "dist/youtube-background.js",
       "options": {
         "sourcemap": true,
         "minify": true,
@@ -11,31 +11,11 @@
       }
     },
     {
-      "in": "src/experimental.mjs",
-      "out": "youtube-background-experimental.js",
+      "in": "src/controls.mjs",
+      "out": "dist/youtube-background-controls.js",
       "options": {
         "sourcemap": true,
         "minify": true,
-        "format": "iife",
-        "target": "es2019"
-      }
-    },
-    {
-      "in": "src/main.mjs",
-      "out": "_site/jquery.youtube-background.js",
-      "options": {
-        "minify": true,
-        "justMinified": true,
-        "format": "iife",
-        "target": "es2019"
-      }
-    },
-    {
-      "in": "src/experimental.mjs",
-      "out": "_site/youtube-background-experimental.js",
-      "options": {
-        "minify": true,
-        "justMinified": true,
         "format": "iife",
         "target": "es2019"
       }
@@ -66,12 +46,28 @@
   ],
   "styles": [
     {
-      "in": "src/styles/prose.scss",
+      "in": "src/styles/controls.scss",
+      "out": "dist/youtube-background-controls.css",
+      "options": {
+        "minify": true
+      }
+    },
+    {
+      "in": "site/prose.scss",
       "out": "_site/css/prose.css",
       "options": {
         "minify": true,
         "justMinified": true
       }
+    }
+  ],
+  "copy": [
+    {
+      "in": [
+        "dist/youtube-background.min.js",
+        "dist/youtube-background-controls.min.js"
+      ],
+      "out": "_site"
     }
   ],
   "markup": {
@@ -82,7 +78,7 @@
         "title": "Youtube Background",
         "brand": "youtube-background",
         "brandMark": "📺",
-        "description": "ESM module for creating video backgrounds from YouTube, Vimeo or video file links, with a deprecated jQuery plugin.",
+        "description": "ESM module and standalone script for creating video backgrounds from YouTube, Vimeo or video file links.",
         "lang": "en",
         "url": "https://stamat.github.io/youtube-background",
         "repo": "https://github.com/stamat/youtube-background",

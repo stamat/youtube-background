@@ -453,11 +453,11 @@
     }
   };
 
-  // src/experimental.mjs
+  // src/controls.mjs
   window.SeekBar = SeekBar;
   window.PlayToggle = PlayToggle;
   window.MuteToggle = MuteToggle;
   window.VideoBackgroundGroup = VideoBackgroundGroup;
   window.VideoBackgroundGroups = VideoBackgroundGroups;
 })();
-//# sourceMappingURL=youtube-background-experimental.js.map
+//# sourceMappingURL=youtube-background-controls.js.map

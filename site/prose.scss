@@ -1,0 +1,89 @@
+// The demo page's one stylesheet, because the poops-docs-theme prose layout links exactly
+// one: the theme, the package's own controls stylesheet, and the page's own chrome. Only
+// the placement of the seek bars is here - their look ships with the package.
+@use "poops-docs-theme/scss/prose-only";
+@use "../src/styles/controls";
+
+// `100vw` is the viewport *including* the classic scrollbar, so a full-bleed band measured
+// that way hangs half a scrollbar past each edge and the document grows a horizontal
+// scrollbar to reach it. `100cqw` measures this container's content box instead, which is
+// the viewport minus that scrollbar.
+body { container-type: inline-size; }
+
+// The `vw` pair comes first as the fallback for browsers without container query units:
+// there the band overflows as it always did, and the clip below keeps the scrollbar off.
+// `clip` and not `hidden`, which would make the root a scroll container and take the
+// topbar's sticky positioning with it.
+html { overflow-x: clip; }
+
+// Demo stages. Each is a full-bleed band that breaks out of the prose column.
+.example-marquee {
+  position: relative;
+  margin: 2rem calc(50% - 50vw);
+  margin-inline: calc(50% - 50cqw);
+  width: 100vw;
+  width: 100cqw;
+  max-width: none;
+  overflow: hidden;
+}
+
+.example-marquee .content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  position: relative;
+  z-index: 1;
+}
+
+.example-marquee .inner {
+  text-align: center;
+  padding: 1rem 1.5rem 3rem;
+}
+
+.example-marquee .inner h2,
+.example-marquee .inner p {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  margin: 0 0 0.5rem;
+  border: 0;
+}
+
+.example-marquee .inner h2 {
+  font-size: clamp(1.75rem, 5vw, 3.25rem);
+}
+
+.example-marquee .inner button {
+  font: inherit;
+  font-size: 0.875rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  margin: 0.25rem 0.15rem;
+  cursor: pointer;
+}
+
+.example-marquee .inner button:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+// The toggles keep their name and carry the state in `aria-pressed`, so pressed is the only
+// thing left to show: inverted, the way a held-down button reads.
+.example-marquee .inner button[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.85);
+  color: #111;
+}
+
+// One inset for the lone bar and for the group's row of them, so a band with three bars
+// lines up with the band above it that has one.
+.example-marquee > .seek-bars,
+.example-marquee > .seek-bar-wrapper {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  width: auto;
+  z-index: 2;
+}

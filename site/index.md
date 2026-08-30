@@ -5,7 +5,7 @@ layout: poops-docs-theme/prose
 # 📺 Youtube Background
 [![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
 [![CI](https://img.shields.io/github/actions/workflow/status/stamat/youtube-background/ci.yml?branch=master&label=CI)](https://github.com/stamat/youtube-background/actions/workflows/ci.yml)
-[![gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
+[![gzip size](https://img.badgesize.io/stamat/youtube-background/master/dist/youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/dist/youtube-background.js)
 
 ESM module for turning a YouTube, Vimeo or plain video file link into a
 cover background — with autoplay, looping, play/mute controls, seek bars and
@@ -14,6 +14,19 @@ playlist groups.
 ```bash
 npm install youtube-background
 ```
+
+> [!IMPORTANT]
+> **2.0 removed the jQuery plugin and renamed the bundles.** The factory and every option,
+> event and method are unchanged — `jquery.youtube-background.js` is now
+> `dist/youtube-background.js`, and `youtube-background-experimental.js` is
+> `dist/youtube-background-controls.js`. The 1.x page is [here](v1/).
+
+> [!NOTE]
+> If you would rather write markup than call a constructor, the same three providers ship
+> as a custom element in
+> [video-background-element](https://github.com/stamat/video-background-element) —
+> `<video-background src="…">`, no factory and no selector. It is where new features go;
+> this package stays maintained for the `[data-vbg]` API.
 
 ## Live demos
 
@@ -186,20 +199,17 @@ new VideoBackgrounds("[data-vbg]");
 Or from a script tag, where the bundle exposes `window.VideoBackgrounds`:
 
 ```html
-<script src="jquery.youtube-background.min.js"></script>
+<script src="youtube-background.min.js"></script>
 ```
 
-> [!WARNING]
-> There is also a jQuery plugin, `jQuery("[data-vbg]").youtube_background()`, which
-> registers itself only if jQuery is on the page. It is deprecated as of 1.2.0 and warns
-> once when called.
-
 The seek bars, play/mute toggles and group controls used above are optional and live in
-a bundle of their own. Each is a class over markup you write, pointed at a background by
-`data-target`, and each has a `destroy()` that takes its listeners back:
+a bundle of their own, with an optional stylesheet. Each control is a class over markup
+you write, pointed at a background by `data-target`, and each has a `destroy()` that takes
+its listeners back:
 
 ```html
-<script src="youtube-background-experimental.min.js"></script>
+<link rel="stylesheet" href="youtube-background-controls.min.css">
+<script src="youtube-background-controls.min.js"></script>
 ```
 
 ## Options
@@ -304,8 +314,8 @@ backgrounds.destroyAll();
 ```
 
 <script src="https://kit.fontawesome.com/228006f19a.js" crossorigin="anonymous"></script>
-<script src="{{ relativePathPrefix }}jquery.youtube-background.min.js"></script>
-<script src="{{ relativePathPrefix }}youtube-background-experimental.min.js"></script>
+<script src="{{ relativePathPrefix }}youtube-background.min.js"></script>
+<script src="{{ relativePathPrefix }}youtube-background-controls.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     window.VIDEO_BACKGROUNDS = new VideoBackgrounds('[data-vbg]');

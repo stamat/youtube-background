@@ -44,7 +44,39 @@ push back to `master`. Pushing the tag triggers
 trusted publishing — `script/publish` never runs `npm publish` from your
 machine. Last it offers a GitHub release, using the entry it cut as the body.
 
-## [Unreleased]
+## [Unreleased] — the jQuery plugin is gone and the bundles moved into `dist/`
+
+The package is named for jQuery in three places it has not needed for years: the
+plugin itself, deprecated since 1.2.0, and the `jquery.` prefix on both built
+files. All three are gone. The factory and every option, event, method and
+`data-vbg-*` attribute are unchanged, so upgrading is changing paths and
+replacing one call.
+
+### Removed
+
+- **The jQuery plugin.** `jQuery('[data-vbg]').youtube_background(params)`
+  becomes `new VideoBackgrounds('[data-vbg]', params)`. It was the only thing
+  that set `window.VIDEO_BACKGROUNDS`; nothing sets it now, so keep the instance
+  the constructor returns.
+
+### Changed
+
+- **The built files are renamed and live in `dist/`.**
+  `jquery.youtube-background.js` is `dist/youtube-background.js` and
+  `youtube-background-experimental.js` is `dist/youtube-background-controls.js`,
+  minified files and source maps alongside them. `import { VideoBackgrounds }
+  from 'youtube-background'` is untouched — it resolved to `src/` before and
+  still does; only `require()` and the CDN see the new paths.
+
+### Added
+
+- **A stylesheet for the controls**, `dist/youtube-background-controls.css`,
+  also reachable as `youtube-background/controls.css`. The look of the seek bar
+  and of the buttons `play-button` and `mute-button` inject only existed inside
+  the demo page before, so anyone using the controls wrote it again from
+  scratch. It is optional; the classes work without it.
+- **A `youtube-background/controls` subpath**, so the control classes can be
+  imported from a bundler instead of read off `window`.
 
 ## [1.2.1] - 2026-08-30 — a source swap keeps the state it was handed
 

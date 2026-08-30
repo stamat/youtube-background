@@ -2,16 +2,22 @@
 
 [![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
 [![CI](https://img.shields.io/github/actions/workflow/status/stamat/youtube-background/ci.yml?branch=master&label=CI)](https://github.com/stamat/youtube-background/actions/workflows/ci.yml)
-[![gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
+[![gzip size](https://img.badgesize.io/stamat/youtube-background/master/dist/youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/dist/youtube-background.js)
 
 > Create video backgrounds from a YouTube, Vimeo or video file links.
 
 > [!IMPORTANT]
-> This package stays at **1.x**. Its successor is
-> [stamat/video-background](https://github.com/stamat/video-background) —
-> `<video-background src="…">`, the same providers as a custom element, no factory, no
-> jQuery, and a map from every `[data-vbg]` option in its README. Support here continues;
-> new features, if any, will go there.
+> **2.0 removed the jQuery plugin and renamed the bundles.** Nothing else changed: the
+> factory, every option, every event and every method are the same. See
+> [Upgrading from 1.x](#upgrading-from-1x), and the 1.x docs at
+> [v1.2.1](https://github.com/stamat/youtube-background/blob/v1.2.1/README.md).
+
+> [!NOTE]
+> There is a custom element variant of this package:
+> [stamat/video-background-element](https://github.com/stamat/video-background-element) —
+> `<video-background src="…">`, the same three providers with no factory and no selector,
+> and a map from every `[data-vbg]` option in its README. It is the successor and where
+> new features go; this package stays maintained for the `[data-vbg]` API.
 
 [DEMO HERE ➡️](http://stamat.github.io/youtube-background/)
 
@@ -27,17 +33,17 @@ This project started as a simple 100 liner jQuery plugin for YouTube video backg
 
 Since it's creation it has evolved to support Vimeo and video files as well. Numerous features were added out of necessity on other projects or by community requests.
 
-After numerous iterations it is now a fully fledged ES module, also available as a standalone script. The jQuery plugin is still here, deprecated.
+After numerous iterations it is now a fully fledged ES module, also available as a standalone script. The jQuery plugin it started as was deprecated in 1.2.0 and removed in 2.0.0.
 
 ## Features
 
 - **No CSS required** - the script takes care of everything
 - **YouTube**, **Vimeo** and **video files** support
-- **ESM** module or standalone global — plus a **jQuery** plugin, deprecated
+- **ESM** module or standalone global — no jQuery, one runtime dependency ([book-of-spells](https://github.com/stamat/book-of-spells))
 - **Lazyloading** - lazyload the iframe/video
 - YouTube and Vimeo **cookies** are disabled by default
 - YouTube and Vimeo player API scrips are loaded only when needed
-- Optional **controls** — a seek bar, play and mute toggles, and a group that plays backgrounds in sequence — in a second bundle
+- Optional **controls** — a seek bar, play and mute toggles, and a group that plays backgrounds in sequence — in a second bundle, with an optional stylesheet
 
 ## Installation
 
@@ -55,28 +61,42 @@ Then import the class just like from any other ESM module (if your bundler suppo
 import { VideoBackgrounds } from "youtube-background";
 ```
 
-The jQuery plugin is not reachable this way and never was — it lives in the bundle,
-and is deprecated.
-
 ### Over CDN
 
 ```
-<script type="text/javascript" src="https://unpkg.com/youtube-background/jquery.youtube-background.js"></script>
+<script type="text/javascript" src="https://unpkg.com/youtube-background/dist/youtube-background.js"></script>
 ```
 
 or minified:
 
 ```
-<script type="text/javascript" src="https://unpkg.com/youtube-background/jquery.youtube-background.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/youtube-background/dist/youtube-background.min.js"></script>
 ```
+
+## Upgrading from 1.x
+
+The jQuery plugin is gone and the built files are renamed. Nothing else moved — the
+factory, every option, every event, every method and every `data-vbg-*` attribute are what
+they were in 1.2.1.
+
+| 1.x | 2.0 | What to do |
+| --- | --- | --- |
+| `jquery.youtube-background.js` | `dist/youtube-background.js` | Change the `src` or CDN path |
+| `jquery.youtube-background.min.js` | `dist/youtube-background.min.js` | Change the `src` or CDN path |
+| `youtube-background-experimental.js` | `dist/youtube-background-controls.js` | Change the `src` or CDN path |
+| `jQuery('[data-vbg]').youtube_background(params)` | `new VideoBackgrounds('[data-vbg]', params)` | Replace the call. It also set `window.VIDEO_BACKGROUNDS` for you; nothing sets that now, so keep the returned instance |
+| — | `dist/youtube-background-controls.css` | New and optional: the look of the seek bar and the injected buttons, previously only in the demo page |
+
+`import { VideoBackgrounds } from "youtube-background"` is untouched — it resolved to
+`src/` in 1.x and still does. Only `require()` and the CDN see the renamed files.
+
+Staying on 1.x is `npm install youtube-background@1`; its docs are on GitHub at
+[v1.2.1](https://github.com/stamat/youtube-background/blob/v1.2.1/README.md) and its demo
+page at [stamat.github.io/youtube-background/v1/](https://stamat.github.io/youtube-background/v1/).
 
 ## Usage
 
-Initialize the factory class yourself. There is also a jQuery plugin, deprecated as of 1.2.0.
-
-### Vanilla Way
-
-Construct the factory class with a selector: `new VideoBackgrounds('[data-vbg]');`. jQuery has not been a dependency since 1.0.6.
+Construct the factory class with a selector: `new VideoBackgrounds('[data-vbg]');`. jQuery has not been a dependency since 1.0.6, and the plugin that wrapped this call is gone as of 2.0.0.
 
 ```html
 <div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
@@ -90,8 +110,7 @@ const videoBackgrounds = new VideoBackgrounds("[data-vbg]");
 
 `import` resolves to the ES module source and gives you the class. `require` and the
 CDN get the prebuilt IIFE bundle instead, which has no exports — loading it is a side
-effect that registers `window.VideoBackgrounds`, and the deprecated jQuery plugin if
-jQuery is on the page.
+effect that registers `window.VideoBackgrounds`.
 
 `VideoBackgrounds` is a factory class - this means that it is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file. It accepts a selector as a parameter and properties object that will be applied to all of the instances queried by the selector. For the list of available properties, please refer to the [Properties](#properties) section.
 
@@ -220,45 +239,6 @@ Factory instance also implements the `IntersectionObserver` out of the box to ke
 
 For the resize events, the factory instance implements the `ResizeObserver` out of the box. You can find the instance of the `ResizeObserver` in the `resizeObserver` property of the factory instance. If the `resizeObserver` is not supported, the factory instance will fallback to the `window` resize event.
 
-### jQuery Way
-
-> [!WARNING]
-> Deprecated as of 1.2.0. Calling the plugin warns once in the console. Everything below
-> has a one-line vanilla equivalent — `new VideoBackgrounds('[data-vbg]')` — so porting is
-> replacing the call, not rewriting the page.
-
-The plugin ships only in the IIFE bundle, and only registers itself if jQuery is already on the page: `jQuery('[data-vbg]').youtube_background();`.
-
-```html
-<div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"></div>
-```
-
-```javascript
-jQuery(document).ready(function () {
-  jQuery("[data-vbg]").youtube_background();
-});
-```
-
-This function does exactly the same thing as if you would initialize the ES6 factory class. It will pass the selected elements and initialize the factory class in the global variable `VIDEO_BACKGROUNDS`. So everything that applies for the factory instance in the ES6 guide applies to this instance.
-
-```javascript
-// get the first element
-const firstElement = $("[data-vbg]")[0];
-
-// get the first instance instance by UID
-const firstInstance = VIDEO_BACKGROUNDS.get(firstElement);
-```
-
-The plugin method accepts properties object as a parameter. For the list of available properties, please refer to the next [Properties](#properties) section.
-
-```javascript
-jQuery(document).ready(function () {
-  jQuery("[data-vbg]").youtube_background({
-    "play-button": true,
-  });
-});
-```
-
 ## Properties
 
 | Property                 | Default            | Accepts | Description                                                                                                                                                                                                                                                                                                                                                                               |
@@ -357,7 +337,7 @@ The source URL itself lives on `data-vbg`, and is also read from the legacy `dat
 
 ### Group events
 
-`VideoBackgroundGroup` from `youtube-background-experimental.js` dispatches on the group element, with the group instance in `event.detail`:
+`VideoBackgroundGroup` from `youtube-background-controls.js` dispatches on the group element, with the group instance in `event.detail`:
 
 - **video-background-group-play** / **video-background-group-pause** - the whole group was started or stopped
 - **video-background-group-mute** / **video-background-group-unmute** - the whole group was muted or unmuted
@@ -370,7 +350,7 @@ The source URL itself lives on `data-vbg`, and is also read from the legacy `dat
 > `video-background-group-umnute`, and the two rewind events never fired at all. Listeners
 > bound to the misspelling need updating.
 
-Events bubble. If you go vanilla, you can get the video object via `event.detail` or `event.originalEvent.detail` in case of jQuery implementation.
+Events bubble, and the video object is in `event.detail`.
 
 You can add listeners to the events onto the element that you've initialized the video background on. If the ID of that element is `#video-background`, you can add listeners like this:
 
@@ -381,15 +361,6 @@ document
     console.log("video-background-ready"); // the video instance object
     console.log(event.detail); // the video instance object
   });
-```
-
-or with jQuery:
-
-```javascript
-jQuery("#video-background").on("video-background-ready", function (event) {
-  console.log("video-background-ready"); // the video instance object
-  console.log(event.originalEvent.detail); // the video instance object
-});
 ```
 
 ## Instance Methods
@@ -448,26 +419,40 @@ jQuery("#video-background").on("video-background-ready", function (event) {
 
 ## Controls
 
-Optional, and in a bundle of their own so the main script does not carry them:
+Optional, and in a bundle of their own so the main script does not carry them. The
+stylesheet is optional too — the classes work without it, it is only the part that is
+awkward to write yourself, a `<progress>` fill under a transparent `<input type="range">`:
 
 ```
-<script src="https://unpkg.com/youtube-background/youtube-background-experimental.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/youtube-background/dist/youtube-background-controls.min.css">
+<script src="https://unpkg.com/youtube-background/dist/youtube-background-controls.min.js"></script>
+```
+
+From a bundler, the controls and their stylesheet are subpath imports:
+
+```javascript
+import { SeekBar, PlayToggle, MuteToggle } from "youtube-background/controls";
+import "youtube-background/controls.css";
 ```
 
 Each control is a class that takes an element carrying `data-target`, a selector for the
-video background element, and tunes onto that element's events. You write the markup and
-style it; the control only wires it.
+video background element, and tunes onto that element's events. You write the markup; the
+control only wires it.
+
+The `js-` classes are what the control looks for and the stylesheet ignores; the plain ones
+are what the stylesheet styles and the control ignores. Drop the plain ones if you are
+styling this yourself.
 
 ```html
-<div data-target="#hero" class="js-seek-bar-wrap">
+<div data-target="#hero" class="seek-bar-wrapper js-seek-bar-wrap">
   <progress
-    class="js-seek-bar-progress"
+    class="seek-bar-progress js-seek-bar-progress"
     value="0"
     max="100"
     aria-hidden="true"
   ></progress>
   <input
-    class="js-seek-bar"
+    class="seek-bar js-seek-bar"
     type="range"
     value="0"
     min="0"
@@ -479,6 +464,12 @@ style it; the control only wires it.
 <button data-target="#hero" class="js-play-toggle" aria-label="Play">⏯</button>
 <button data-target="#hero" class="js-mute-toggle" aria-label="Mute">🔇</button>
 ```
+
+The stylesheet places nothing — a seek bar sits where you put it. It reads five custom
+properties, so recolouring is a `:root` override rather than a fork:
+`--seek-bar-height`, `--seek-bar-thumb-size`, `--seek-bar-thumb-color`,
+`--seek-bar-progress-color` and `--seek-bar-color`. A row of bars for a group goes in a
+`.seek-bars` wrapper, which is only a flex row.
 
 ```javascript
 const seekBar = new SeekBar(document.querySelector(".js-seek-bar-wrap"));
@@ -584,7 +575,7 @@ Tested with [BrowserStack](https://www.browserstack.com).
 
 ## Development
 
-Development setup uses **POOPS bundler** to bundle ES modules into IIFE `jquery.youtube-background.js` and `jquery.youtube-background.min.js`
+Development setup uses **POOPS bundler** to bundle ES modules into IIFE `dist/youtube-background.js` and `dist/youtube-background.min.js`
 
 [POOPS](https://github.com/stamat/poops) is a simple bundler + static site builder that I've created, do give it a try and let me know what you think.
 
@@ -608,7 +599,7 @@ To just build the code, without running the local server, run:
 npm run build
 ```
 
-The build produces the two bundles at the repo root and the demo page in `_site/`, which is what gets deployed to GitHub Pages.
+The build produces the two bundles and the controls stylesheet in `dist/`, and the demo page in `_site/`, which is what gets deployed to GitHub Pages.
 
 To run the tests ([jest](https://jestjs.io), in `src/__tests__`):
 
@@ -630,17 +621,18 @@ A user-visible change goes in [CHANGELOG.md](CHANGELOG.md) under `## [Unreleased
 
 Sources are ES modules with the `.mjs` extension — the package itself stays CommonJS so the published IIFE bundles remain `require()`-able.
 
-- **main.mjs** - entry point of the IIFE bundle. Registers `window.VideoBackgrounds` and, when jQuery is on the page, the deprecated plugin.
+- **main.mjs** - entry point of the IIFE bundle. Registers `window.VideoBackgrounds`, and nothing else.
 - **video-backgrounds.mjs** - the main entry point of the ES6 module. It contains the factory class `VideoBackgrounds` that is used to create and index multiple instances of the video backgrounds depending on the link type: YouTube, Vimeo or video file.
-- **experimental.mjs** - entry point of the second bundle, exposing the control classes below as globals.
+- **controls.mjs** - entry point of the second bundle, exposing the control classes below as globals.
 - **lib/super-video-background.mjs** - It contains the super class `SuperVideoBackground` with all of the common methods and properties for all of the video background types. This class is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
 - **lib/youtube-background.mjs** - It contains the `YouTubeBackground` class that is used to create and control YouTube video backgrounds. Inherits from `SuperVideoBackground`.
 - **lib/vimeo-background.mjs** - It contains the `VimeoBackground` class that is used to create and control Vimeo video backgrounds. Inherits from `SuperVideoBackground`.
 - **lib/video-background.mjs** - It contains the `VideoBackground` class that is used to create and control HTML5 video backgrounds. Inherits from `SuperVideoBackground`. It also owns `MIME_MAP`, whose keys are kept in step with book-of-spells' `RE_VIDEO` — the pattern detection runs through — by a test, so the containers the script claims to support and the ones it detects cannot drift apart.
 - **lib/buttons.mjs** - It contains the play and pause automatic buttons and their functionality that are added to the video backgrounds. I seriously don't know why I created this in the first place.
-- **lib/controls.mjs** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle`, `VideoBackgroundGroup` and `VideoBackgroundGroups` which tune onto the video events and use the common API, they are not bundled with the main script, but are available through `youtube-background-experimental.js`.
+- **lib/controls.mjs** - Module containing externalized control classes `SeekBar`, `PlayToggle`, `MuteToggle`, `VideoBackgroundGroup` and `VideoBackgroundGroups` which tune onto the video events and use the common API, they are not bundled with the main script, but are available through `dist/youtube-background-controls.js`.
+- **styles/controls.scss** - the optional look of the controls, shipped as `dist/youtube-background-controls.css`. It styles only what the control classes and the `play-button` / `mute-button` options put on the page; where those sit is the page's business.
 
-The demo page is generated, not hand-written: `site/index.md` and `src/styles/prose.scss` are built through [poops-docs-theme](https://github.com/stamat/poops-docs-theme) into `_site/`.
+The demo page is generated, not hand-written: `site/index.md` and `site/prose.scss` are built through [poops-docs-theme](https://github.com/stamat/poops-docs-theme) into `_site/`. `site/prose.scss` pulls in `src/styles/controls.scss`, so the demo and the shipped stylesheet cannot drift apart. `site/v1/index.md` is the frozen 1.x page — it loads its scripts from unpkg at a pinned 1.2.1 and is not built from this source tree.
 
 Tu summarize, because YouTube, Vimeo and HTML5 Video API's are different - we need a way to generalize these APIs and provide a common interface for all of them. Due to a lot of common code we have the `SuperVideoBackground` class that is inherited by the `YouTubeBackground`, `VimeoBackground` and `VideoBackground` classes.
 
