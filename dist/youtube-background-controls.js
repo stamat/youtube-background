@@ -1,4 +1,4 @@
-/* youtube-background v1.2.1 | https://github.com/stamat/youtube-background | MIT License */
+/* youtube-background v2.0.0 | https://github.com/stamat/youtube-background | MIT License */
 (() => {
   // src/lib/controls.mjs
   function attach(listeners) {
