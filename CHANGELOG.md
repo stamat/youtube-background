@@ -44,7 +44,9 @@ push back to `master`. Pushing the tag triggers
 trusted publishing — `script/publish` never runs `npm publish` from your
 machine. Last it offers a GitHub release, using the entry it cut as the body.
 
-## [Unreleased] — the jQuery plugin is gone and the bundles moved into `dist/`
+## [Unreleased]
+
+## [2.0.0] - 2026-08-30 — the jQuery plugin is gone and the bundles moved into `dist/`
 
 The package is named for jQuery in three places it has not needed for years: the
 plugin itself, deprecated since 1.2.0, and the `jquery.` prefix on both built
