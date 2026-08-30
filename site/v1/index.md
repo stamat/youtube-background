@@ -75,7 +75,7 @@ Every band below is a real instance. The markup that produces it is right under 
   <div class="content">
     <div class="inner">
       <h2>Sound, and your own controls</h2>
-      <p>Unmute with the plugin's button, or drive it from buttons of your own.</p>
+      <p>Unmute with the plugin's button, or drive it from buttons of your own — those keep their name and carry the state in <code>aria-pressed</code>.</p>
       <button class="js-demo-play-toggle" data-target="#demo-sound">Play</button>
       <button class="js-demo-mute-toggle" data-target="#demo-sound">Mute</button>
       <button class="js-demo-src" data-src="https://www.youtube.com/watch?v=UIyoNvInzCI">Change source</button>
