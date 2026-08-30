@@ -44,7 +44,9 @@ push back to `master`. Pushing the tag triggers
 trusted publishing — `script/publish` never runs `npm publish` from your
 machine. Last it offers a GitHub release, using the entry it cut as the body.
 
-## [Unreleased] — a source swap keeps the state it was handed
+## [Unreleased]
+
+## [1.2.1] - 2026-08-30 — a source swap keeps the state it was handed
 
 `setSource()` replaced the player's `src` and left everything else standing. The new
 video came back muted after the visitor had unmuted, it no longer looped, and a plain

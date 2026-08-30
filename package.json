@@ -1,6 +1,6 @@
 {
   "name": "youtube-background",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "ESM module for creating video backgrounds from YouTube, Vimeo or video file links, with a deprecated jQuery plugin.",
   "main": "jquery.youtube-background.js",
   "exports": {
