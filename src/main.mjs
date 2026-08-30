@@ -7,7 +7,7 @@ if (typeof jQuery == 'function') {
     $.fn.youtube_background = function (params) {
       if (!deprecationWarned) {
         deprecationWarned = true;
-        console.warn('youtube-background: the jQuery plugin is deprecated and will be removed in 2.0.0. Use `new VideoBackgrounds(\'[data-vbg]\')` instead.');
+        console.warn('youtube-background: the jQuery plugin is deprecated. Use `new VideoBackgrounds(\'[data-vbg]\')` instead.');
       }
 
       const $this = $(this);

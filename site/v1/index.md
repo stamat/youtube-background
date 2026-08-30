@@ -1,11 +1,16 @@
 ---
 layout: poops-docs-theme/prose
+title: Youtube Background v1
+robots: noindex
 ---
 
+> [!IMPORTANT]
+> This is the **1.x** page, kept for the `[data-vbg]` factory and the jQuery plugin. The
+> current release is the `<youtube-background>` custom element — its page is
+> [one level up](../), and the 1.x README is on GitHub at
+> [v1.2.0](https://github.com/stamat/youtube-background/blob/v1.2.0/README.md).
+
 # 📺 Youtube Background
-[![npm version](https://img.shields.io/npm/v/youtube-background)](https://www.npmjs.com/package/youtube-background)
-[![CI](https://img.shields.io/github/actions/workflow/status/stamat/youtube-background/ci.yml?branch=master&label=CI)](https://github.com/stamat/youtube-background/actions/workflows/ci.yml)
-[![gzip size](https://img.badgesize.io/stamat/youtube-background/master/jquery.youtube-background.min.js?compression=gzip&label=gzip%20size)](https://github.com/stamat/youtube-background/blob/master/jquery.youtube-background.js)
 
 ESM module for turning a YouTube, Vimeo or plain video file link into a
 cover background — with autoplay, looping, play/mute controls, seek bars and
@@ -36,7 +41,10 @@ Every band below is a real instance. The markup that produces it is right under 
 </div>
 
 ```html
-<div data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA" data-vbg-load-background="true"></div>
+<div
+  data-vbg="https://www.youtube.com/watch?v=eEpEeyqGlxA"
+  data-vbg-load-background="true"
+></div>
 ```
 
 <div class="example-marquee">
@@ -158,9 +166,25 @@ Every band below is a real instance. The markup that produces it is right under 
 
 ```html
 <div class="js-vbg-group">
-  <div data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4" data-vbg-loop="false" data-vbg-load-background="true"></div>
-  <div data-vbg="https://vimeo.com/137250145" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-load-background="true" style="display: none"></div>
-  <div data-vbg="https://media.w3.org/2010/05/bunny/trailer.mp4" data-vbg-loop="false" data-vbg-autoplay="false" data-vbg-end-at="20" style="display: none"></div>
+  <div
+    data-vbg="https://www.youtube.com/watch?v=LC5rEhxGqT4"
+    data-vbg-loop="false"
+    data-vbg-load-background="true"
+  ></div>
+  <div
+    data-vbg="https://vimeo.com/137250145"
+    data-vbg-loop="false"
+    data-vbg-autoplay="false"
+    data-vbg-load-background="true"
+    style="display: none"
+  ></div>
+  <div
+    data-vbg="https://media.w3.org/2010/05/bunny/trailer.mp4"
+    data-vbg-loop="false"
+    data-vbg-autoplay="false"
+    data-vbg-end-at="20"
+    style="display: none"
+  ></div>
 </div>
 ```
 
@@ -191,8 +215,8 @@ Or from a script tag, where the bundle exposes `window.VideoBackgrounds`:
 
 > [!WARNING]
 > There is also a jQuery plugin, `jQuery("[data-vbg]").youtube_background()`, which
-> registers itself only if jQuery is on the page. It is deprecated as of 1.2.0 and warns
-> once when called.
+> registers itself only if jQuery is on the page. It is deprecated as of 1.2.0, warns
+> once when called, and is removed in 2.0.0.
 
 The seek bars, play/mute toggles and group controls used above are optional and live in
 a bundle of their own. Each is a class over markup you write, pointed at a background by
@@ -207,26 +231,26 @@ a bundle of their own. Each is a class over markup you write, pointed at a backg
 Every option is settable as a `data-vbg-*` attribute on the element, or as a key in
 the object passed to the constructor. Attributes win.
 
-| Option | Default | What it does |
-| --- | --- | --- |
-| `autoplay` | `true` | Start as soon as the element is in view |
-| `muted` | `true` | Start muted — required for autoplay to be allowed |
-| `loop` | `true` | Restart when the video ends |
-| `mobile` | `true` | Create the background on mobile too |
-| `always-play` | `false` | Keep playing while off-screen |
-| `start-at` | `0` | Seconds to start from |
-| `end-at` | `0` | Seconds to stop at, `0` for the full duration |
-| `volume` | `1` | `0`–`1`, applied on first unmute |
-| `play-button` | `false` | Render the plugin's play/pause toggle |
-| `mute-button` | `false` | Render the plugin's mute toggle |
-| `poster` | `null` | Image shown until the first frame plays |
-| `load-background` | `false` | Use the platform's own thumbnail as the poster |
-| `resolution` | `'16:9'` | Aspect ratio used to cover the container |
-| `fit-box` | `false` | Stretch to the container instead of covering it |
-| `inline-styles` | `true` | Let the plugin write the positioning styles |
-| `no-cookie` | `true` | Use the privacy-preserving embed domains |
-| `lazyloading` | `false` | Add `loading="lazy"` to the iframe — YouTube and Vimeo only |
-| `title` | `'Video background'` | Accessible name for the player frame |
+| Option            | Default              | What it does                                                |
+| ----------------- | -------------------- | ----------------------------------------------------------- |
+| `autoplay`        | `true`               | Start as soon as the element is in view                     |
+| `muted`           | `true`               | Start muted — required for autoplay to be allowed           |
+| `loop`            | `true`               | Restart when the video ends                                 |
+| `mobile`          | `true`               | Create the background on mobile too                         |
+| `always-play`     | `false`              | Keep playing while off-screen                               |
+| `start-at`        | `0`                  | Seconds to start from                                       |
+| `end-at`          | `0`                  | Seconds to stop at, `0` for the full duration               |
+| `volume`          | `1`                  | `0`–`1`, applied on first unmute                            |
+| `play-button`     | `false`              | Render the plugin's play/pause toggle                       |
+| `mute-button`     | `false`              | Render the plugin's mute toggle                             |
+| `poster`          | `null`               | Image shown until the first frame plays                     |
+| `load-background` | `false`              | Use the platform's own thumbnail as the poster              |
+| `resolution`      | `'16:9'`             | Aspect ratio used to cover the container                    |
+| `fit-box`         | `false`              | Stretch to the container instead of covering it             |
+| `inline-styles`   | `true`               | Let the plugin write the positioning styles                 |
+| `no-cookie`       | `true`               | Use the privacy-preserving embed domains                    |
+| `lazyloading`     | `false`              | Add `loading="lazy"` to the iframe — YouTube and Vimeo only |
+| `title`           | `'Video background'` | Accessible name for the player frame                        |
 
 ## Limits
 
@@ -238,7 +262,7 @@ and the plugin's own play and mute buttons set it off like any other toggle. The
 option that turns it off, here or upstream.
 
 **Cosmetic filtering** hides it — an element-hiding rule in Adblock Plus / uBlock Origin
-syntax, where `##` means *hide this selector on these domains*:
+syntax, where `##` means _hide this selector on these domains_:
 
 ```text
 www.youtube-nocookie.com,www.youtube.com##.html5-video-player .ytp-bezel
@@ -265,9 +289,11 @@ Every instance dispatches on its own element and bubbles:
 `video-background-destroyed`.
 
 ```javascript
-document.querySelector("#hero").addEventListener("video-background-ready", (event) => {
-  console.log(event.detail.type, event.detail.currentState);
-});
+document
+  .querySelector("#hero")
+  .addEventListener("video-background-ready", (event) => {
+    console.log(event.detail.type, event.detail.currentState);
+  });
 ```
 
 A group dispatches on the group element, with the group in `event.detail`:
@@ -292,8 +318,8 @@ instance.pause();
 instance.mute();
 instance.unmute();
 instance.setVolume(0.4);
-instance.seek(50);          // percent
-instance.seekTo(12);        // seconds
+instance.seek(50); // percent
+instance.seekTo(12); // seconds
 instance.setSource("https://vimeo.com/137250145");
 
 backgrounds.pauseAll();
@@ -304,8 +330,8 @@ backgrounds.destroyAll();
 ```
 
 <script src="https://kit.fontawesome.com/228006f19a.js" crossorigin="anonymous"></script>
-<script src="{{ relativePathPrefix }}jquery.youtube-background.min.js"></script>
-<script src="{{ relativePathPrefix }}youtube-background-experimental.min.js"></script>
+<script src="https://unpkg.com/youtube-background@1.2.0/jquery.youtube-background.min.js"></script>
+<script src="https://unpkg.com/youtube-background@1.2.0/youtube-background-experimental.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     window.VIDEO_BACKGROUNDS = new VideoBackgrounds('[data-vbg]');

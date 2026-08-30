@@ -52,8 +52,7 @@ A full review of `src/` turned up a teardown that tore nothing down, a video tha
 restarted itself after the visitor had paused it, and a second instance that
 quietly killed the first. Nothing in the public API was renamed except one event:
 the group unmute event went out as `video-background-group-umnute`, and listeners
-bound to that spelling need updating. The jQuery plugin is deprecated here and is
-removed in 2.0.0.
+bound to that spelling need updating. The jQuery plugin is deprecated here.
 
 ### Added
 
@@ -130,9 +129,9 @@ removed in 2.0.0.
 
 ### Deprecated
 
-- **The jQuery plugin, `jQuery('[data-vbg]').youtube_background()`.** It is removed in
-  2.0.0; the first call now warns once in the console. `new VideoBackgrounds('[data-vbg]')`
-  does the same job and has since 1.0.6 — the plugin only ever wrapped it.
+- **The jQuery plugin, `jQuery('[data-vbg]').youtube_background()`.** The first call now warns
+  once in the console. `new VideoBackgrounds('[data-vbg]')` does the same job and has
+  since 1.0.6 — the plugin only ever wrapped it.
 
 ### Removed
 
