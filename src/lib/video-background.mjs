@@ -111,7 +111,7 @@ export class VideoBackground extends SuperVideoBackground {
     const pts = url.match(RE_VIDEO);
     if (!pts || !pts.length) return;
 
-    const playing = this.isPlaying();
+    const start = this.startsAfterSwap();
 
     this.id = pts[1];
     this.setMimeType(this.id);
@@ -124,9 +124,11 @@ export class VideoBackground extends SuperVideoBackground {
     this.resetProgress();
 
     // source children are read by the load algorithm and nowhere else - without this
-    // the element plays on with the file it already has
+    // the element plays on with the file it already has; load() also re-arms the
+    // autoplay attribute, so a video that is to wait loses it first
+    this.player.autoplay = start;
     this.player.load();
-    if (playing) this.player.play();
+    if (start) this.player.play();
 
     this.writeSourceAttributes(url);
   }

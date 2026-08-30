@@ -404,6 +404,12 @@
     isPlaying() {
       return !this.paused && (this.currentState === "playing" || this.currentState === "buffering");
     }
+    // what a swapped-in video does: plays on if the old one was, starts if a fresh build
+    // would - autoplay on and in view - and waits otherwise; a held pause stops both
+    startsAfterSwap() {
+      if (this.paused) return false;
+      return this.isPlaying() || this.params.autoplay && (this.params["always-play"] || this.isIntersecting);
+    }
     // duration and progress describe the video being replaced, and a stale duration
     // ends the new one early - every setSource clears them before the swap
     resetProgress() {
@@ -548,13 +554,13 @@
     setSource(url) {
       const pts = url.match(RE_YOUTUBE);
       if (!pts || !pts.length) return;
-      const playing = this.isPlaying();
+      const start = this.startsAfterSwap();
       this.id = pts[1];
       this.src = this.generateSrcURL(this.id);
       this.resetProgress();
       if (this.player && this.player.loadVideoById) {
         const request = { videoId: this.id, startSeconds: this.params["start-at"] || 0 };
-        if (playing) {
+        if (start) {
           this.player.loadVideoById(request);
         } else {
           this.player.cueVideoById(request);
@@ -770,16 +776,17 @@
     setSource(url) {
       const pts = url.match(RE_VIMEO);
       if (!pts || !pts.length) return;
-      const playing = this.isPlaying();
+      const start = this.startsAfterSwap();
       this.id = pts[1];
       this.unlisted = getVimeoUnlistedHash(url);
       this.src = this.generateSrcURL(this.id, this.unlisted);
       this.resetProgress();
       if (this.player && this.player.loadVideo) {
-        this.player.loadVideo(this.unlisted ? { id: this.id, h: this.unlisted } : this.id).then(() => {
+        const video = `https://vimeo.com/${this.id}` + (this.unlisted ? `?h=${this.unlisted}` : "");
+        this.player.loadVideo({ url: video }).then(() => {
           this.player.setLoop(this.params.loop);
           this.player.setMuted(this.muted);
-          if (playing) {
+          if (start) {
             this.player.play();
           } else {
             this.player.pause();
@@ -990,7 +997,7 @@
     setSource(url) {
       const pts = url.match(RE_VIDEO);
       if (!pts || !pts.length) return;
-      const playing = this.isPlaying();
+      const start = this.startsAfterSwap();
       this.id = pts[1];
       this.setMimeType(this.id);
       this.playerElement.innerHTML = "";
@@ -1000,8 +1007,9 @@
       this.playerElement.appendChild(source);
       this.src = url;
       this.resetProgress();
+      this.player.autoplay = start;
       this.player.load();
-      if (playing) this.player.play();
+      if (start) this.player.play();
       this.writeSourceAttributes(url);
     }
     onVideoLoadedMetadata() {

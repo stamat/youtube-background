@@ -267,6 +267,13 @@ export class SuperVideoBackground {
     return !this.paused && (this.currentState === 'playing' || this.currentState === 'buffering');
   }
 
+  // what a swapped-in video does: plays on if the old one was, starts if a fresh build
+  // would - autoplay on and in view - and waits otherwise; a held pause stops both
+  startsAfterSwap() {
+    if (this.paused) return false;
+    return this.isPlaying() || (this.params.autoplay && (this.params['always-play'] || this.isIntersecting));
+  }
+
   // duration and progress describe the video being replaced, and a stale duration
   // ends the new one early - every setSource clears them before the swap
   resetProgress() {

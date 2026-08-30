@@ -119,7 +119,7 @@ export class VimeoBackground extends SuperVideoBackground {
     const pts = url.match(RE_VIMEO);
     if (!pts || !pts.length) return;
 
-    const playing = this.isPlaying();
+    const start = this.startsAfterSwap();
 
     this.id = pts[1];
     this.unlisted = getVimeoUnlistedHash(url);
@@ -129,12 +129,16 @@ export class VimeoBackground extends SuperVideoBackground {
     // A new iframe src navigates away from the document player.js registered its
     // handlers with, so 'ended' and 'timeupdate' stop arriving and the loop with them.
     // loadVideo keeps the player; the swap is what is left when there is none, or when
-    // this build of player.js refuses the hash form.
+    // player.js could not load the video.
     if (this.player && this.player.loadVideo) {
-      this.player.loadVideo(this.unlisted ? { id: this.id, h: this.unlisted } : this.id).then(() => {
+      // the url form: player.js takes an unlisted hash only as ?h= on a url, never beside an id
+      const video = `https://vimeo.com/${this.id}` + (this.unlisted ? `?h=${this.unlisted}` : '');
+      // 'loaded' fires again and onVideoPlayerReady with it - the seek to start-at, the
+      // autoplay and the duration come from there; this adds what a new load drops
+      this.player.loadVideo({ url: video }).then(() => {
         this.player.setLoop(this.params.loop);
         this.player.setMuted(this.muted);
-        if (playing) { this.player.play(); } else { this.player.pause(); }
+        if (start) { this.player.play(); } else { this.player.pause(); }
       }).catch(() => {
         this.playerElement.src = this.src;
       });

@@ -205,11 +205,12 @@ describe('setSource', () => {
   // Every swap used to go through the iframe src, which navigates away from the document
   // the player API shook hands with: the new video came back muted, and with no state
   // changes left to hear, it never looped.
+  const params = { 'start-at': 5, 'end-at': 0, autoplay: true, 'always-play': true, 'no-cookie': true, 'load-background': false }
   const youtube = (overrides) => {
     const calls = []
     const stub = Object.assign(Object.create(YoutubeBackground.prototype), {
       id: 'oldVideoId',
-      params: { 'start-at': 5, 'end-at': 0, autoplay: true, 'always-play': true, 'no-cookie': true, 'load-background': false },
+      params,
       muted: false,
       paused: false,
       currentState: 'playing',
@@ -238,7 +239,11 @@ describe('setSource', () => {
 
   test('a stopped video is cued, never started behind the user', () => {
     expect(youtube({ paused: true }).calls).toEqual(['cue:dQw4w9WgXcQ@5'])
-    expect(youtube({ currentState: 'paused' }).calls).toEqual(['cue:dQw4w9WgXcQ@5'])
+    expect(youtube({ currentState: 'paused', params: { ...params, 'always-play': false } }).calls).toEqual(['cue:dQw4w9WgXcQ@5'])
+  })
+
+  test('a video that ran out in view starts over on a swap, the way a fresh build would', () => {
+    expect(youtube({ currentState: 'ended' }).calls).toEqual(['load:dQw4w9WgXcQ@5'])
   })
 
   test('the replaced video leaves no duration behind to end the new one early', () => {
@@ -255,7 +260,7 @@ describe('setSource', () => {
     expect(youtube({ player: null, muted: true }).stub.playerElement.src).toContain('mute=1')
   })
 
-  test('a Vimeo swap goes through the player, and an unlisted link keeps its hash', async () => {
+  test('a Vimeo swap goes through the player as a url, and an unlisted link keeps its hash', async () => {
     const calls = []
     const stub = Object.assign(Object.create(VimeoBackground.prototype), {
       params: { loop: true, 'start-at': 0, 'load-background': false },
@@ -276,7 +281,7 @@ describe('setSource', () => {
     stub.setSource('https://vimeo.com/123456789/abc123def')
     await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(calls).toEqual(['load:{"id":"123456789","h":"abc123def"}', 'loop:true', 'muted:false', 'play'])
+    expect(calls).toEqual(['load:{"url":"https://vimeo.com/123456789?h=abc123def"}', 'loop:true', 'muted:false', 'play'])
     expect(stub.playerElement.getAttribute('src')).toBeNull()
   })
 
@@ -300,8 +305,32 @@ describe('setSource', () => {
     stub.setSource('https://example.com/other.webm')
 
     expect(calls).toEqual(['load', 'play'])
+    expect(player.autoplay).toBe(true)
     expect(player.querySelector('source').getAttribute('type')).toBe('video/webm')
     expect(stub.duration).toBe(0)
+  })
+
+  test('a file swapped in while stopped is loaded, not started, and load() cannot autoplay it back', () => {
+    const calls = []
+    const player = document.createElement('video')
+    player.autoplay = true
+    player.load = () => calls.push('load')
+    player.play = () => calls.push('play')
+    const stub = Object.assign(Object.create(VideoBackground.prototype), {
+      MIME_MAP,
+      params: { 'start-at': 0, autoplay: true, 'always-play': true },
+      muted: false,
+      paused: true,
+      currentState: 'paused',
+      element: document.createElement('div'),
+      player,
+      playerElement: player
+    })
+
+    stub.setSource('https://example.com/other.webm')
+
+    expect(calls).toEqual(['load'])
+    expect(player.autoplay).toBe(false)
   })
 })
 

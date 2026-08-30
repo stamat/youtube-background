@@ -115,7 +115,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     const pts = url.match(RE_YOUTUBE);
     if (!pts || !pts.length) return;
 
-    const playing = this.isPlaying();
+    const start = this.startsAfterSwap();
 
     this.id = pts[1];
     this.src = this.generateSrcURL(this.id);
@@ -129,7 +129,7 @@ export class YoutubeBackground extends SuperVideoBackground {
     // is not one that can be driven yet
     if (this.player && this.player.loadVideoById) {
       const request = { videoId: this.id, startSeconds: this.params['start-at'] || 0 };
-      if (playing) {
+      if (start) {
         this.player.loadVideoById(request);
       } else {
         this.player.cueVideoById(request);

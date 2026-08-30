@@ -55,8 +55,9 @@ video file did not change at all.
 - **`setSource()` goes through the player API, not the iframe `src`.** A new `src`
   navigates the iframe away from the document the YouTube and Vimeo APIs shook hands
   with, so state changes stopped arriving and the loop went with them. YouTube now
-  swaps with `loadVideoById`, or `cueVideoById` for a video that was not playing, and
-  Vimeo with `loadVideo` — the player survives, and so do its mute state and volume.
+  swaps with `loadVideoById`, or `cueVideoById` for a video neither playing nor due to
+  start, and Vimeo with `loadVideo` — the player survives, and so do its mute state and
+  volume.
 
 - **A swap before the player exists carries the live state into the URL.** That one
   path still assigns `src`, but it now reads the current mute and pause state rather
@@ -64,7 +65,8 @@ video file did not change at all.
 
 - **A `<video>` file actually changes.** `setSource()` swapped the `<source>` child,
   which the browser only reads while running its load algorithm, so the old file played
-  on; the element is reloaded now, and resumes playing if it was playing.
+  on; the element is reloaded now, `autoplay` taken off it first when it is to wait, and
+  resumes playing if it was playing.
 
 - **The replaced video leaves no duration behind.** Duration and progress carried over
   from the old video, so a longer replacement was cut short at the old length.
