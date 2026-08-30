@@ -71,11 +71,13 @@ export class VimeoBackground extends SuperVideoBackground {
     unlisted = unlisted ? `h=${unlisted}&` : ''
     let src = `https://player.vimeo.com/video/${id}?${unlisted}background=1&controls=0`;
   
-    if (this.params.muted) {
+    // the live state, not the initial params: a reload after the user unmuted or
+    // paused has to come back the way they left it
+    if (this.muted) {
       src += '&muted=1';
     }
   
-    if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
+    if (!this.paused && this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       src += '&autoplay=1';
     }
 
@@ -117,10 +119,28 @@ export class VimeoBackground extends SuperVideoBackground {
     const pts = url.match(RE_VIMEO);
     if (!pts || !pts.length) return;
 
+    const playing = this.isPlaying();
+
     this.id = pts[1];
     this.unlisted = getVimeoUnlistedHash(url);
     this.src = this.generateSrcURL(this.id, this.unlisted);
-    this.playerElement.src = this.src;
+    this.resetProgress();
+
+    // A new iframe src navigates away from the document player.js registered its
+    // handlers with, so 'ended' and 'timeupdate' stop arriving and the loop with them.
+    // loadVideo keeps the player; the swap is what is left when there is none, or when
+    // this build of player.js refuses the hash form.
+    if (this.player && this.player.loadVideo) {
+      this.player.loadVideo(this.unlisted ? { id: this.id, h: this.unlisted } : this.id).then(() => {
+        this.player.setLoop(this.params.loop);
+        this.player.setMuted(this.muted);
+        if (playing) { this.player.play(); } else { this.player.pause(); }
+      }).catch(() => {
+        this.playerElement.src = this.src;
+      });
+    } else if (this.playerElement) {
+      this.playerElement.src = this.src;
+    }
 
     this.writeSourceAttributes(url);
     this.loadBackground(this.id);

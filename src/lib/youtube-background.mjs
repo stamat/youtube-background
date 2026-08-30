@@ -82,11 +82,13 @@ export class YoutubeBackground extends SuperVideoBackground {
     }
     let src = `${site}${id}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
 
-    if (this.params.muted) {
+    // the live state, not the initial params: a reload after the user unmuted or
+    // paused has to come back the way they left it
+    if (this.muted) {
       src += '&mute=1';
     }
   
-    if (this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
+    if (!this.paused && this.params.autoplay && (this.params['always-play'] || this.isIntersecting)) {
       src += '&autoplay=1';
     }
   
@@ -113,9 +115,28 @@ export class YoutubeBackground extends SuperVideoBackground {
     const pts = url.match(RE_YOUTUBE);
     if (!pts || !pts.length) return;
 
+    const playing = this.isPlaying();
+
     this.id = pts[1];
     this.src = this.generateSrcURL(this.id);
-    this.playerElement.src = this.src;
+    this.resetProgress();
+
+    // A new iframe src navigates away from the document the API shook hands with: no
+    // more state changes, so no more loop, and the fresh embed takes mute and autoplay
+    // from the URL rather than from the player. Only a swap before the player exists
+    // has to pay that.
+    // the API attaches the playback methods on its handshake, so a player object alone
+    // is not one that can be driven yet
+    if (this.player && this.player.loadVideoById) {
+      const request = { videoId: this.id, startSeconds: this.params['start-at'] || 0 };
+      if (playing) {
+        this.player.loadVideoById(request);
+      } else {
+        this.player.cueVideoById(request);
+      }
+    } else if (this.playerElement) {
+      this.playerElement.src = this.src;
+    }
 
     this.writeSourceAttributes(url);
     this.loadBackground(this.id);

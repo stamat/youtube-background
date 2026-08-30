@@ -44,7 +44,30 @@ push back to `master`. Pushing the tag triggers
 trusted publishing — `script/publish` never runs `npm publish` from your
 machine. Last it offers a GitHub release, using the entry it cut as the body.
 
-## [Unreleased]
+## [Unreleased] — a source swap keeps the state it was handed
+
+`setSource()` replaced the player's `src` and left everything else standing. The new
+video came back muted after the visitor had unmuted, it no longer looped, and a plain
+video file did not change at all.
+
+### Fixed
+
+- **`setSource()` goes through the player API, not the iframe `src`.** A new `src`
+  navigates the iframe away from the document the YouTube and Vimeo APIs shook hands
+  with, so state changes stopped arriving and the loop went with them. YouTube now
+  swaps with `loadVideoById`, or `cueVideoById` for a video that was not playing, and
+  Vimeo with `loadVideo` — the player survives, and so do its mute state and volume.
+
+- **A swap before the player exists carries the live state into the URL.** That one
+  path still assigns `src`, but it now reads the current mute and pause state rather
+  than the `muted` and `autoplay` parameters the instance started with.
+
+- **A `<video>` file actually changes.** `setSource()` swapped the `<source>` child,
+  which the browser only reads while running its load algorithm, so the old file played
+  on; the element is reloaded now, and resumes playing if it was playing.
+
+- **The replaced video leaves no duration behind.** Duration and progress carried over
+  from the old video, so a longer replacement was cut short at the old length.
 
 ## [1.2.0] - 2026-08-29 — a pass over every file in `src/`, and jQuery on notice
 

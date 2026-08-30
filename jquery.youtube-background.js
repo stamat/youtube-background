@@ -400,6 +400,17 @@
     dispatchEvent(name) {
       this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
     }
+    // playback the user did not ask to stop - buffering is playing that is still catching up
+    isPlaying() {
+      return !this.paused && (this.currentState === "playing" || this.currentState === "buffering");
+    }
+    // duration and progress describe the video being replaced, and a stale duration
+    // ends the new one early - every setSource clears them before the swap
+    resetProgress() {
+      this.duration = 0;
+      this.currentTime = this.params["start-at"] || 0;
+      this.percentComplete = 0;
+    }
     shouldPlay() {
       if (this.paused) return false;
       if (this.currentState === "ended" && !this.params.loop) return false;
@@ -516,10 +527,10 @@
         site = "https://www.youtube-nocookie.com/embed/";
       }
       let src = `${site}${id}?&enablejsapi=1&disablekb=1&controls=0&rel=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&showinfo=0&modestbranding=1&fs=0`;
-      if (this.params.muted) {
+      if (this.muted) {
         src += "&mute=1";
       }
-      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
+      if (!this.paused && this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         src += "&autoplay=1";
       }
       return src;
@@ -537,9 +548,20 @@
     setSource(url) {
       const pts = url.match(RE_YOUTUBE);
       if (!pts || !pts.length) return;
+      const playing = this.isPlaying();
       this.id = pts[1];
       this.src = this.generateSrcURL(this.id);
-      this.playerElement.src = this.src;
+      this.resetProgress();
+      if (this.player && this.player.loadVideoById) {
+        const request = { videoId: this.id, startSeconds: this.params["start-at"] || 0 };
+        if (playing) {
+          this.player.loadVideoById(request);
+        } else {
+          this.player.cueVideoById(request);
+        }
+      } else if (this.playerElement) {
+        this.playerElement.src = this.src;
+      }
       this.writeSourceAttributes(url);
       this.loadBackground(this.id);
     }
@@ -714,10 +736,10 @@
     generateSrcURL(id, unlisted) {
       unlisted = unlisted ? `h=${unlisted}&` : "";
       let src = `https://player.vimeo.com/video/${id}?${unlisted}background=1&controls=0`;
-      if (this.params.muted) {
+      if (this.muted) {
         src += "&muted=1";
       }
-      if (this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
+      if (!this.paused && this.params.autoplay && (this.params["always-play"] || this.isIntersecting)) {
         src += "&autoplay=1";
       }
       if (this.params.loop) {
@@ -748,10 +770,26 @@
     setSource(url) {
       const pts = url.match(RE_VIMEO);
       if (!pts || !pts.length) return;
+      const playing = this.isPlaying();
       this.id = pts[1];
       this.unlisted = getVimeoUnlistedHash(url);
       this.src = this.generateSrcURL(this.id, this.unlisted);
-      this.playerElement.src = this.src;
+      this.resetProgress();
+      if (this.player && this.player.loadVideo) {
+        this.player.loadVideo(this.unlisted ? { id: this.id, h: this.unlisted } : this.id).then(() => {
+          this.player.setLoop(this.params.loop);
+          this.player.setMuted(this.muted);
+          if (playing) {
+            this.player.play();
+          } else {
+            this.player.pause();
+          }
+        }).catch(() => {
+          this.playerElement.src = this.src;
+        });
+      } else if (this.playerElement) {
+        this.playerElement.src = this.src;
+      }
       this.writeSourceAttributes(url);
       this.loadBackground(this.id);
     }
@@ -952,6 +990,7 @@
     setSource(url) {
       const pts = url.match(RE_VIDEO);
       if (!pts || !pts.length) return;
+      const playing = this.isPlaying();
       this.id = pts[1];
       this.setMimeType(this.id);
       this.playerElement.innerHTML = "";
@@ -960,6 +999,9 @@
       if (this.mime) source.setAttribute("type", this.mime);
       this.playerElement.appendChild(source);
       this.src = url;
+      this.resetProgress();
+      this.player.load();
+      if (playing) this.player.play();
       this.writeSourceAttributes(url);
     }
     onVideoLoadedMetadata() {

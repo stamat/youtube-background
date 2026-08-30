@@ -1,6 +1,6 @@
 // Covers the bugs that have actually shipped here: URL parsing, MIME and param
 // resolution, time/percentage arithmetic, the loop and pause decisions, source
-// attribute round-tripping, group wrap-around, factory teardown, the scroll-in gate, control
+// attribute round-tripping, the state a source swap carries over, group wrap-around, factory teardown, the scroll-in gate, control
 // teardown, the ARIA the buttons and seek bar write, and the seek bar's motion
 // between time reports.
 //
@@ -11,6 +11,7 @@
 
 import { VideoBackgrounds } from '../video-backgrounds.mjs'
 import { VideoBackground, MIME_MAP } from '../lib/video-background.mjs'
+import { VimeoBackground } from '../lib/vimeo-background.mjs'
 import { YoutubeBackground } from '../lib/youtube-background.mjs'
 import { VideoBackgroundGroup, SeekBar, PlayToggle, MuteToggle } from '../lib/controls.mjs'
 import { generateActionButton } from '../lib/buttons.mjs'
@@ -197,6 +198,110 @@ describe('source attributes', () => {
 
     expect(element.hasAttribute('data-ytbg')).toBe(false)
     expect(element.hasAttribute('data-youtube')).toBe(false)
+  })
+})
+
+describe('setSource', () => {
+  // Every swap used to go through the iframe src, which navigates away from the document
+  // the player API shook hands with: the new video came back muted, and with no state
+  // changes left to hear, it never looped.
+  const youtube = (overrides) => {
+    const calls = []
+    const stub = Object.assign(Object.create(YoutubeBackground.prototype), {
+      id: 'oldVideoId',
+      params: { 'start-at': 5, 'end-at': 0, autoplay: true, 'always-play': true, 'no-cookie': true, 'load-background': false },
+      muted: false,
+      paused: false,
+      currentState: 'playing',
+      duration: 120,
+      currentTime: 60,
+      percentComplete: 50,
+      element: document.createElement('div'),
+      playerElement: document.createElement('iframe'),
+      player: {
+        loadVideoById: (request) => calls.push(`load:${request.videoId}@${request.startSeconds}`),
+        cueVideoById: (request) => calls.push(`cue:${request.videoId}@${request.startSeconds}`)
+      },
+      ...overrides
+    })
+    stub.element.setAttribute('data-vbg', 'https://www.youtube.com/watch?v=oldVideoId')
+    stub.setSource('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    return { calls, stub }
+  }
+
+  test('a playing video is handed to the player that is already unmuted, and its iframe stays put', () => {
+    const { calls, stub } = youtube({})
+    expect(calls).toEqual(['load:dQw4w9WgXcQ@5'])
+    expect(stub.playerElement.getAttribute('src')).toBeNull()
+    expect(stub.element.getAttribute('data-vbg')).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+  })
+
+  test('a stopped video is cued, never started behind the user', () => {
+    expect(youtube({ paused: true }).calls).toEqual(['cue:dQw4w9WgXcQ@5'])
+    expect(youtube({ currentState: 'paused' }).calls).toEqual(['cue:dQw4w9WgXcQ@5'])
+  })
+
+  test('the replaced video leaves no duration behind to end the new one early', () => {
+    const { stub } = youtube({})
+    expect(stub.duration).toBe(0)
+    expect(stub.currentTime).toBe(5)
+    expect(stub.percentComplete).toBe(0)
+  })
+
+  test('a swap before the player exists carries the live mute state into the URL', () => {
+    const withoutPlayer = youtube({ player: null }).stub
+    expect(withoutPlayer.playerElement.src).toContain('dQw4w9WgXcQ')
+    expect(withoutPlayer.playerElement.src).not.toContain('mute=1')
+    expect(youtube({ player: null, muted: true }).stub.playerElement.src).toContain('mute=1')
+  })
+
+  test('a Vimeo swap goes through the player, and an unlisted link keeps its hash', async () => {
+    const calls = []
+    const stub = Object.assign(Object.create(VimeoBackground.prototype), {
+      params: { loop: true, 'start-at': 0, 'load-background': false },
+      muted: false,
+      paused: false,
+      currentState: 'playing',
+      element: document.createElement('div'),
+      playerElement: document.createElement('iframe'),
+      player: {
+        loadVideo: (video) => { calls.push(`load:${JSON.stringify(video)}`); return Promise.resolve() },
+        setLoop: (loop) => calls.push(`loop:${loop}`),
+        setMuted: (muted) => calls.push(`muted:${muted}`),
+        play: () => calls.push('play'),
+        pause: () => calls.push('pause')
+      }
+    })
+
+    stub.setSource('https://vimeo.com/123456789/abc123def')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(calls).toEqual(['load:{"id":"123456789","h":"abc123def"}', 'loop:true', 'muted:false', 'play'])
+    expect(stub.playerElement.getAttribute('src')).toBeNull()
+  })
+
+  test('a plain video file is reloaded, not just relabelled', () => {
+    const calls = []
+    const player = document.createElement('video')
+    player.load = () => calls.push('load')
+    player.play = () => calls.push('play')
+    const stub = Object.assign(Object.create(VideoBackground.prototype), {
+      MIME_MAP,
+      params: { 'start-at': 0 },
+      muted: false,
+      paused: false,
+      currentState: 'playing',
+      duration: 30,
+      element: document.createElement('div'),
+      player,
+      playerElement: player
+    })
+
+    stub.setSource('https://example.com/other.webm')
+
+    expect(calls).toEqual(['load', 'play'])
+    expect(player.querySelector('source').getAttribute('type')).toBe('video/webm')
+    expect(stub.duration).toBe(0)
   })
 })
 

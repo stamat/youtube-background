@@ -262,6 +262,19 @@ export class SuperVideoBackground {
     this.element.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: this }));
   }
 
+  // playback the user did not ask to stop - buffering is playing that is still catching up
+  isPlaying() {
+    return !this.paused && (this.currentState === 'playing' || this.currentState === 'buffering');
+  }
+
+  // duration and progress describe the video being replaced, and a stale duration
+  // ends the new one early - every setSource clears them before the swap
+  resetProgress() {
+    this.duration = 0;
+    this.currentTime = this.params['start-at'] || 0;
+    this.percentComplete = 0;
+  }
+
   shouldPlay() {
     if (this.paused) return false; // user asked for pause, nothing overrides that
     if (this.currentState === 'ended' && !this.params.loop) return false;

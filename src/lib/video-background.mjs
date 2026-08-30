@@ -110,6 +110,9 @@ export class VideoBackground extends SuperVideoBackground {
   setSource(url) {
     const pts = url.match(RE_VIDEO);
     if (!pts || !pts.length) return;
+
+    const playing = this.isPlaying();
+
     this.id = pts[1];
     this.setMimeType(this.id);
     this.playerElement.innerHTML = '';
@@ -118,6 +121,12 @@ export class VideoBackground extends SuperVideoBackground {
     if (this.mime) source.setAttribute('type', this.mime);
     this.playerElement.appendChild(source);
     this.src = url;
+    this.resetProgress();
+
+    // source children are read by the load algorithm and nowhere else - without this
+    // the element plays on with the file it already has
+    this.player.load();
+    if (playing) this.player.play();
 
     this.writeSourceAttributes(url);
   }
